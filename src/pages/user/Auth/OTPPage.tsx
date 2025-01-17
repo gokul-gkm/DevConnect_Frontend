@@ -1,19 +1,30 @@
-import { BottomGradient } from '@/components/ui/BottomGradient';
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { BottomGradient } from "@/components/ui/BottomGradient";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import AuthApi from "@/service/Api/AuthApi";
 
 export const UserOTPPage: React.FC = () => {
   const location = useLocation();
   const { email } = location.state || { email: "" };
-  const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
-  const [errors, setErrors] = useState<string>('');
-  const [success, setSuccess] = useState<string>('');
+  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(105);
   const [isResending, setIsResending] = useState<boolean>(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
 
-  const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  useEffect(() => {
+    if (!email) {
+      toast.error("No email provided");
+      navigate("/auth/register");
+    }
+  }, [email, navigate]);
+
+  const handleOtpChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
     const value = e.target.value;
     if (/^[0-9]?$/.test(value)) {
       const newOtp = [...otp];
@@ -28,8 +39,11 @@ export const UserOTPPage: React.FC = () => {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
@@ -44,28 +58,41 @@ export const UserOTPPage: React.FC = () => {
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
-    return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    return `${minutes < 10 ? "0" : ""}${minutes}:${
+      seconds < 10 ? "0" : ""
+    }${seconds}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const otpString = otp.join("");
+    if (otpString.length !== 6) {
+      toast.error("Please enter all 6 digits");
+      return;
+    }
     try {
-      setSuccess('OTP verified successfully!');
-      setErrors('');
-      navigate('/auth/login');
+      setIsLoading(true);
+      await AuthApi.verifyOtp(email, otpString);
+      toast.success("OTP verified successfully!");
+      navigate("/auth/login");
     } catch (error: any) {
-      setErrors(error.response?.data.message);
+      toast.error(error.response?.data?.message || "Failed to verify OTP");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleResendOTP = async () => {
-    setIsResending(true);
+    if (timeLeft > 0) return;
+
     try {
+      setIsResending(true);
+      await AuthApi.resendOtp(email);
       setTimeLeft(105);
-      setSuccess('New OTP sent successfully!');
-      setErrors('');
+      toast.success("New OTP sent successfully!");
+      setOtp(["", "", "", "", "", ""]);
     } catch (error: any) {
-      setErrors(error.response?.data.message || 'Failed to resend OTP');
+      toast.error(error.response?.data?.message || "Failed to resend OTP");
     } finally {
       setIsResending(false);
     }
@@ -75,25 +102,24 @@ export const UserOTPPage: React.FC = () => {
     <div className="min-h-screen  flex items-center justify-center p-4">
       <div className="w-full max-w-[320px] bg-black rounded-2xl p-4 sm:p-6 relative shadow-[0_5px_30px_rgba(255,_255,_255,_0.2)]">
         <div className="absolute inset-0 rounded-2xl bg-black"></div>
-        
+
         <div className="relative z-10 flex flex-col items-center">
-          {/* Timer Display */}
           <div className="bg-white rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mb-4 sm:mb-6 shadow-lg">
-            <span className="text-black text-base sm:text-lg font-medium">{formatTime(timeLeft)}</span>
+            <span className="text-black text-base sm:text-lg font-medium">
+              {formatTime(timeLeft)}
+            </span>
           </div>
 
-          {/* Instructions */}
           <p className="text-gray-400 text-xs sm:text-sm mb-4 sm:mb-6">
             Enter the OTP sent to your email
           </p>
 
           <form onSubmit={handleSubmit} className="w-full">
-            {/* OTP Input Container */}
             <div className="flex justify-center gap-1 sm:gap-2 mb-4 sm:mb-6">
               {otp.map((digit, index) => (
                 <input
                   key={index}
-                  ref={el => inputRefs.current[index] = el}
+                  ref={(el) => (inputRefs.current[index] = el)}
                   type="text"
                   inputMode="numeric"
                   value={digit}
@@ -109,26 +135,15 @@ export const UserOTPPage: React.FC = () => {
               ))}
             </div>
 
-            {errors && 
-              <p className="text-red-500 text-center text-xs sm:text-sm mb-3">{errors}</p>
-            }
-            {success && 
-              <p className="text-green-500 text-center text-xs sm:text-sm mb-3">{success}</p>
-            }
+            <button
+              type="submit"
+              className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-9 font-medium text-sm shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+            >
+              {isLoading ? "Verifying..." : `Verify OTP →`}
+              <BottomGradient />
+            </button>
 
-            {/* Verify Button */}
-            
-
-                      <button type="submit"
-                                className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-9 font-medium text-sm shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
-                              >
-                                Verify OTP &rarr;
-                                <BottomGradient />
-                              </button>
-                      
-
-            {/* Resend Button */}
-            <button 
+            <button
               type="button"
               onClick={handleResendOTP}
               disabled={isResending || timeLeft > 0}
@@ -136,7 +151,7 @@ export const UserOTPPage: React.FC = () => {
                        hover:text-[#4d94ff] transition-colors duration-200 
                        disabled:text-gray-600"
             >
-              {isResending ? 'Resending...' : 'Resend OTP'}
+              {isResending ? "Resending..." : "Resend OTP"}
             </button>
           </form>
         </div>

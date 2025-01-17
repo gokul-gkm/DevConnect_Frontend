@@ -58,11 +58,11 @@ export function Footer() {
 
   return (
     <footer className="bg-black text-gray-300 py-12 px-4 md:px-6 lg:px-8">
-      {/* Top Section with Logo and Social Media */}
+
       <div className="max-w-7xl mx-auto mb-12 flex flex-col md:flex-row justify-between items-center">
         <a href="/" className="mb-6 md:mb-0">
           <img
-            src="https://i.imghippo.com/files/NPo1259thc.png" // Replace with your actual logo path
+            src="https://i.imghippo.com/files/NPo1259thc.png" 
             alt="Company Logo"
             className="w-auto h-10"
           />
@@ -95,7 +95,6 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Main Navigation Section */}
       <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-12">
         {mainSections.map((section) => (
           <div key={section.title} className="flex flex-col">
@@ -116,7 +115,7 @@ export function Footer() {
         ))}
       </div>
 
-      {/* Bottom Section */}
+
       <div className="max-w-7xl mx-auto pt-8 border-t border-gray-800">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-400">
           <div>©2024 DevConnect. All Rights Reserved</div>

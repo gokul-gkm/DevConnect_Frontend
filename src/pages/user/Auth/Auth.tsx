@@ -2,7 +2,6 @@ import { Outlet } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 
-
 import { Background } from "@/components/ui/Background";
 
 const Auth = () => {
@@ -11,15 +10,11 @@ const Auth = () => {
       <div>
         <Navbar />
       </div>
-      
-        <Background>
-      <div className="mt-20">
-
-        <Outlet />
+      <Background>
+        <div className="mt-20">
+          <Outlet />
         </div>
-        </Background>
-          
-      
+      </Background>
       <Footer />
     </div>
   );
