@@ -4,108 +4,32 @@ import { LinkedIn } from "react-linkedin-login-oauth2";
 import { Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/utils";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { BottomGradient } from "@/components/ui/BottomGradient";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { toast } from "react-hot-toast";
-import { loginSchema } from "@/utils/validation/userValidation";
-import AuthApi from "@/service/Api/AuthApi";
-import { useAppDispatch } from "@/hooks/useAppSelector";
-import { setCredentials } from "@/redux/slices/authSlice";
+import { loginSchema, LoginFormData } from "@/utils/validation/userValidation";
 import { GoogleLogin } from "@react-oauth/google";
+import { useLogin } from "@/hooks/userAuth/useLogin";
+import { useGoogleLogin } from "@/hooks/userAuth/useGoogleLogin";
+import { useLinkedInLogin } from "@/hooks/userAuth/useLinkedInLogin";
 
-type LoginData = z.infer<typeof loginSchema>;
-
-export function UserLoginPage() {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+export default function UserLoginPage() {
+  const { login, isLogging } = useLogin();
+  const { handleGoogleSuccess, handleGoogleError } = useGoogleLogin();
+  const { handleLinkedInSuccess, handleLinkedInError } = useLinkedInLogin();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginData>({
+    formState: { errors },
+  } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     mode: "onChange",
   });
 
-  const onSubmit = async (data: LoginData) => {
-    try {
-      const response = await AuthApi.login(data.email, data.password);
-      if (response.success && response.user) {
-        dispatch(
-          setCredentials({
-            username: response.user.username,
-            email: response.user.email,
-            role: response.user.role,
-          })
-        );
-      }
-      toast.success("Login successful!");
-      navigate("/");
-    } catch (error: any) {
-      console.error("Login failed:", error);
-      toast.error(
-        error.response?.data?.message ||
-          "Login failed. Please check your credentials."
-      );
-    }
-  };
-
-  const handleGoogleSuccess = async (credentialResponse: any) => {
-    try {
-      const response = await AuthApi.googleLogin(credentialResponse.credential);
-      if (response.success && response.user) {
-        dispatch(
-          setCredentials({
-            username: response.user.username,
-            email: response.user.email,
-            role: response.user.role,
-          })
-        );
-      }
-      toast.success("Login successful!");
-      navigate("/");
-    } catch (error: any) {
-      console.error("Google login failed:", error);
-      toast.error(
-        error.response?.data?.message || "Google login failed. Please try again."
-      );
-    }
-  };
-
-  const handleGoogleError = () => {
-    console.error("Google login failed");
-  };
-
-  const handleLinkedInSuccess = async (code: string) => {
-    
-    try {
-      const response = await AuthApi.linkedinLogin(code);
-      if (response.success && response.user) {
-        dispatch(
-          setCredentials({
-            username: response.user.username,
-            email: response.user.email,
-            role: response.user.role,
-          })
-        );
-        toast.success("Login successful!");
-        navigate("/");
-      }
-    } catch (error: any) {
-      console.error("LinkedIn login failed:", error);
-      toast.error(
-        error.response?.data?.message || "LinkedIn login failed. Please try again."
-      );
-    }
-  };
-
-  const handleLinkedInError = (error: any) => {
-    console.error("LinkedIn login error:", error);
-    toast.error("LinkedIn login failed. Please try again.");
+  const onSubmit = (data: LoginFormData) => {
+    login(data);
   };
 
   return (
@@ -160,11 +84,11 @@ export function UserLoginPage() {
           </div>
 
           <button
-            className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-message600 block dark:bg-zinc-800 w-full text-white rounded-md h-9 font-medium text-sm shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+            className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-9 font-medium text-sm shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
             type="submit"
-            disabled={isSubmitting}
+            disabled={isLogging}
           >
-            {isSubmitting ? "Signing In..." : "Sign In →"}
+            {isLogging ? "Signing In..." : "Sign In →"}
             <BottomGradient />
           </button>
 
@@ -180,44 +104,37 @@ export function UserLoginPage() {
               shape="rectangular"
               theme="filled_black"
             />
-
-
-
-
           </div>
           <div className="flex gap-2 justify-center mt-2">
-          <LinkedIn
-  clientId={import.meta.env.VITE_APP_LINKEDIN_CLIENT_ID}
-  redirectUri={`${window.location.origin}/linkedin-callback`}
-  onSuccess={(code) => handleLinkedInSuccess(code)}
-  onError={(error: any) => handleLinkedInError(error)}
-  scope="openid profile email"
->
-  {({ linkedInLogin }) => (
-    <button
-      onClick={(e) => {
-        e.preventDefault(); 
-
-       
-        const linkedInOAuthURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${
-          import.meta.env.VITE_APP_LINKEDIN_CLIENT_ID
-        }&redirect_uri=${encodeURIComponent(
-          `${window.location.origin}/linkedin-callback`
-        )}&scope=${encodeURIComponent("openid profile email")}`;
-
-        window.location.href = linkedInOAuthURL;
-      }}
-      className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2"
-      type="button"
-    >
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
-      </svg>
-      Sign in with LinkedIn
-    </button>
-  )}
-</LinkedIn>
-</div>
+            <LinkedIn
+              clientId={import.meta.env.VITE_APP_LINKEDIN_CLIENT_ID}
+              redirectUri={`${window.location.origin}/linkedin-callback`}
+              onSuccess={(code) => handleLinkedInSuccess(code)}
+              onError={handleLinkedInError}
+              scope="openid profile email"
+            >
+              {({ linkedInLogin }) => (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const linkedInOAuthURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${
+                      import.meta.env.VITE_APP_LINKEDIN_CLIENT_ID
+                    }&redirect_uri=${encodeURIComponent(
+                      `${window.location.origin}/linkedin-callback`
+                    )}&scope=${encodeURIComponent("openid profile email")}`;
+                    window.location.href = linkedInOAuthURL;
+                  }}
+                  className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2"
+                  type="button"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+                  </svg>
+                  Sign in with LinkedIn
+                </button>
+              )}
+            </LinkedIn>
+          </div>
         </form>
 
         <div className="text-center">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, X, Menu, User, LogOut } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
 import AuthApi from '@/service/Api/AuthApi';
@@ -27,6 +27,7 @@ const DevNavbar: React.FC = () => {
   const { scrollY } = useScroll();
   const dispatch = useAppDispatch();
   const { isAuthenticated, username, email } = useAppSelector((state) => state.user);
+  const navigate = useNavigate()
 
   const handleLogout = async () => {
     try {
@@ -107,7 +108,7 @@ const DevNavbar: React.FC = () => {
                   className="w-full flex items-center space-x-4 px-4 py-3 hover:bg-gray-900 transition-colors group"
                   onClick={() => {
                     setIsProfileOpen(false);
-                    // Add navigation to profile page
+                    navigate('/developer/profile')
                   }}
                 >
                   <div className="bg-gray-800 p-2 rounded-full group-hover:bg-blue-900 transition-colors">

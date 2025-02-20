@@ -2,17 +2,18 @@ import { BottomGradient } from "@/components/ui/BottomGradient";
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import DevAuthApi from "@/service/Api/DevAuthApi";
+import { useDevOTP } from "@/hooks/devAuth/useDevOtp";
+import { Loader2 } from "lucide-react";
 
-export const DevOTPPage: React.FC = () => {
+const DevOTPPage: React.FC = () => {
   const location = useLocation();
   const { email } = location.state || { email: "" };
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(105);
-  const [isResending, setIsResending] = useState<boolean>(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
+
+  const { verifyOtp, isVerifying, resendOtp, isResending } = useDevOTP();
 
   useEffect(() => {
     if (!email) {
@@ -70,37 +71,18 @@ export const DevOTPPage: React.FC = () => {
       toast.error("Please enter all 6 digits");
       return;
     }
-    try {
-      setIsLoading(true);
-      await DevAuthApi.verifyOtp(email, otpString);
-      toast.success("OTP verified successfully!");
-      navigate("/developer/auth/dev-request");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to verify OTP");
-    } finally {
-      setIsLoading(false);
-    }
+    verifyOtp({ email, otp: otpString });
   };
 
   const handleResendOTP = async () => {
     if (timeLeft > 0) return;
-
-    try {
-      setIsResending(true);
-      await DevAuthApi.resendOtp(email);
-      setTimeLeft(105);
-      toast.success("New OTP sent successfully!");
-      setOtp(["", "", "", "", "", ""]);
-      
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to resend OTP");
-    } finally {
-      setIsResending(false);
-    }
+    resendOtp(email);
+    setTimeLeft(105);
+    setOtp(["", "", "", "", "", ""]);
   };
 
   return (
-    <div className="min-h-screen  flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-[320px] bg-black rounded-2xl p-4 sm:p-6 relative shadow-[0_5px_30px_rgba(255,_255,_255,_0.2)]">
         <div className="absolute inset-0 rounded-2xl bg-black"></div>
 
@@ -138,9 +120,17 @@ export const DevOTPPage: React.FC = () => {
 
             <button
               type="submit"
-              className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-9 font-medium text-sm shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+              className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 dark:bg-zinc-800 w-full text-white rounded-md h-9 font-medium text-sm shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset] flex items-center justify-center"
             >
-              {isLoading ? "Verifying..." : `Verify OTP →`}
+              {isVerifying ? (
+    <>
+      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+      Verifying...
+    </>
+  ) : (
+    "Verify OTP →"
+  )}
+              
               <BottomGradient />
             </button>
 
@@ -150,9 +140,16 @@ export const DevOTPPage: React.FC = () => {
               disabled={isResending || timeLeft > 0}
               className="w-full text-[#0066ff] py-2 text-xs sm:text-sm rounded-md 
                        hover:text-[#4d94ff] transition-colors duration-200 
-                       disabled:text-gray-600"
+                       disabled:text-gray-600 flex justify-center items-center"
             >
-              {isResending ? "Resending..." : "Resend OTP"}
+              {isResending ? (
+    <>
+      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+      Resending...
+    </>
+  ) : (
+    "Resend OTP"
+  )}
             </button>
           </form>
         </div>
@@ -160,3 +157,5 @@ export const DevOTPPage: React.FC = () => {
     </div>
   );
 };
+
+export default DevOTPPage;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, X, Menu, User, LogOut } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
 import AuthApi from '@/service/Api/AuthApi';
@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 
 const navItems = [
   { name: 'Home', delay: 0, url: '/' },
-  { name: 'Sessions', delay: 0.1, url: 'sessions' },
+  { name: 'Sessions', delay: 0.1, url: 'sessions/upcoming' },
   { name: 'Community', delay: 0.2, url: '/community' },
   { name: 'Resources', delay: 0.3, url: '/resources' },
   { name: 'Blog', delay: 0.4, url: '/blog' },
@@ -18,12 +18,11 @@ const navItems = [
 ];
 
 const Navbar: React.FC = () => {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const location = useLocation();
+  const navigate = useNavigate();
   const { scrollY } = useScroll();
   const dispatch = useAppDispatch();
   const { isAuthenticated, username, email } = useAppSelector((state) => state.user);
@@ -49,12 +48,6 @@ const Navbar: React.FC = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  useEffect(() => {
-    if (isMobile && isSearchOpen) {
-      setIsProfileOpen(false);
-    }
-  }, [isSearchOpen, isMobile]);
 
   const navBackground = useTransform(scrollY, [0, 100], ["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0.95)"]);
   const navHeight = useTransform(scrollY, [0, 100], ["5rem", "4rem"]);
@@ -107,7 +100,7 @@ const Navbar: React.FC = () => {
                   className="w-full flex items-center space-x-4 px-4 py-3 hover:bg-gray-900 transition-colors group"
                   onClick={() => {
                     setIsProfileOpen(false);
-                    // Add navigation to profile page
+                    navigate('/profile')
                   }}
                 >
                   <div className="bg-gray-800 p-2 rounded-full group-hover:bg-blue-900 transition-colors">
@@ -194,7 +187,7 @@ const Navbar: React.FC = () => {
 
           <div className="hidden md:flex space-x-2">
             {navItems.map((item) => {
-              const isActive = location.pathname === `/${item.url}`;
+              const isActive = location.pathname === item.url;
               return (
                 <motion.div 
                   key={item.name} 
@@ -203,7 +196,7 @@ const Navbar: React.FC = () => {
                   transition={{ delay: item.delay, duration: 0.3 }} 
                   whileHover={{ y: -2 }}
                 >
-                  <Link to={`${item.url}`} className="relative px-4 py-2 group">
+                  <Link to={item.url} className="relative px-4 py-2 group">
                     <span className={`relative z-10 text-sm font-medium ${isActive ? 'text-white' : 'text-gray-300'}`}>
                       {item.name}
                     </span>
@@ -224,64 +217,21 @@ const Navbar: React.FC = () => {
             })}
           </div>
 
-          <div className="flex items-center space-x-2 md:space-x-6">
-            <motion.div layout className="flex items-center space-x-2 relative">
-              <motion.div
-                className="relative overflow-hidden"
-                style={{
-                  width: isSearchOpen ? '250px' : 0,
-                  maxWidth: '250px',
-                  transition: "width 0.4s ease-in-out",
-                }}
-              >
-                <AnimatePresence>
-                  {isSearchOpen && (
-                    <motion.div 
-                      className="relative w-full"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <motion.input
-                        onFocus={() => setIsSearchFocused(true)}
-                        onBlur={() => setIsSearchFocused(false)}
-                        type="text"
-                        placeholder="Search DevConnect..."
-                        className={`
-                          bg-black/50 text-white px-4 py-2 rounded-full w-full 
-                          border border-gray-700
-                          focus:outline-none 
-                          text-sm md:text-base
-                        `}
-                      />
-                      {isSearchFocused && (
-                        <motion.div 
-                          layoutId="search-focus-ring"
-                          className="absolute inset-0 rounded-full pointer-events-none 
-                            border-2 border-gray-500 
-                            animate-pulse"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ duration: 0.3 }}
-                        />
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
+          <div className="flex items-center space-x-4">
+    
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => navigate('/search-developers')}
+              className="p-2 rounded-full
+                       bg-white/5 hover:bg-white/10
+                       border border-white/10 hover:border-white/20
+                       backdrop-blur-sm transition-all duration-300"
+            >
+              <Search className="w-4 h-4 md:w-5 md:h-5 text-white" />
+            </motion.button>
 
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="bg-black text-white p-2 rounded-full"
-              >
-                {isSearchOpen ? <X className="w-4 h-4 md:w-5 md:h-5" /> : <Search className="w-4 h-4 md:w-5 md:h-5" />}
-              </motion.button>
-            </motion.div>
-
-            {!(isMobile && isSearchOpen) && renderAuthSection()}
+            {renderAuthSection()}
           </div>
 
           <AnimatePresence>
@@ -316,7 +266,6 @@ const Navbar: React.FC = () => {
                     </motion.button>
                   </div>
 
-
                   {navItems.map((item, index) => (
                     <motion.div
                       key={item.name}
@@ -327,7 +276,7 @@ const Navbar: React.FC = () => {
                       whileTap={{ scale: 0.95 }}
                     >
                       <Link 
-                        to={`/${item.name.toLowerCase()}`}
+                        to={item.url}
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="block py-3 text-white transition-colors 
                           hover:text-blue-500 
@@ -362,7 +311,7 @@ const Navbar: React.FC = () => {
                         className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-900 rounded-lg transition-colors"
                         onClick={() => {
                           setIsMobileMenuOpen(false);
-                         
+                          navigate('/profile');
                         }}
                       >
                         <User className="w-5 h-5 text-gray-400" />
@@ -383,15 +332,11 @@ const Navbar: React.FC = () => {
                       <Link 
                         to="/auth/login"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="block w-full"
+                        className="block w-full py-3 text-center text-white 
+                                 bg-blue-600 rounded-lg hover:bg-blue-700 
+                                 transition-colors"
                       >
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="w-full px-4 py-2 bg-black text-white rounded-full hover:bg-neutral-900 transition-colors"
-                        >
-                          Sign In
-                        </motion.button>
+                        Sign In
                       </Link>
                     </div>
                   )}

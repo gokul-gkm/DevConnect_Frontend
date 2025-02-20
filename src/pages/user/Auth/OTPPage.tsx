@@ -2,17 +2,16 @@ import { BottomGradient } from "@/components/ui/BottomGradient";
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import AuthApi from "@/service/Api/AuthApi";
+import { useOTP } from "@/hooks/userAuth/useOtp";
 
-export const UserOTPPage: React.FC = () => {
+const UserOTPPage: React.FC = () => {
   const location = useLocation();
   const { email } = location.state || { email: "" };
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(105);
-  const [isResending, setIsResending] = useState<boolean>(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
+  const { verifyOtp, isVerifying, resendOtp, isResending } = useOTP();
 
   useEffect(() => {
     if (!email) {
@@ -70,36 +69,18 @@ export const UserOTPPage: React.FC = () => {
       toast.error("Please enter all 6 digits");
       return;
     }
-    try {
-      setIsLoading(true);
-      await AuthApi.verifyOtp(email, otpString);
-      toast.success("OTP verified successfully!");
-      navigate("/auth/login");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to verify OTP");
-    } finally {
-      setIsLoading(false);
-    }
+    verifyOtp({ email, otp: otpString });
   };
 
   const handleResendOTP = async () => {
     if (timeLeft > 0) return;
-
-    try {
-      setIsResending(true);
-      await AuthApi.resendOtp(email);
-      setTimeLeft(105);
-      toast.success("New OTP sent successfully!");
-      setOtp(["", "", "", "", "", ""]);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to resend OTP");
-    } finally {
-      setIsResending(false);
-    }
+    resendOtp(email);
+    setTimeLeft(105);
+    setOtp(["", "", "", "", "", ""]);
   };
 
   return (
-    <div className="min-h-screen  flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-[320px] bg-black rounded-2xl p-4 sm:p-6 relative shadow-[0_5px_30px_rgba(255,_255,_255,_0.2)]">
         <div className="absolute inset-0 rounded-2xl bg-black"></div>
 
@@ -139,7 +120,7 @@ export const UserOTPPage: React.FC = () => {
               type="submit"
               className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-9 font-medium text-sm shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
             >
-              {isLoading ? "Verifying..." : `Verify OTP →`}
+              {isVerifying ? "Verifying..." : `Verify OTP →`}
               <BottomGradient />
             </button>
 
@@ -159,3 +140,5 @@ export const UserOTPPage: React.FC = () => {
     </div>
   );
 };
+
+export default UserOTPPage;

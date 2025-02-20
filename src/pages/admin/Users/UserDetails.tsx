@@ -1,205 +1,230 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/shadcn-button";
-import AdminApi from "@/service/Api/AdminApi";
-import { useQuery } from "@tanstack/react-query";
+import { useParams } from 'react-router-dom';
+import { Loader2, Mail, Phone, Github, Linkedin, Twitter, Globe } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/shadcn-button';
+import { Badge } from '@/components/ui/badge';
+import { useUserDetails } from '@/hooks/admin/useUserDetails';  
 
-import {motion} from 'framer-motion'
-import { useParams } from "react-router-dom";
 export default function UserDetails() {
-    const { userId } = useParams()
-    
-    const { data: userData, isLoading, error } = useQuery({
-        queryKey: ['userDetails', userId],
-        queryFn: () => userId ? AdminApi.getUserDetails(userId) : Promise.reject('No user ID provided'),
-        enabled: !!userId, 
-    });
-    
-    console.log(userData)
+    const { userId } = useParams();
+    const { userData, isLoading, error, toggleStatus, isUpdating } = useUserDetails(userId);
 
-    
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+            </div>
+        );
+    }
 
+    if (error || !userData) {
+        return (
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+                <p className="text-slate-400">Failed to load user details</p>
+            </div>
+        );
+    }
 
+    const { user } = userData;
 
-
-  const user = {
-    name: "Mark Johnson",
-    id: "ID#1234567890",
-    avatar: "https://i.imghippo.com/files/GFY5894omo.jpg",
-    reviewCount: 0,
-    hourlyRate: 3500,
-    totalEarnings: 20000,
-    bio: "Hi, I'm Mark Johnson, Developer. If you can't handle, the answer is no. If two equally difficult paths exist, choose the one more painful in the short term (pain avoidance is creating an illusion of equality).",
-    contactInfo: {
-      phone: "+91 123 456 123",
-      email: "mark@example.com",
-      location: "United States"
-    },
-    professional: {
-      title: "Senior Mern Stack Developer",
-      company: "growth+",
-      experience: "2 years"
-    },
-    expertise: ["Node.js", "React.js", "MongoDB", "Next.js", "TypeScript"],
-    availableTimes: ["10 AM", "11 AM", "2 PM", "4 PM", "5 PM"],
-    languages: ["English", "Hindi", "Malayalam"],
-    socialLinks: {
-      github: "http://github.com",
-      linkedin: "http://github.com",
-      email: "mark@example.com",
-      twitter: "http://twitter.com",
-      portfolio: "http://example.com"
-    },
-    portfolio: [
-      {
-        id: 1,
-        title: "E-Commerce Revolution",
-        description: "A dynamic e-commerce platform that revolutionized online shopping for fashion enthusiasts...",
-        image: "https://i.imghippo.com/files/GFY5894omo.jpg"
-      },
-      {
-        id: 2,
-        title: "E-Commerce Revolution",
-        description: "A dynamic e-commerce platform that revolutionized online shopping for fashion enthusiasts...",
-        image: "https://i.imghippo.com/files/GFY5894omo.jpg"
-      },
-      {
-        id: 3,
-        title: "E-Commerce Revolution",
-        description: "A dynamic e-commerce platform that revolutionized online shopping for fashion enthusiasts...",
-        image: "https://i.imghippo.com/files/GFY5894omo.jpg"
-      }
-    ]
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-950 p-6">
-
-      <motion.div
+    return (
+        <div className="min-h-screen bg-slate-950 p-6">
+            <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="max-w-7xl mx-auto space-y-8"
+                className="max-w-7xl mx-auto space-y-6"
             >
-          
-          <motion.div
+                <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
-                    className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/50 p-6 rounded-2xl border border-slate-800/50 backdrop-blur-sm shadow-xl"
+                    className="bg-slate-900/50 rounded-2xl border border-slate-800/50 backdrop-blur-sm shadow-xl overflow-hidden"
                 >
-                    <div>
-                        <h1 className="text-3xl font-bold text-slate-100 tracking-tight">
-                            User Details
-                        </h1>
+                    <div className="h-48 bg-gradient-to-r from-blue-600/20 to-purple-600/20" />
+                    
+                    <div className="p-6 -mt-20">
+                        <div className="flex flex-col md:flex-row gap-6 items-start">
+                            <div className="relative">
+                                <img
+                                    src={user.profilePicture || "https://i.imghippo.com/files/CFSX4839hi.png"}
+                                    alt={user.username}
+                                    className="w-32 h-32 rounded-2xl border-4 border-slate-900 shadow-xl object-cover"
+                                />
+                                <Badge
+                                    className={`absolute -top-3 -right-3 ${
+                                        user.status === 'active' 
+                                            ? 'bg-green-500/10 text-green-500 border-green-500/20' 
+                                            : 'bg-red-500/10 text-red-500 border-red-500/20'
+                                    }`}
+                                >
+                                    {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                                </Badge>
+                            </div>
 
+                            <div className="flex-1">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h1 className="text-3xl font-bold text-slate-100 tracking-tight">
+                                            {user.username}
+                                        </h1>
+                                        <p className="text-slate-400 mt-1">{user.email}</p>
+                                    </div>
+                                    <Button 
+                                        onClick={() => toggleStatus(userId as string)}
+                                        variant="destructive" 
+                                        size="sm"
+                                        disabled={isUpdating}
+                                        className="bg-transparent border border-red-500/50 text-red-500 hover:bg-red-500/10 rounded-full px-6"
+                                    >
+                                        {user.status === 'blocked' ? 'Unblock' : 'Block'}
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-6">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 }}
+                            className="bg-slate-900/50 rounded-xl border border-slate-800/50 p-6"
+                        >
+                            <h3 className="text-lg font-semibold text-slate-100 mb-4">Bio</h3>
+                            <p className="text-slate-300 whitespace-pre-wrap">
+                                {user.bio || 'No bio provided'}
+                            </p>
+                        </motion.div>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                            className="bg-slate-900/50 rounded-xl border border-slate-800/50 p-6"
+                        >
+                            <h3 className="text-lg font-semibold text-slate-100 mb-4">Contact Information</h3>
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2 text-slate-400">
+                                    <Mail className="w-4 h-4" />
+                                    <span>{user.email}</span>
+                                </div>
+                                {user.contact && (
+                                    <div className="flex items-center gap-2 text-slate-400">
+                                        <Phone className="w-4 h-4" />
+                                        <span>{user.contact}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+
+                        {user.skills && (user.skills.length > 0 ) && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.6 }}
+                                className="bg-slate-900/50 rounded-xl border border-slate-800/50 p-6"
+                            >
+                                <h3 className="text-lg font-semibold text-slate-100 mb-4">Skills</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {user.skills.map((skill: string) => (
+                                        <Badge
+                                            key={skill}
+                                            className="bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20"
+                                        >
+                                            {skill}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
                     </div>
 
-                    
-              </motion.div>
-              
-              </motion.div>
+                    <div className="space-y-6">
+                        {user.socialLinks && Object.keys(user.socialLinks).length > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.7 }}
+                                className="bg-slate-900/50 rounded-xl border border-slate-800/50 p-6"
+                            >
+                                <h3 className="text-lg font-semibold text-slate-100 mb-4">Social Links</h3>
+                                <div className="flex flex-wrap gap-4">
+                                    {user.socialLinks.github && (
+                                        <a
+                                            href={user.socialLinks.github}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors"
+                                        >
+                                            <Github className="w-5 h-5" />
+                                            <span>GitHub</span>
+                                        </a>
+                                    )}
+                                    {user.socialLinks.linkedIn && (
+                                        <a
+                                            href={user.socialLinks.linkedIn}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors"
+                                        >
+                                            <Linkedin className="w-5 h-5" />
+                                            <span>LinkedIn</span>
+                                        </a>
+                                    )}
+                                    {user.socialLinks.twitter && (
+                                        <a
+                                            href={user.socialLinks.twitter}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors"
+                                        >
+                                            <Twitter className="w-5 h-5" />
+                                            <span>Twitter</span>
+                                        </a>
+                                    )}
+                                    {user.socialLinks.portfolio && (
+                                        <a
+                                            href={user.socialLinks.portfolio}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors"
+                                        >
+                                            <Globe className="w-5 h-5" />
+                                            <span>Portfolio</span>
+                                        </a>
+                                    )}
+                                </div>
+                            </motion.div>
+                        )}
 
-      <div className="max-w-6xl mx-auto p-6">
-      
-        <div className="rounded-lg border border-blue-500/20 bg-slate-900/50 p-6">
-          <div className="flex justify-between items-start mb-8">
-            <div className="flex gap-4">
-              <img
-                src={userData?.user?.profilePicture}
-                alt={userData?.user.username}
-                className="w-12 h-12 rounded-lg"
-              />
-              <div>
-                <h2 className="text-lg font-medium text-slate-100">{userData?.user.username}</h2>
-                <p className="text-sm text-slate-500">Last seen moments ago</p>
-              </div>
-            </div>
-            <Button 
-              variant="destructive" 
-              size="sm"
-              className="bg-transparent border border-red-500/50 text-red-500 hover:bg-red-500/10 rounded-full px-6"
-            >
-              Block
-            </Button>
-          </div>
-
-         
-          <div className="grid grid-cols-3 gap-6 mb-8">
-            <div className="bg-slate-900/50 p-4 rounded">
-              <p className="text-sm text-slate-400">No of Sessions Booked</p>
-              <p className="text-xl font-semibold text-slate-100 mt-1">{user.reviewCount}</p>
-            </div>
-        
-          </div>
-
-          <div className="grid grid-cols-2 gap-8">
-            <div className="space-y-6">
-         
-              <div>
-                <h3 className="text-lg font-medium text-slate-100 mb-4">Profile Informations</h3>
-                <p className="text-slate-400 text-sm mb-4">{userData?.user?.bio}</p>
-                
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-slate-400">Full Name:</p>
-                    <p className="text-sm text-slate-300">{userData?.user.username}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-400">Mobile:</p>
-                    <p className="text-sm text-slate-300">{userData?.user.contact}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-400">Email:</p>
-                    <p className="text-sm text-slate-300">{userData?.user.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-400">Location:</p>
-                    <p className="text-sm text-slate-300">{user.contactInfo.location}</p>
-                  </div>
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.8 }}
+                            className="bg-slate-900/50 rounded-xl border border-slate-800/50 p-6"
+                        >
+                            <h3 className="text-lg font-semibold text-slate-100 mb-4">Statistics</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-slate-800/50 p-4 rounded-lg">
+                                    <p className="text-sm text-slate-400">Sessions Booked</p>
+                                    <p className="text-xl font-semibold text-slate-100 mt-1">
+                                        {0}
+                                    </p>
+                                </div>
+                                <div className="bg-slate-800/50 p-4 rounded-lg">
+                                    <p className="text-sm text-slate-400">Member Since</p>
+                                    <p className="text-sm font-semibold text-slate-100 mt-1">
+                                        {new Date(user.createdAt).toLocaleDateString()}
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
                 </div>
-              </div>
-
-
-             
-            </div>
-
-            <div className="space-y-6">
-                
-            <div>
-                <h3 className="text-lg font-medium text-slate-100 mb-4">Skills</h3>
-                <div className="flex flex-wrap gap-2">
-                  {user.expertise.map((skill) => (
-                    <Badge
-                      key={skill}
-                      className="bg-slate-800/50 text-slate-300 border-none text-xs px-3 py-1"
-                    >
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-medium text-slate-100 mb-4">Social Media</h3>
-                <div className="space-y-2">
-                  {Object.entries(user.socialLinks).map(([platform, url]) => (
-                    <a
-                      key={platform}
-                      href={url}
-                      className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-300"
-                    >
-                      <span className="text-slate-500">•</span>
-                      {url}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-        
+            </motion.div>
         </div>
-      </div>
-    </div>
-  );
+    );
 }

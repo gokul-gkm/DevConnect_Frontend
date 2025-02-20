@@ -39,7 +39,6 @@ const AuthApi = {
     },
     linkedinLogin: async (code: string): Promise<IAuthResponse> => {
         const response = await axiosClient.post('/auth/linkedin', { code });
-        console.log("Response in authapi : ",response)
         return response.data
     }
    

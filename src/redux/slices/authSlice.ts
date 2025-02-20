@@ -29,6 +29,7 @@ const initialState: UserState = {
         state.email = null;
         state.role = null;
         state.isAuthenticated = false;
+        localStorage.removeItem("access-token");
     }
   },
 });

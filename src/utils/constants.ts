@@ -26,3 +26,19 @@ export const devAuthRoutes = {
     resendOtp: '/developer/auth/resend-otp',
     devRequest: '/developer/auth/dev-request'
 }
+
+export const userRoutes = {
+    getProfile: '/users/profile',
+    updateProfile: '/users/profile/update'  
+}
+
+export const DeveloperRoutes = {
+    getProfile: '/developer/profile',
+    updateProfile: '/developer/profile/update',
+    getProjects: '/developer/projects',
+    addProject: '/developer/add-project',
+    getProject: '/developer/projects',
+    editProject: '/developer/project/edit',
+    deleteProject: '/developer/project/remove'
+
+}

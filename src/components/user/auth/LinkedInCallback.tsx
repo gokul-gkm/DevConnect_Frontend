@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast';
 import { useAppDispatch } from '@/hooks/useAppSelector';
 import { setCredentials } from '@/redux/slices/authSlice';
 
-export function LinkedInCallback() {
+export default function LinkedInCallback() {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
