@@ -8,7 +8,8 @@ import {
   Bell,
   Lock,
   User,
-  Sparkles
+  Sparkles,
+  Wallet2
 } from 'lucide-react'
 import { SidebarProps } from '@/types/types'
 import { useNavigate } from 'react-router-dom'
@@ -21,6 +22,7 @@ const sidebarItems = [
   { icon: Calendar, label: 'Upcoming Sessions', path: '/sessions/upcoming' },
   { icon: Bell, label: 'Notifications', path: '/profile/notifications' },
   { icon: Lock, label: 'Password & Security', path: '/change-password' },
+  { icon: Wallet2, label: 'Wallet', path: '/wallet' },
 ]
 
 const buttonVariants = {

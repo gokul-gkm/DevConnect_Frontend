@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/shadcn-button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useSessionDetails } from '@/hooks/session/useSessionDetails';
+import { PaymentButton } from '../payments/PaymentButton';
 
 type SessionStatus = 'pending' | 'approved' | 'rejected' | 'completed' | 'awaiting_payment';
 
@@ -33,13 +34,6 @@ export default function SessionDetails() {
   const { sessionId } = useParams();
   const { data: session, isLoading } = useSessionDetails(sessionId as string);
 
-  const handlePayment = async () => {
-    try {
-     
-    } catch (error) {
-      
-    }
-  };
 
   if (isLoading || !session) {
     return (
@@ -56,18 +50,12 @@ export default function SessionDetails() {
     if (session.status === 'approved' && session.paymentStatus === 'pending') {
       return (
         <div className="flex gap-4">
-          <Button
-            className="flex-1 h-12 gap-2 rounded-xl bg-purple-950/50 hover:bg-purple-900/50 text-purple-400 border border-purple-400/20"
-            onClick={handlePayment}
-          >
-            <DollarSign className="w-5 h-5" />
-            Pay and Book Your Slot
-          </Button>
+          <PaymentButton sessionId={sessionId as string} amount={session.price} />
         </div>
       );
     }
 
-    if (session.status === 'approved' && session.paymentStatus === 'completed') {
+    if ((session.status === 'approved' || 'scheduled') && session.paymentStatus === 'completed') {
       return (
         <div className="flex gap-4">
           <Button

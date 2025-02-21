@@ -26,7 +26,7 @@ interface Session {
   _id: string;
   title: string;
   description: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'scheduled';
   userId: {
     username: string;
     email: string;
@@ -42,6 +42,7 @@ const statusColors = {
   pending: 'bg-amber-900/20 text-amber-400 border-amber-400/30',
   approved: 'bg-emerald-900/20 text-emerald-400 border-emerald-400/30',
   rejected: 'bg-rose-900/20 text-rose-400 border-rose-400/30',
+  scheduled: 'bg-blue-900/20 text-blue-400 border-blue-400/30'
 };
 
 const cardVariants = {
@@ -144,6 +145,12 @@ export default function SessionRequests() {
       value: sessions?.filter((s: Session) => s.status === 'rejected').length || 0,
       icon: XCircle,
       gradient: 'from-rose-950 to-black',
+    },
+    {
+      label: 'Scheduled',
+      value: sessions?.filter((s: Session) => s.status === 'scheduled').length || 0,
+      icon: Calendar,
+      gradient: 'from-blue-950 to-black',
     }
   ];
 
@@ -178,7 +185,7 @@ export default function SessionRequests() {
         </div>
       </motion.div>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4">
         {stats.map((stat, index) => (
           <motion.div
             key={stat.label}
@@ -186,20 +193,23 @@ export default function SessionRequests() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.1 }}
             className={cn(
-              "relative overflow-hidden rounded-2xl p-6",
+              "relative overflow-hidden rounded-2xl",
+              "p-4 min-h-[120px]",
               "bg-gradient-to-br",
               stat.gradient,
-              "border border-white/5 hover:border-white/10 transition-all duration-300",
-              "shadow-lg shadow-black/40 hover:shadow-xl hover:shadow-black/50"
+              "border border-white/5 hover:border-white/10",
+              "transition-all duration-300",
+              "shadow-lg shadow-black/40 hover:shadow-xl hover:shadow-black/50",
+              "flex items-center" 
             )}
           >
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                <stat.icon className="w-6 h-6 text-white" />
+            <div className="flex items-center gap-3 w-full">
+              <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 shrink-0">
+                <stat.icon className="w-4 h-4 text-white" />
               </div>
-              <div>
-                <div className="text-sm text-gray-400">{stat.label}</div>
-                <div className="text-2xl font-bold text-white">{stat.value}</div>
+              <div className="flex flex-col min-w-0"> 
+                <span className="text-xs text-gray-400 truncate">{stat.label}</span>
+                <span className="text-xl font-bold text-white truncate">{stat.value}</span>
               </div>
             </div>
           </motion.div>

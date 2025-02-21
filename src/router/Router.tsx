@@ -46,6 +46,12 @@ import SessionBookingPage from '@/pages/user/Sessions/SessionBookingPage';
 import SessionsPage from '@/pages/user/session/SessionPage';
 import SessionRequestPage from '@/pages/developer/Sessions/SessionRequestPage';
 import SessionDetailsPage from '@/pages/user/Sessions/SessionDetailsPage';
+import PaymentSuccess from '@/components/user/payments/PaymentSuccess';
+import PaymentCancel from '@/components/user/payments/PaymentCancel';
+import { AdminWallet } from '@/components/admin/wallet/AdminWallet';
+import DeveloperWalletPage from '@/pages/developer/Wallet/DeveloperWalletPage';
+import { UserWallet } from '@/components/user/payments/UserWallet';
+import UserWalletPage from '@/pages/user/Wallet/UserWalletPage';
 
 
 export const Router = createBrowserRouter([
@@ -129,7 +135,12 @@ export const Router = createBrowserRouter([
             {
                 path: 'session-requests',
                 element: <ProtectedRoute allowedRole="developer"><SessionRequestPage/></ProtectedRoute>
-            }
+            },
+            {
+                path: 'wallet',
+                element: <ProtectedRoute allowedRole="developer"><DeveloperWalletPage/></ProtectedRoute>
+            },
+
         
         ]
     },
@@ -178,6 +189,10 @@ export const Router = createBrowserRouter([
                 element: <AdminProtectedRoute><DevRequestDetails/></AdminProtectedRoute>
             },
             {
+                path: 'wallet',
+                element: <AdminProtectedRoute><AdminWallet/></AdminProtectedRoute>
+            },
+            {
                 path: '*',
                 element: <AdminNotFoundPage/>
             }
@@ -200,6 +215,11 @@ export const Router = createBrowserRouter([
         path: 'change-password',
         element: <ProtectedRoute allowedRole="user"><ChangePasswordPage/></ProtectedRoute>
     },
+    {
+        path: 'wallet',
+        element: <ProtectedRoute allowedRole="user"><UserWalletPage/></ProtectedRoute>
+    },
+    
     {
         path: '/',
         element: <RootPage/>
@@ -240,6 +260,15 @@ export const Router = createBrowserRouter([
     {
         path: 'dev-profile/:developerId',
         element: <DeveloperPublicProfilePage/>
+    },
+
+    {
+        path: '/payment/success',
+        element: <PaymentSuccess/>
+    },
+    {
+        path: '/payment/cancel',
+        element: <PaymentCancel/>
     },
     {
         path: '*',

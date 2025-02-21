@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Edit, Github, Linkedin, Twitter, Globe, MapPin, Mail, Phone, Download, Briefcase, Building2, GraduationCap, Code, Languages, DollarSign } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { cn } from '@/lib/utils';
-import { Spinner } from '@/components/ui/spinner';
 import { useDeveloperProfile } from '@/hooks/profile/useDeveloperProfile';
 
 const itemVariants = {
@@ -25,11 +24,15 @@ const DeveloperProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="relative">
-          <div className="absolute inset-0 bg-white/5 blur-xl rounded-full" />
-          <Spinner className="w-12 h-12 text-white" />
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 to-slate-900 w-full">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500" />
+          <div className="text-slate-400 animate-pulse">Loading developer profile...</div>
+        </motion.div>
       </div>
     );
   }

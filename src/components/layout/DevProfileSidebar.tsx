@@ -12,7 +12,8 @@ import {
   Clock,
   BarChart,
   Edit,
-  CalendarPlus
+  CalendarPlus,
+  Wallet
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -45,6 +46,11 @@ const menuItems = [
     title: 'Messages',
     icon: MessageSquare,
     path: '/developer/messages'
+  },
+  {
+    title: 'Wallet',
+    icon: Wallet,
+    path: '/developer/wallet'
   },
   {
     title: 'Students',

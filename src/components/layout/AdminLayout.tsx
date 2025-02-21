@@ -14,7 +14,8 @@ import {
   ChevronRight,
   Search,
   Menu,
-  X 
+  X, 
+  Wallet
 } from 'lucide-react';
 import AdminApi from '@/service/Api/AdminApi';
 import { useAppDispatch } from '@/hooks/useAppSelector';
@@ -52,6 +53,7 @@ const AdminLayout = () => {
     { icon: <Award className="w-5 h-5" />, label: 'Leaderboard', path: '/admin/leaderboard' },
     { icon: <Briefcase className="w-5 h-5" />, label: 'Sessions', path: '/admin/sessions' },
     { icon: <FileText className="w-5 h-5" />, label: 'Blogs', path: '/admin/blogs' },
+    { icon: <Wallet className="w-5 h-5" />, label: 'Wallet', path: '/admin/wallet' },
   ];
 
   const bottomNavItems = [
