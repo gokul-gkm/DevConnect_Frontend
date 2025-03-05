@@ -43,9 +43,9 @@ const menuItems = [
     path: '/developer/session-requests'
   },
   {
-    title: 'Messages',
+    title: 'Chats',
     icon: MessageSquare,
-    path: '/developer/messages'
+    path: '/developer/chats'
   },
   {
     title: 'Wallet',

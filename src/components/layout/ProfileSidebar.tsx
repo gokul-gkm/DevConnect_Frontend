@@ -5,11 +5,11 @@ import {
   Settings,
   History,
   Calendar,
-  Bell,
   Lock,
   User,
   Sparkles,
-  Wallet2
+  Wallet2,
+  MessageSquare
 } from 'lucide-react'
 import { SidebarProps } from '@/types/types'
 import { useNavigate } from 'react-router-dom'
@@ -20,7 +20,7 @@ const sidebarItems = [
   { icon: Settings, label: 'Edit Profile', path: '/edit-profile' },
   { icon: History, label: 'Session History', path: '/sessions/history' },
   { icon: Calendar, label: 'Upcoming Sessions', path: '/sessions/upcoming' },
-  { icon: Bell, label: 'Notifications', path: '/profile/notifications' },
+  { icon: MessageSquare, label: 'Chats', path: '/chats' },
   { icon: Lock, label: 'Password & Security', path: '/change-password' },
   { icon: Wallet2, label: 'Wallet', path: '/wallet' },
 ]

@@ -86,15 +86,6 @@ export const useSessionBooking = ({
       
       const isBooked = slotStartTime >= bookedStartTime && slotStartTime < bookedEndTime;
   
-      if (isBooked) {
-        console.log('Slot booked:', {
-          slot: timeSlot,
-          slotStart: slotStartTime,
-          bookedStart: bookedStartTime,
-          bookedEnd: bookedEndTime
-        });
-      }
-  
       return isBooked;
     });
   };

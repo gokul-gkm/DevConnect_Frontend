@@ -20,7 +20,6 @@ const EditProject = () => {
     const [previewImage, setPreviewImage] = useState<string>('');
     const { data: project, isLoading: isProjectLoading } = useProject(projectId!);
     const { mutate: updateProject, isPending } = useUpdateProject();
-    console.log(project)
     const {
         register,
         handleSubmit,

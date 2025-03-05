@@ -4,7 +4,8 @@ import {
   Github, Linkedin, Twitter, Globe, MapPin, 
   Calendar, Code, Languages, DollarSign, Clock,
   GraduationCap, Briefcase, Building2, Star,
-  User, Zap, CheckCircle
+  User, Zap, CheckCircle,
+  MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/shadcn-button';
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,8 @@ import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import ProjectCard from './ProjectCard';
 import { useDeveloperPublicProfile } from '@/hooks/profile/useDeveloperPublicProfile';
+import { ChatApi } from '@/service/Api/ChatApi';
+import toast from 'react-hot-toast';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -39,8 +42,16 @@ const DeveloperPublicProfile = () => {
   const { developerId } = useParams();
   const navigate = useNavigate();
 
-
   const { profile, isLoading, error } = useDeveloperPublicProfile(developerId);
+
+  const handleStartChat = async () => {
+    try {
+      const response = await ChatApi.createChat(developerId!);
+      navigate(`/chats/${response.chat._id}`);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to start chat');
+    }
+  }
 
   if (isLoading) {
     return (
@@ -137,7 +148,7 @@ const DeveloperPublicProfile = () => {
               </div>
             </div>
           </div>
-
+          <div className='flex gap-2'>
           <Button
             onClick={() => navigate(`/sessions/booking/${developerId}`)}
             className="bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 hover:from-violet-700 hover:via-purple-700 hover:to-indigo-800 text-white font-medium px-6 py-4 h-11 rounded-2xl flex items-center gap-2 shadow-lg shadow-purple-950/50 border border-white/10"
@@ -145,6 +156,15 @@ const DeveloperPublicProfile = () => {
             <Calendar className="w-4 h-4" />
             Book a Session
           </Button>
+
+          <button
+        onClick={handleStartChat}
+        className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-br from-blue-800 via-blue-900 to-neutral-900 text-white rounded-xl hover:from-blue-700 hover:via-blue-800 hover:to-neutral-800 transition-colors "
+      >
+        <MessageSquare className="w-5 h-5" />
+        <span>Message Developer</span>
+            </button>
+            </div>
         </div>
       </motion.div>
 

@@ -49,8 +49,6 @@ export function UpcomingSessions() {
     debouncedSearch,
     statusFilter
   )
-  console.log("sessions", sessions)
-  console.log("filteredSessions", filteredSessions)
 
   const columns = useMemo<ColumnDef<UpcomingSession>[]>(() => [
     {

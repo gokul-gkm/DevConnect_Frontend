@@ -48,7 +48,7 @@ export const AdminTransactionHistory = ({ wallet }: TransactionHistoryProps) => 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className={cn(
-                  "p-2 rounded-lg",
+                  "p-2 rounded-xl",
                   transaction.type === 'credit' 
                     ? "bg-green-500/10 text-green-400" 
                     : "bg-red-500/10 text-red-400"

@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 
 import userReducer from '../slices/authSlice';
 import adminReducer from '../slices/adminSlice';
+import chatReducer from '@/redux/slices/chatSlice'
 import storage from 'redux-persist/lib/storage';
 import {persistReducer} from 'redux-persist';
 import { combineReducers } from 'redux';
@@ -15,7 +16,11 @@ const persistConfig:any = ({
     transforms: [encryptor]
 })
 
-const reducers = combineReducers({ user: userReducer , admin: adminReducer});
+const reducers = combineReducers({
+    user: userReducer,
+    admin: adminReducer,
+    chat: chatReducer
+});
 
 const persistedReducer = persistReducer(persistConfig, reducers);
 

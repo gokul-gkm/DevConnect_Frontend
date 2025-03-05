@@ -19,16 +19,14 @@ let persistor = persistStore(store);
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryProvider>
-
-    <GoogleOAuthProvider clientId={googleClientId}>
-    <Provider store={store}>
-      <PersistGate persistor={persistor}>
-        <CustomToaster />
-        <RouterProvider router={Router} />
-      </PersistGate>
-      </Provider>
+      <GoogleOAuthProvider clientId={googleClientId}>
+        <Provider store={store}>
+          <PersistGate persistor={persistor}>              
+            <CustomToaster />
+            <RouterProvider router={Router} />         
+          </PersistGate>
+        </Provider>
       </GoogleOAuthProvider>
-    </QueryProvider>
-      
+    </QueryProvider>    
   </StrictMode>
 );

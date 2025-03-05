@@ -13,7 +13,7 @@ const stats = [
     gradient: 'from-green-500/20 to-green-500/5'
   },
   {
-    label: 'Total Spent',
+    label: 'Total Platform Fee',
     value: '$1,250.00',
     icon: ArrowUpRight,
     gradient: 'from-red-500/20 to-red-500/5'
@@ -93,7 +93,7 @@ export const AdminWallet = () => {
               )}
             >
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10">
                   <stat.icon className="w-5 h-5 text-white" />
                 </div>
                 <div>

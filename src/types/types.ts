@@ -1,3 +1,8 @@
+export enum Role {
+  USER = 'user',
+  DEVELOPER = 'developer'
+}
+
 export interface IRegisterData {
     username: string,
     email: string,

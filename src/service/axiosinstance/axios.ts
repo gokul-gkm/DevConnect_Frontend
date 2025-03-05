@@ -18,7 +18,12 @@ axiosClient.interceptors.response.use(
         if (error.response?.status === 401) {
             console.error('Unauthrozed , please log in.');
         }
-        return Promise.reject(error)
+        if (axios.isAxiosError(error)) {
+            const errorMessage = error.response?.data?.message || 'An error occurred';
+            const customError = new Error(errorMessage);
+            return Promise.reject(customError);
+          }
+          return Promise.reject(error);
     }
 )
 

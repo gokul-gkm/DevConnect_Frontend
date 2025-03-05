@@ -1,5 +1,6 @@
 import axiosClient from "@/service/axiosinstance/axios";
 import { userRoutes } from "@/utils/constants";
+import { ChangePasswordFormData } from "@/utils/validation/userValidation";
 
 const UserApi = {
   getProfile: async () => {
@@ -27,6 +28,16 @@ const UserApi = {
           console.error('API Error:', error.response?.data || error)
           throw error
         }
+  },
+    
+  changePassword: async (data: ChangePasswordFormData) => {
+    try {
+      const response = await axiosClient.put('/users/change-password', data);
+      return response.data;
+    } catch (error: any) {
+      console.error('API Error:', error.response?.data || error)
+          throw error
+    }
   },
     
   searchDevelopers: async (params: any) => {
