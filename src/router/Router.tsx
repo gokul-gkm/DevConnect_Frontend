@@ -110,14 +110,7 @@ export const Router = createBrowserRouter([
                     }
                 ]
             },
-            {
-                path: 'chats',
-                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><DeveloperChatPage/></ProtectedRoute>
-            },
-            {
-                path: 'chats/:chatId',
-                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><DeveloperChatPage/></ProtectedRoute>
-            },
+           
             {
                 path: 'dashboard',
                 element: <ProtectedRoute allowedRole={Role.DEVELOPER}><DevDashboard/></ProtectedRoute>
@@ -151,6 +144,15 @@ export const Router = createBrowserRouter([
                 element: <ProtectedRoute allowedRole={Role.DEVELOPER}><DeveloperWalletPage/></ProtectedRoute>
             },      
         ]
+    },
+
+    {
+        path: 'developer/chats',
+        element: <ProtectedRoute allowedRole={Role.DEVELOPER}><DeveloperChatPage/></ProtectedRoute>
+    },
+    {
+        path: 'developer/chats/:chatId',
+        element: <ProtectedRoute allowedRole={Role.DEVELOPER}><DeveloperChatPage/></ProtectedRoute>
     },
     {
         path: 'admin',

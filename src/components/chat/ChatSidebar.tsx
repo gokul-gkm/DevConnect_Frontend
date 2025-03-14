@@ -1,13 +1,11 @@
-
-
 import { useChat } from '@/hooks/chat/useChat';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
 import { setSelectedChat } from '@/redux/slices/chatSlice';
-import { formatDistanceToNow } from 'date-fns';
 import { Spinner } from '../ui/spinner';
 import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
+import { formatMessageTime } from '@/utils/date';
 
 export const ChatSidebar = () => {
     const navigate = useNavigate();
@@ -35,7 +33,7 @@ export const ChatSidebar = () => {
             transition={{ duration: 0.3 }}
             className="w-80 bg-black/95 border-r border-zinc-800 overflow-y-auto h-screen flex flex-col"
         >
-            <div className="p-5 border-b border-zinc-800 sticky top-0 z-10 backdrop-blur-md bg-black/80">
+            <div className="p-6 pb-7 border-b border-zinc-800 sticky top-0 z-10 backdrop-blur-md bg-black/80">
                 <h2 className="text-xl font-bold text-white flex items-center">
                     <MessageCircle className="mr-2 h-5 w-5 text-blue-500" />
                     Messages
@@ -94,8 +92,8 @@ export const ChatSidebar = () => {
                                     <div className="flex flex-col items-end space-y-1">
                                         {chat.lastMessageTime && (
                                             <span className="text-xs text-zinc-500">
-                                                {formatDistanceToNow(new Date(chat.lastMessageTime), { addSuffix: true })}
-                                            </span>
+                                            {formatMessageTime(chat.lastMessageTime)}
+                                        </span>
                                         )}
                                         {chat.userUnreadCount > 0 && (
                                             <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">

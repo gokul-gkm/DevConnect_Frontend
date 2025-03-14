@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 
 const navItems = [
   { name: 'Home', delay: 0, url: '/' },
-  { name: 'Sessions', delay: 0.1, url: '/sessions' },
+  { name: 'Sessions', delay: 0.1, url: '/developer/session-requests' },
   { name: 'Blog', delay: 0.4, url: '/blog' },
   { name: 'Quiz', delay: 0.5, url: '/quiz' },
   { name: 'About', delay: 0.6, url: '/about' },

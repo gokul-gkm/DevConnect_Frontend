@@ -8,8 +8,14 @@ const AuthApi = {
         return response.data;
     },
     login: async (email: string, password: string): Promise<IAuthResponse> => {
-        const response = await axiosClient.post(authRoutes.login, { email, password })
-        return response.data;
+        try {
+            const response = await axiosClient.post(authRoutes.login, { email, password })
+            return response.data;
+        } catch (error: any) {
+          console.error('API Error:', error.response?.data || error)
+          throw error
+        }
+        
     },
     verifyOtp: async (email: string, otp: string): Promise<IAuthResponse> => {
         const response = await axiosClient.post(authRoutes.verifyOtp, { email, otp });

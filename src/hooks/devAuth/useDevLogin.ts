@@ -4,6 +4,8 @@ import { toast } from 'react-hot-toast';
 import DevAuthApi from '@/service/Api/DevAuthApi';
 import { useAppDispatch } from '@/hooks/useAppSelector';
 import { setCredentials } from '@/redux/slices/authSlice';
+import { socketService } from '@/service/socket/socketService';
+
 
 export const useDevLogin = () => {
   const navigate = useNavigate();
@@ -25,8 +27,10 @@ export const useDevLogin = () => {
             username: data.user.username,
             email: data.user.email,
             role: data.user.role,
+            _id: data.user.id
           })
         );
+        socketService.connect(data.token!);
         toast.success("Login successful!");
         navigate("/developer/dashboard");
       }
@@ -54,8 +58,10 @@ export const useDevLogin = () => {
             username: data.user.username,
             email: data.user.email,
             role: data.user.role,
+            _id: data.user.id
           })
         );
+        socketService.connect(data.token!);
         toast.success("Login successful!");
         navigate("/developer/dashboard");
       }

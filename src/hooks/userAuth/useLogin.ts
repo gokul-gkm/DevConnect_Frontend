@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import AuthApi from '@/service/Api/AuthApi';
 import { useAppDispatch } from '@/hooks/useAppSelector';
 import { setCredentials } from '@/redux/slices/authSlice';
+import { socketService } from '@/service/socket/socketService';
 
 export interface ILoginData {
     email: string,
@@ -35,15 +36,17 @@ export const useLogin = () => {
             username: response.user.username,
             email: response.user.email,
             role: response.user.role,
+            _id: response.user.id
           })
         );
+        socketService.connect(response.token!);
         toast.success("Login successful!");
         navigate("/");
       }
     },
     onError: (error: any) => {
       toast.error(
-        error.response?.data?.message || "Login failed. Please check your credentials."
+        error.response?.data?.message || error.message ||"Login failed. Please check your credentials."
       );
     }
   });

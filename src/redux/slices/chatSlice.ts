@@ -68,6 +68,25 @@ export const sendMessage = createAsyncThunk(
     }
 )
 
+export const fetchDeveloperChats = createAsyncThunk(
+    'chat/fetchDeveloperChats',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await ChatApi.getDeveloperChats();
+            if (!response.success) {
+                throw new Error('Failed to fetch developer chats');
+            }
+
+            return response.chats;
+        } catch (error: any) {
+            console.error("Error in fetchDeveloperChats:", error);
+            toast.error(error.message);
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+
 const chatSlice = createSlice({
     name: 'chat',
     initialState,
@@ -88,8 +107,9 @@ const chatSlice = createSlice({
         },
         updateMessageReadStatus: (state, action) => {
             if (state.messages) {
+                const messageIds = action.payload.messageIds || [action.payload.messageId];
                 state.messages = state.messages.map(message => 
-                    message._id === action.payload.messageId 
+                    messageIds.includes(message._id)
                         ? { ...message, read: true }
                         : message
                 );
@@ -157,6 +177,17 @@ const chatSlice = createSlice({
             })
             .addCase(sendMessage.rejected, (state) => {
                 toast.error('Failed to send message');
+            })
+            .addCase(fetchDeveloperChats.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchDeveloperChats.fulfilled, (state, action) => {
+                state.loading = false;
+                state.chats = action.payload;
+            })
+            .addCase(fetchDeveloperChats.rejected, (state, action) => {
+                state.loading = false;
+                toast.error('Failed to load developer chats');
             });
     }
 });

@@ -39,13 +39,36 @@ export class ChatApi {
     }
   }
   
-  static clearCache() {
-    this.cache.clear();
+  static clearUserChatsCache() {
+    this.cache.delete('userChats');
   }
 
-  static async getDeveloperChats() {
-    const response = await axiosClient.get('/chats/developer');
-    return response.data;
+ static async getDeveloperChats() {
+    const cacheKey = 'developerChats';
+    const now = Date.now();
+    const cachedData = this.cache.get(cacheKey);
+
+    if (cachedData && (now - cachedData.timestamp < this.CACHE_DURATION)) {
+        return cachedData.data;
+    }
+
+    try {
+        const response = await axiosClient.get('/chats/developer');
+        
+        this.cache.set(cacheKey, {
+            data: response.data,
+            timestamp: now
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error("ChatApi getDeveloperChats error:", error);
+        throw error;
+    }
+}
+
+  static clearDeveloperChatsCache() {
+    this.cache.delete('developerChats');
   }
 
   static async getChatMessages(chatId: string, page: number) {

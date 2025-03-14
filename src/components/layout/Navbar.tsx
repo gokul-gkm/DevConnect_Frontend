@@ -6,10 +6,12 @@ import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
 import AuthApi from '@/service/Api/AuthApi';
 import { logout } from '@/redux/slices/authSlice';
 import toast from 'react-hot-toast';
+import { socketService } from '@/service/socket/socketService';
 
 const navItems = [
   { name: 'Home', delay: 0, url: '/' },
-  { name: 'Sessions', delay: 0.1, url: '/sessions/upcoming' },
+  { name: 'developers', delay: 0.1, url: '/search-developers'},
+  { name: 'Sessions', delay: 0.2, url: '/sessions/upcoming' },
   { name: 'Blog', delay: 0.4, url: '/blog' },
   { name: 'Quiz', delay: 0.5, url: '/quiz' },
   { name: 'About', delay: 0.6, url: '/about' },
@@ -23,7 +25,20 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const { scrollY } = useScroll();
   const dispatch = useAppDispatch();
-  const { isAuthenticated, username, email } = useAppSelector((state) => state.user);
+  const { isAuthenticated, username, email, _id } = useAppSelector((state) => state.user);
+
+  useEffect(() => {
+    if (isAuthenticated && _id) {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            socketService.connect(token);
+        }
+    }
+    
+    return () => {
+        socketService.cleanup();
+    };
+}, [isAuthenticated, _id]);
 
   const handleLogout = async () => {
     try {

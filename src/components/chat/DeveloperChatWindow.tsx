@@ -1,9 +1,10 @@
 import { useDeveloperChat } from '@/hooks/chat/useDeveloperChat';
 import { useEffect, useRef, useState } from 'react';
 import { Spinner } from '../ui/spinner';
-import { formatDistanceToNow } from 'date-fns';
 import { Send, MoreVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LiaCheckDoubleSolid } from "react-icons/lia";
+import { formatChatMessageTime } from '@/utils/date';
 
 export const DeveloperChatWindow = () => {
     const { selectedChat, messages, messageLoading, hasMore, loadMoreMessages, handleSendMessage, handleTyping } = useDeveloperChat();
@@ -85,9 +86,9 @@ export const DeveloperChatWindow = () => {
                         <h2 className="font-bold text-white">
                             {selectedChat.userId?.username || "User"}
                         </h2>
-                        <p className="text-sm text-zinc-400">
+                        {/* <p className="text-sm text-zinc-400">
                             {selectedChat.isOnline ? 'Online' : 'Offline'}
-                        </p>
+                        </p> */}
                     </div>
                 </div>
                 <div className="flex space-x-2">
@@ -146,12 +147,27 @@ export const DeveloperChatWindow = () => {
                                 <div className={`flex items-center mt-1 text-xs ${
                                     message.senderType === 'developer' ? 'justify-end text-zinc-500' : 'justify-start text-zinc-600'
                                 }`}>
-                                    {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
+                                    {formatChatMessageTime(message.createdAt)}
                                     {message.read && message.senderType === 'developer' && (
-                                        <span className="ml-2 text-blue-500">✓✓</span>
+                                        <span className="ml-2 text-blue-500"><LiaCheckDoubleSolid/></span>
                                     )}
                                 </div>
                             </div>
+                            {message.senderType === 'developer' && (
+                                <div className="flex-shrink-0 ml-3">
+                                    {selectedChat.developerId?.profilePicture ? (
+                                        <img
+                                            src={selectedChat.developerId.profilePicture}
+                                            alt="Developer"
+                                            className="w-8 h-8 rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white text-xs font-bold">
+                                            {selectedChat.developerId?.username?.charAt(0)?.toUpperCase() || "D"}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </motion.div>
                     ))}
                 </AnimatePresence>

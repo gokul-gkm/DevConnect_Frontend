@@ -39,7 +39,7 @@ const UserApi = {
           throw error
     }
   },
-    
+
   searchDevelopers: async (params: any) => {
     try {
         const queryString = new URLSearchParams();
@@ -48,21 +48,35 @@ const UserApi = {
         if (params.sort) queryString.append('sort', params.sort);
         if (params.page) queryString.append('page', params.page.toString());
         if (params.limit) queryString.append('limit', params.limit.toString());
-        if (params.experience) queryString.append('experience', params.experience);
-        if (params.availability) queryString.append('availability', params.availability);
         if (params.location) queryString.append('location', params.location);
+        
         if (params.skills?.length > 0) {
             params.skills.forEach((skill: string) => {
-                queryString.append('skills', skill);
+                queryString.append('skills[]', skill);
             });
         }
 
-      const response = await axiosClient.get(`/users/developers/search?${queryString.toString()}`);
+        if (params.languages?.length > 0) {
+            params.languages.forEach((language: string) => {
+                queryString.append('languages[]', language);
+            });
+        }
+
+        if (params.priceRange) {
+            if (params.priceRange.min !== undefined) {
+                queryString.append('priceRange[min]', params.priceRange.min.toString());
+            }
+            if (params.priceRange.max !== undefined) {
+                queryString.append('priceRange[max]', params.priceRange.max.toString());
+            }
+        }
+
+        const response = await axiosClient.get(`/users/developers/search?${queryString.toString()}`);
         return response.data.data;
     } catch (error) {
         throw error;
     }
-  },
+},
 
   getPublicProfile: async (developerId: string) => {
     try {

@@ -1,9 +1,10 @@
 import { useChat } from '@/hooks/chat/useChat';
 import { useEffect, useRef, useState } from 'react';
 import { Spinner } from '../ui/spinner';
-import { formatDistanceToNow } from 'date-fns';
 import { Send, MoreVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LiaCheckDoubleSolid } from "react-icons/lia";
+import { formatChatMessageTime } from '@/utils/date';
 
 export const ChatWindow = () => {
     const { selectedChat, messages, messageLoading, hasMore, loadMoreMessages, handleSendMessage, handleTyping } = useChat();
@@ -125,8 +126,8 @@ export const ChatWindow = () => {
                                 <div className="flex-shrink-0 mr-3">
                                     {selectedChat.developerId.profilePicture ? (
                                         <img
-                                            src={selectedChat.userId.profilePicture}
-                                            alt="Profile"
+                                            src={selectedChat.developerId.profilePicture}
+                                            alt="Developer Profile"
                                             className="w-8 h-8 rounded-full object-cover"
                                         />
                                     ) : (
@@ -147,12 +148,27 @@ export const ChatWindow = () => {
                                 <div className={`flex items-center mt-1 text-xs ${
                                     message.senderType === 'user' ? 'justify-end text-zinc-500' : 'justify-start text-zinc-600'
                                 }`}>
-                                    {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
+                                    {formatChatMessageTime(message.createdAt)}
                                     {message.read && message.senderType === 'user' && (
-                                        <span className="ml-2 text-blue-500">✓✓</span>
+                                        <span className="ml-2 text-blue-500"><LiaCheckDoubleSolid /></span>
                                     )}
                                 </div>
                             </div>
+                            {message.senderType === 'user' && (
+                                <div className="flex-shrink-0 ml-3">
+                                    {selectedChat.userId.profilePicture ? (
+                                        <img
+                                            src={selectedChat.userId.profilePicture}
+                                            alt="User Profile"
+                                            className="w-8 h-8 rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white text-xs font-bold">
+                                            {selectedChat.userId.username?.charAt(0)?.toUpperCase()}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </motion.div>
                     ))}
                 </AnimatePresence>

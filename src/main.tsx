@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import CustomToaster from "@/components/ui/Toaster.tsx";
@@ -17,7 +16,6 @@ const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
 let persistor = persistStore(store);
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
     <QueryProvider>
       <GoogleOAuthProvider clientId={googleClientId}>
         <Provider store={store}>
@@ -28,5 +26,4 @@ createRoot(document.getElementById("root")!).render(
         </Provider>
       </GoogleOAuthProvider>
     </QueryProvider>    
-  </StrictMode>
 );

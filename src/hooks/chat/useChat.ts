@@ -4,6 +4,7 @@ import { addMessage, fetchChats, fetchMessages, sendMessage, updateMessageReadSt
 import { socketService } from "@/service/socket/socketService";
 import { debounce } from "lodash";
 import toast from "react-hot-toast";
+import { ChatApi } from "@/service/Api/ChatApi";
 
 export const useChat = () => {
     const dispatch = useAppDispatch();
@@ -53,7 +54,11 @@ export const useChat = () => {
             socketService.joinChat(chatId);
             subscribedChats.current.add(chatId);
         }
-        
+        ChatApi.markMessagesAsRead(selectedChat._id)
+                        .then(() => {
+                            console.log("Messages marked as read for selected chat");
+                        })
+                        .catch(err => console.error("Error marking messages as read:", err));
         return () => {
             
         };
@@ -62,9 +67,10 @@ export const useChat = () => {
     useEffect(() => {
         socketService.onNewMessage((data) => {
             if (selectedChat?._id === data.chatId) {
-                dispatch(addMessage(data.message));
+                dispatch(addMessage(data.message || data));
             } else {
                 console.log("New message in another chat:", data);
+                refreshChats();
             }
         });
         
@@ -79,7 +85,7 @@ export const useChat = () => {
             subscribedChats.current.clear();
             socketService.cleanup();
         };
-    }, [dispatch, selectedChat]);
+    }, [dispatch, selectedChat?._id, refreshChats]);
 
     const loadMoreMessages = useCallback(() => {
         if (selectedChat?._id && hasMore && !messageLoading) {
