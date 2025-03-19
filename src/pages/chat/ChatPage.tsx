@@ -9,20 +9,20 @@ const ChatPage = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-100">
+      <div className="flex h-screen items-center justify-center bg-black/95">
         <Spinner />
       </div>
     );
   }
 
   return (
-    <>
+    <div className="flex flex-col h-screen bg-black/95">
       <Navbar />
-      <div className="flex h-screen  mt-20">
+      <div className="flex flex-1 overflow-hidden pt-[72px] md:pt-20">
         <ChatSidebar />
         <ChatWindow />
       </div>
-    </>
+    </div>
   );
 };
 

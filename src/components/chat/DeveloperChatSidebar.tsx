@@ -3,38 +3,39 @@ import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
 import { setSelectedChat } from '@/redux/slices/chatSlice';
 import { Spinner } from '../ui/spinner';
-import { motion } from 'framer-motion';
-import { MessageCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MessageCircle, ChevronRight } from 'lucide-react';
 import { formatMessageTime } from '@/utils/date';
 import { SocketStatusIndicator } from '../socket/SocketStatusIndicator';
+import { useState, useEffect } from 'react';
 
 export const DeveloperChatSidebar = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { chats, loading } = useDeveloperChat();
     const selectedChat = useAppSelector(state => state.chat.selectedChat);
+    const [isOpen, setIsOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const handleChatSelect = (chat: any) => {
         dispatch(setSelectedChat(chat));
         navigate(`/developer/chats/${chat._id}`);
+        if (isMobile) setIsOpen(false);
     };
 
     if (loading) {
-        return (
-            <div className="w-80 bg-black/95 border-r border-zinc-800 flex items-center justify-center h-screen">
-                <Spinner />
-            </div>
-        );
+        return <div className="w-20 md:w-80 bg-black/95 border-r border-zinc-800 flex items-center justify-center h-screen"><Spinner /></div>;
     }
 
-    return (
-        <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3 }}
-            className="w-80 bg-black/95 border-r border-zinc-800 h-screen flex flex-col"
-        >
-            <div className="p-6 pb-7 border-b border-zinc-800 sticky top-0 z-20 backdrop-blur-md bg-black/80">
+    const sidebarContent = (
+        <div className="flex flex-col h-full">
+            <div className="p-4 md:p-6 border-b border-zinc-800 sticky top-0 z-20 backdrop-blur-md bg-black/80 flex items-center">
                 <h2 className="text-xl font-bold text-white flex items-center">
                     <MessageCircle className="mr-2 h-5 w-5 text-blue-500" />
                     Client Messages
@@ -81,35 +82,73 @@ export const DeveloperChatSidebar = () => {
                                             chat.isOnline ? 'bg-green-500' : 'bg-zinc-500'
                                         }`}></div>
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-white font-medium truncate">
-                                            {chat.userId?.username || "User"}
-                                        </p>
-                                        <p className="text-sm text-zinc-400 truncate">
-                                            {chat.lastMessage || 'Start a conversation'}
-                                        </p>
-                                    </div>
-                                    <div className="flex flex-col items-end space-y-1">
-                                        {chat.lastMessageTime && (
-                                            <span className="text-xs text-zinc-500">
-                                                {formatMessageTime(chat.lastMessageTime)}
-                                            </span>
-                                        )}
-                                        {chat.developerUnreadCount > 0 && (
-                                            <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
-                                                {chat.developerUnreadCount}
-                                            </span>
-                                        )}
-                                        
-                                    </div>
+                                    {(!isMobile || isOpen) && (
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-white font-medium truncate">
+                                                {chat.userId?.username || "User"}
+                                            </p>
+                                            <p className="text-sm text-zinc-400 truncate">
+                                                {chat.lastMessage || 'Start a conversation'}
+                                            </p>
+                                        </div>
+                                    )}
+                                    {(!isMobile || isOpen) && (
+                                        <div className="flex flex-col items-end space-y-1">
+                                            {chat.lastMessageTime && (
+                                                <span className="text-xs text-zinc-500">
+                                                    {formatMessageTime(chat.lastMessageTime)}
+                                                </span>
+                                            )}
+                                            {chat.developerUnreadCount > 0 && (
+                                                <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
+                                                    {chat.developerUnreadCount}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </motion.div>
                         ))}
                     </div>
                 )}
             </div>
-            
             <SocketStatusIndicator />
-        </motion.div>
+        </div>
+    );
+
+    return (
+        <>
+            {isMobile && !isOpen && (
+                <button
+                    onClick={() => setIsOpen(true)}
+                    className="fixed top-[160px] left-4 z-50 p-2.5 bg-zinc-800/80 backdrop-blur-sm rounded-full text-white shadow-lg hover:bg-zinc-700/80 transition-all"
+                >
+                    <ChevronRight className="h-5 w-5" />
+                </button>
+            )}
+            
+            <AnimatePresence>
+                {(!isMobile || isOpen) && (
+                    <motion.div
+                        initial={{ x: isMobile ? -320 : 0 }}
+                        animate={{ x: 0 }}
+                        exit={{ x: isMobile ? -320 : 0 }}
+                        transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                        className={`fixed md:relative z-40 h-screen bg-black/95 border-r border-zinc-800 ${
+                            isMobile ? 'w-[280px]' : 'w-20 md:w-80'
+                        }`}
+                    >
+                        {sidebarContent}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            
+            {isMobile && isOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-30"
+                    onClick={() => setIsOpen(false)}
+                />
+            )}
+        </>
     );
 };

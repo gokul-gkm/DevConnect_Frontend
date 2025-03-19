@@ -74,33 +74,33 @@ export const DeveloperChatWindow = () => {
         <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex-1 flex flex-col h-screen bg-black/95"
+            className="flex-1 flex flex-col h-[calc(100vh-5rem)] md:h-screen relative bg-gradient-to-b from-black to-zinc-900"
         >
-            <div className="p-4 border-b border-zinc-800 backdrop-blur-md bg-zinc-900/30 flex items-center justify-between sticky top-0 z-10">
-                <div className="flex items-center space-x-3">
-                    <div className="relative">
-                        {selectedChat.userId?.profilePicture ? (
-                            <img
-                                src={selectedChat.userId.profilePicture}
-                                alt={selectedChat.userId.username || "User"}
-                                className="w-12 h-12 rounded-full object-cover border-2 border-zinc-800"
-                            />
-                        ) : (
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold">
-                                {selectedChat.userId?.username?.charAt(0)?.toUpperCase() || "U"}
-                            </div>
-                        )}
-                        <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-black ${
-                            selectedChat.isOnline ? 'bg-green-500' : 'bg-zinc-500'
-                        }`}></div>
+            <div className="fixed top-[72px] md:top-[80px] left-0 md:left-[320px] right-0 border-b border-zinc-800 backdrop-blur-md bg-zinc-900/30 z-20">
+                <div className="flex items-center justify-between p-4 max-w-[1800px] mx-auto w-full">
+                    <div className="flex items-center space-x-3">
+                        <div className="relative">
+                            {selectedChat.userId?.profilePicture ? (
+                                <img
+                                    src={selectedChat.userId.profilePicture}
+                                    alt={selectedChat.userId.username || "User"}
+                                    className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-zinc-800"
+                                />
+                            ) : (
+                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold">
+                                    {selectedChat.userId?.username?.charAt(0)?.toUpperCase() || "U"}
+                                </div>
+                            )}
+                            <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-black ${
+                                selectedChat.isOnline ? 'bg-green-500' : 'bg-zinc-500'
+                            }`}></div>
+                        </div>
+                        <div>
+                            <h2 className="font-bold text-white text-sm md:text-base">
+                                {selectedChat.userId?.username || "User"}
+                            </h2>
+                        </div>
                     </div>
-                    <div>
-                        <h2 className="font-bold text-white">
-                            {selectedChat.userId?.username || "User"}
-                        </h2>
-                    </div>
-                </div>
-                <div className="flex space-x-2">
                     <button className="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 transition-colors text-zinc-300">
                         <MoreVertical className="w-5 h-5" />
                     </button>
@@ -109,7 +109,7 @@ export const DeveloperChatWindow = () => {
 
             <div
                 ref={messageContainerRef}
-                className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-black to-zinc-900 relative"
+                className="flex-1 overflow-y-auto px-4 pt-[140px] pb-20"
             >
                 {messageLoading && messages.length === 0 ? (
                     <div className="flex justify-center items-center h-full">
@@ -121,117 +121,121 @@ export const DeveloperChatWindow = () => {
                     </div>
                 ) : null}
                 
-                <AnimatePresence>
-                    {messages
-                        .slice()
-                        .reverse()
-                        .map((message: any, index) => (
-                        <motion.div
-                            key={`${message._id}-${index}`}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className={`flex ${
-                                message.senderType === 'developer' ? 'justify-end' : 'justify-start'
-                            } mb-4`}
-                        >
-                            {message.senderType === 'user' && (
-                                <div className="flex-shrink-0 mr-3">
-                                    {selectedChat.userId?.profilePicture ? (
-                                        <img
-                                            src={selectedChat.userId.profilePicture}
-                                            alt="User"
-                                            className="w-8 h-8 rounded-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
-                                            {selectedChat.userId?.username?.charAt(0)?.toUpperCase() || "U"}
-                                        </div>
-                                    )}
+                <div className="space-y-4 pb-4">
+                    <AnimatePresence>
+                        {messages
+                            .slice()
+                            .reverse()
+                            .map((message: any, index) => (
+                            <motion.div
+                                key={`${message._id}-${index}`}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className={`flex ${
+                                    message.senderType === 'developer' ? 'justify-end' : 'justify-start'
+                                } mb-4`}
+                            >
+                                {message.senderType === 'user' && (
+                                    <div className="flex-shrink-0 mr-3">
+                                        {selectedChat.userId?.profilePicture ? (
+                                            <img
+                                                src={selectedChat.userId.profilePicture}
+                                                alt="User"
+                                                className="w-8 h-8 rounded-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+                                                {selectedChat.userId?.username?.charAt(0)?.toUpperCase() || "U"}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                <div className={`max-w-[70%] ${message.senderType === 'developer' ? 'ml-auto' : 'mr-auto'}`}>
+                                    <div className={`rounded-2xl px-4 py-3 shadow-lg ${
+                                        message.senderType === 'developer'
+                                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-tr-none'
+                                            : 'bg-zinc-800/80 text-zinc-100 rounded-tl-none backdrop-blur-sm'
+                                    }`}>
+                                        <p className="text-sm">{message.content}</p>
+                                    </div>
+                                    <div className={`flex items-center mt-1 text-xs ${
+                                        message.senderType === 'developer' ? 'justify-end text-zinc-500' : 'justify-start text-zinc-600'
+                                    }`}>
+                                        {formatChatMessageTime(message.createdAt)}
+                                        {message.read && message.senderType === 'developer' && (
+                                            <span className="ml-2 text-blue-500"><LiaCheckDoubleSolid /></span>
+                                        )}
+                                    </div>
                                 </div>
-                            )}
-                            <div className={`max-w-[70%] ${message.senderType === 'developer' ? 'ml-auto' : 'mr-auto'}`}>
-                                <div className={`rounded-2xl px-4 py-3 shadow-lg ${
-                                    message.senderType === 'developer'
-                                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-tr-none'
-                                        : 'bg-zinc-800/80 text-zinc-100 rounded-tl-none backdrop-blur-sm'
-                                }`}>
-                                    <p className="text-sm">{message.content}</p>
-                                </div>
-                                <div className={`flex items-center mt-1 text-xs ${
-                                    message.senderType === 'developer' ? 'justify-end text-zinc-500' : 'justify-start text-zinc-600'
-                                }`}>
-                                    {formatChatMessageTime(message.createdAt)}
-                                    {message.read && message.senderType === 'developer' && (
-                                        <span className="ml-2 text-blue-500"><LiaCheckDoubleSolid/></span>
-                                    )}
-                                </div>
-                            </div>
-                            {message.senderType === 'developer' && (
-                                <div className="flex-shrink-0 ml-3">
-                                    {selectedChat.developerId?.profilePicture ? (
-                                        <img
-                                            src={selectedChat.developerId.profilePicture}
-                                            alt="Developer"
-                                            className="w-8 h-8 rounded-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white text-xs font-bold">
-                                            {selectedChat.developerId?.username?.charAt(0)?.toUpperCase() || "D"}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
+                                {message.senderType === 'developer' && (
+                                    <div className="flex-shrink-0 ml-3">
+                                        {selectedChat.developerId?.profilePicture ? (
+                                            <img
+                                                src={selectedChat.developerId.profilePicture}
+                                                alt="Developer"
+                                                className="w-8 h-8 rounded-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white text-xs font-bold">
+                                                {selectedChat.developerId?.username?.charAt(0)?.toUpperCase() || "D"}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                </div>
                 <div ref={messagesEndRef} />
-                
-                {showScrollButton && (
-                    <motion.button
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        onClick={scrollToBottom}
-                        className="absolute bottom-5 right-5 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
-                    >
-                        <ArrowDown className="w-5 h-5" />
-                    </motion.button>
-                )}
             </div>
 
-            <form
-                onSubmit={handleSubmit}
-                className="p-4 border-t border-zinc-800 backdrop-blur-md bg-zinc-900/30 sticky bottom-0"
-            >
-                <div className="flex items-center space-x-2 bg-zinc-800/80 rounded-full p-1 pl-4 backdrop-blur-sm shadow-lg">
-                    <input
-                        type="text"
-                        value={newMessage}
-                        onChange={(e) => {
-                            setNewMessage(e.target.value);
-                            handleTyping(true);
-                        }}
-                        onBlur={() => handleTyping(false)}
-                        placeholder="Type a message..."
-                        className="flex-1 bg-transparent text-zinc-200 placeholder-zinc-500 focus:outline-none py-2 pl-5"
-                    />
-                
-                    <motion.button
-                        type="submit"
-                        disabled={!newMessage.trim()}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`rounded-full p-3 ${
-                            newMessage.trim()
-                                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md shadow-blue-700/20'
-                                : 'bg-zinc-700 text-zinc-500'
-                        }`}
-                    >
-                        <Send className="w-5 h-5" />
-                    </motion.button>
-                </div>
-            </form>
+            <div className="fixed bottom-0 left-0 md:left-[320px] right-0 bg-black border-t border-zinc-800/50 z-30">
+                <form
+                    onSubmit={handleSubmit}
+                    className="px-4 py-4"
+                >
+                    <div className="flex items-center space-x-2 bg-zinc-800/80 rounded-full px-4 py-1 backdrop-blur-sm shadow-lg max-w-[1800px] mx-auto">
+                        <input
+                            type="text"
+                            value={newMessage}
+                            onChange={(e) => {
+                                setNewMessage(e.target.value);
+                                handleTyping(true);
+                            }}
+                            onBlur={() => handleTyping(false)}
+                            placeholder="Type a message..."
+                            className="flex-1 bg-transparent text-zinc-200 placeholder-zinc-500 focus:outline-none py-2.5 text-sm md:text-base"
+                        />
+                        
+                        <motion.button
+                            type="submit"
+                            disabled={!newMessage.trim()}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className={`rounded-full p-2 md:p-2.5 ${
+                                newMessage.trim()
+                                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md shadow-blue-700/20'
+                                    : 'bg-zinc-700 text-zinc-500'
+                            }`}
+                        >
+                            <Send className="w-4 h-4 md:w-5 md:h-5" />
+                        </motion.button>
+                    </div>
+                </form>
+            </div>
+
+            {showScrollButton && (
+                <motion.button
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    onClick={scrollToBottom}
+                    className="fixed bottom-24 right-4 bg-blue-600 text-white p-2.5 rounded-full shadow-lg hover:bg-blue-700 transition-colors z-30"
+                >
+                    <ArrowDown className="w-5 h-5" />
+                </motion.button>
+            )}
         </motion.div>
     );
 };
