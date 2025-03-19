@@ -6,7 +6,7 @@ interface PriceRangeFilterProps {
 }
 
 export function PriceRangeFilter({ onChange }: PriceRangeFilterProps) {
-  const [range, setRange] = useState([0, 500])
+  const [range, setRange] = useState([0, 1000])
 
   useEffect(() => {
     onChange({ min: range[0], max: range[1] })
@@ -16,8 +16,8 @@ export function PriceRangeFilter({ onChange }: PriceRangeFilterProps) {
     <div className="space-y-4">
       <h3 className="text-white font-medium mb-3">Hourly Rate (USD)</h3>
       <Slider
-        defaultValue={[0, 500]}
-        max={500}
+        defaultValue={[0, 1000]}
+        max={1000}
         step={5}
         value={range}
         onValueChange={setRange}

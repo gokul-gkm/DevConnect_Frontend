@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../useAppSelector"
-import { addMessage, fetchChats, fetchMessages, sendMessage, updateMessageReadStatus } from "@/redux/slices/chatSlice";
+import { addMessage, fetchChats, fetchMessages, sendMessage, updateMessageReadStatus, updateChatWithNewMessage, updateUnreadCount } from "@/redux/slices/chatSlice";
 import { socketService } from "@/service/socket/socketService";
 import { debounce } from "lodash";
 import toast from "react-hot-toast";
 import { ChatApi } from "@/service/Api/ChatApi";
+import { useAuth } from "@/hooks/useAuth";
 
 export const useChat = () => {
     const dispatch = useAppDispatch();
@@ -19,30 +20,22 @@ export const useChat = () => {
     } = useAppSelector(state => state.chat);
 
     const initialFetchDone = useRef(false);
-    const lastFetchTime = useRef<number>(0);
-    const FETCH_COOLDOWN = 30000;
     
     const subscribedChats = useRef<Set<string>>(new Set());
 
-    const refreshChats = useCallback(() => {
-        const now = Date.now();
-        if (!initialFetchDone.current || now - lastFetchTime.current >= FETCH_COOLDOWN) {
-            lastFetchTime.current = now;
-            
-            return dispatch(fetchChats())
-                .unwrap()
-                .then((result) => {
-                    initialFetchDone.current = true;
-                    return result;
-                })
-                .catch((error) => {
-                    console.error("Fetch failed:", error);
-                    toast.error("Failed to load chats");
-                    throw error;
-                });
+    const { token } = useAuth();
+
+    const refreshChats = useCallback(async () => {
+        try {
+            await dispatch(fetchChats()).unwrap();
+            initialFetchDone.current = true;
+            return true;
+        } catch (error) {
+            console.error("Fetch failed:", error);
+            toast.error("Failed to load chats");
+            return false;
         }
-        return Promise.resolve(chats);
-    }, [dispatch, chats]);
+    }, [dispatch]);
 
     useEffect(() => {
         const chatId = selectedChat?._id;
@@ -54,30 +47,91 @@ export const useChat = () => {
             socketService.joinChat(chatId);
             subscribedChats.current.add(chatId);
         }
-        ChatApi.markMessagesAsRead(selectedChat._id)
-                        .then(() => {
-                            console.log("Messages marked as read for selected chat");
-                        })
-                        .catch(err => console.error("Error marking messages as read:", err));
-        return () => {
-            
-        };
+        
+        ChatApi.markMessagesAsRead(chatId)
+            .then(() => {
+                dispatch(updateUnreadCount({
+                    chatId,
+                    recipientType: 'user'
+                }));
+            })
+            .catch(err => console.error("Error marking messages as read:", err));
+        
+        return () => {};
     }, [selectedChat?._id, dispatch]);
     
     useEffect(() => {
-        socketService.onNewMessage((data) => {
-            if (selectedChat?._id === data.chatId) {
-                dispatch(addMessage(data.message || data));
-            } else {
-                console.log("New message in another chat:", data);
-                refreshChats();
+        const setupSocketConnection = async () => {
+            
+            if (!socketService.isConnected()) {
+                const connected = await socketService.waitForConnection();
+                if (!connected) {
+                    console.error('Failed to connect socket');
+                    return;
+                }
             }
-        });
+            
+            if (token && (!socketService.isConnected() || socketService.getCurrentRole() !== 'user')) {
+                socketService.connect(token, 'user');
+            }
+            
+            socketService.onNewMessage((data) => {
+                
+                const messageChatId = data.chatId || 
+                                     (data.message && data.message.chatId) || 
+                                     (data.chat && data.chat._id);
+                
+                const chatIdStr = typeof messageChatId === 'object' ? 
+                                  messageChatId.toString() : messageChatId;
+                
+                if (selectedChat?._id === chatIdStr) {
+                    dispatch(addMessage(data.message || data));
+                }
+                
+                dispatch(updateChatWithNewMessage({
+                    chatId: chatIdStr,
+                    message: data.message || data
+                }));
+            });
+            
+            socketService.onMessagesRead((data) => {
+                
+                dispatch(updateMessageReadStatus(data));
+                
+                if (data.chatId && data.recipientType) {
+                    dispatch(updateUnreadCount({
+                        chatId: data.chatId,
+                        recipientType: data.recipientType
+                    }));
+                }
+            });
+            
+            socketService.on('new-message-notification', (data) => {
+                
+                const chatId = data.chatId || 
+                              (data.message && data.message.chatId) || 
+                              (data.chat && data.chat._id);
+                              
+                if (chatId) {
+                    dispatch(updateChatWithNewMessage({
+                        chatId,
+                        message: data.message || data
+                    }));
+                }
+            });
+            
+            if (selectedChat?._id) {
+                socketService.joinChat(selectedChat._id);
+                subscribedChats.current.add(selectedChat._id);
+            }
+        };
         
-        socketService.onMessagesRead((data) => {
-            dispatch(updateMessageReadStatus(data));
-        });
+        setupSocketConnection();
+        
+        return () => {};
+    }, [selectedChat?._id, dispatch, refreshChats, token]);
 
+    useEffect(() => {
         return () => {
             subscribedChats.current.forEach(chatId => {
                 socketService.leaveChat(chatId);
@@ -85,7 +139,7 @@ export const useChat = () => {
             subscribedChats.current.clear();
             socketService.cleanup();
         };
-    }, [dispatch, selectedChat?._id, refreshChats]);
+    }, []);
 
     const loadMoreMessages = useCallback(() => {
         if (selectedChat?._id && hasMore && !messageLoading) {
@@ -96,15 +150,23 @@ export const useChat = () => {
         }
     }, [selectedChat?._id, hasMore, messageLoading, page, dispatch]);
 
+    const forceRefreshChats = useCallback(async () => {
+        ChatApi.clearUserChatsCache();
+        return dispatch(fetchChats()).unwrap();
+    }, [dispatch]);
+
     const handleSendMessage = useCallback(async (content: string) => {
         if (selectedChat?._id && content.trim()) {
             try {
-                await dispatch(sendMessage({
+                const result = await dispatch(sendMessage({
                     chatId: selectedChat._id,
                     content: content.trim()
                 })).unwrap();
+                
+                return result;
             } catch (error) {
                 console.error("Failed to send message:", error);
+                throw error;
             }
         }
     }, [selectedChat?._id, dispatch]);

@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppSelector';
 import { setSelectedChat } from '@/redux/slices/chatSlice';
@@ -9,6 +9,8 @@ export const useChatPage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { chats, loading, refreshChats } = useChat();
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const initialLoadRef = useRef(false);
   
   const currentChat = useCallback(() => {
     if (!chatId || chats.length === 0) return null;
@@ -28,11 +30,18 @@ export const useChatPage = () => {
   }, [chatId, chats.length]);
   
   useEffect(() => {
-    refreshChats();
-  }, []);
+    if (!initialLoadRef.current) {
+      initialLoadRef.current = true;
+      refreshChats().finally(() => {
+        setInitialLoadComplete(true);
+      });
+    }
+  }, [refreshChats]);
+  
+  const isLoading = loading && !initialLoadComplete;
   
   return {
-    loading,
+    loading: isLoading,
     currentChat: currentChat()
   };
 };

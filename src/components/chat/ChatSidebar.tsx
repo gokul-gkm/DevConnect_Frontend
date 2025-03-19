@@ -6,6 +6,7 @@ import { Spinner } from '../ui/spinner';
 import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
 import { formatMessageTime } from '@/utils/date';
+import { SocketStatusIndicator } from '../socket/SocketStatusIndicator';
 
 export const ChatSidebar = () => {
     const navigate = useNavigate();
@@ -31,17 +32,16 @@ export const ChatSidebar = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-80 bg-black/95 border-r border-zinc-800 overflow-y-auto h-screen flex flex-col"
+            className="w-80 bg-black/95 border-r border-zinc-800 h-screen flex flex-col"
         >
-            <div className="p-6 pb-7 border-b border-zinc-800 sticky top-0 z-10 backdrop-blur-md bg-black/80">
+            <div className="p-6 pb-7 border-b border-zinc-800 sticky top-0 z-20 backdrop-blur-md bg-black/80">
                 <h2 className="text-xl font-bold text-white flex items-center">
                     <MessageCircle className="mr-2 h-5 w-5 text-blue-500" />
                     Messages
                 </h2>
-               
             </div>
             
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto scrollbar-hide pb-20">
                 {chats.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-center p-5">
                         <div className="bg-zinc-800/50 p-6 rounded-full mb-4">
@@ -107,6 +107,8 @@ export const ChatSidebar = () => {
                     </div>
                 )}
             </div>
+            
+            <SocketStatusIndicator />
         </motion.div>
     );
 };

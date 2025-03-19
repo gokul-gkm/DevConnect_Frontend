@@ -1,7 +1,7 @@
 import { useDeveloperChat } from '@/hooks/chat/useDeveloperChat';
 import { useEffect, useRef, useState } from 'react';
 import { Spinner } from '../ui/spinner';
-import { Send, MoreVertical } from 'lucide-react';
+import { Send, MoreVertical, ArrowDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LiaCheckDoubleSolid } from "react-icons/lia";
 import { formatChatMessageTime } from '@/utils/date';
@@ -11,13 +11,14 @@ export const DeveloperChatWindow = () => {
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messageContainerRef = useRef<HTMLDivElement>(null);
-
+    const [showScrollButton, setShowScrollButton] = useState(false);
+    
     useEffect(() => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        if (messageContainerRef.current && messages.length > 0 && !messageLoading) {
+            messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
         }
-    }, [messages]);
-
+    }, [messages, messageLoading, selectedChat?._id]);
+    
     useEffect(() => {
         const container = messageContainerRef.current;
         if (!container) return;
@@ -26,17 +27,28 @@ export const DeveloperChatWindow = () => {
             if (container.scrollTop === 0 && hasMore && !messageLoading) {
                 loadMoreMessages();
             }
+            const { scrollTop, scrollHeight, clientHeight } = container;
+            const isNearBottom = scrollTop + clientHeight >= scrollHeight - 150;
+            setShowScrollButton(!isNearBottom && messages.length > 0);
         };
 
         container.addEventListener('scroll', handleScroll);
         return () => container.removeEventListener('scroll', handleScroll);
-    }, [hasMore, messageLoading, loadMoreMessages]);
+    }, [hasMore, messageLoading, loadMoreMessages, messages.length]);
+    
+    const scrollToBottom = () => {
+        if (messageContainerRef.current) {
+            messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
+            setShowScrollButton(false);
+        }
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (newMessage.trim()) {
             handleSendMessage(newMessage);
             setNewMessage('');
+            setTimeout(scrollToBottom, 100);
         }
     };
 
@@ -86,9 +98,6 @@ export const DeveloperChatWindow = () => {
                         <h2 className="font-bold text-white">
                             {selectedChat.userId?.username || "User"}
                         </h2>
-                        {/* <p className="text-sm text-zinc-400">
-                            {selectedChat.isOnline ? 'Online' : 'Offline'}
-                        </p> */}
                     </div>
                 </div>
                 <div className="flex space-x-2">
@@ -100,13 +109,18 @@ export const DeveloperChatWindow = () => {
 
             <div
                 ref={messageContainerRef}
-                className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-black to-zinc-900"
+                className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-black to-zinc-900 relative"
             >
-                {messageLoading && (
+                {messageLoading && messages.length === 0 ? (
+                    <div className="flex justify-center items-center h-full">
+                        <Spinner />
+                    </div>
+                ) : messageLoading ? (
                     <div className="flex justify-center py-4">
                         <Spinner />
                     </div>
-                )}
+                ) : null}
+                
                 <AnimatePresence>
                     {messages
                         .slice()
@@ -172,6 +186,18 @@ export const DeveloperChatWindow = () => {
                     ))}
                 </AnimatePresence>
                 <div ref={messagesEndRef} />
+                
+                {showScrollButton && (
+                    <motion.button
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        onClick={scrollToBottom}
+                        className="absolute bottom-5 right-5 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+                    >
+                        <ArrowDown className="w-5 h-5" />
+                    </motion.button>
+                )}
             </div>
 
             <form

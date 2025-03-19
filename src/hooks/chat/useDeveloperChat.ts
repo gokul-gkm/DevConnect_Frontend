@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect,  useCallback, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../useAppSelector';
-import {  fetchMessages, sendMessage, addMessage, setSelectedChat, fetchDeveloperChats, updateMessageReadStatus } from '@/redux/slices/chatSlice';
+import { fetchMessages, sendMessage, addMessage, setSelectedChat, fetchDeveloperChats, updateMessageReadStatus, updateChatWithNewMessage, updateUnreadCount } from '@/redux/slices/chatSlice';
 import { useParams } from 'react-router-dom';
 import { socketService } from '@/service/socket/socketService';
 import { debounce } from 'lodash';
@@ -11,16 +11,15 @@ export const useDeveloperChat = () => {
     const dispatch = useAppDispatch();
     const { chatId } = useParams();
     const { chats, selectedChat, messages, loading, messageLoading, hasMore, page } = useAppSelector(state => state.chat);
-    const [subscribedChats, setSubscribedChats] = useState<Set<string>>(new Set());
+    const subscribedChats = useRef<Set<string>>(new Set());
     const { token } = useAuth();
     const initialFetchRef = useRef(false);
     const isSubscribedRef = useRef(true);
+    const processingChatSelection = useRef(false);
 
-    // Function to refresh chats when new messages arrive
     const refreshChats = useCallback(async () => {
         try {
             await dispatch(fetchDeveloperChats()).unwrap();
-            console.log("Developer chats refreshed after new message");
         } catch (error) {
             console.error("Error refreshing developer chats:", error);
         }
@@ -29,7 +28,6 @@ export const useDeveloperChat = () => {
     useEffect(() => {
         const fetchDeveloperChat = async () => {
             if (!initialFetchRef.current) {
-                console.log("Initial fetch of developer chats");
                 try {
                     await dispatch(fetchDeveloperChats()).unwrap();
                     initialFetchRef.current = true;
@@ -47,108 +45,142 @@ export const useDeveloperChat = () => {
         };
     }, []);
 
-    useEffect(() => {
-        if (chatId && chats.length > 0) {
-            const chat = chats.find(c => c._id === chatId);
-            if (chat) {
-                dispatch(setSelectedChat(chat));
-            }
-        }
-    }, [chatId, chats]);
 
     useEffect(() => {
-        if (selectedChat?._id) {
-            dispatch(fetchMessages({ chatId: selectedChat._id, page: 1 }));
-            console.log("Marking messages as read for selected chat:", selectedChat._id);
-            ChatApi.markMessagesAsRead(selectedChat._id)
-                .then(() => {
-                    console.log("Messages marked as read for selected chat");
-                    // Refresh chats to update unread counts
-                    refreshChats();
-                })
-                .catch(err => console.error("Error marking messages as read:", err));
+        if (chatId && chats.length > 0 && !processingChatSelection.current) {
+            const chat = chats.find(c => c._id === chatId);
+            if (chat) {
+                processingChatSelection.current = true;
+                dispatch(setSelectedChat(chat));
+                setTimeout(() => {
+                    processingChatSelection.current = false;
+                }, 100);
+            }
         }
-    }, [selectedChat?._id, dispatch, refreshChats]);
+    }, [chatId, chats, dispatch]);
+
+    useEffect(() => {
+        if (!selectedChat?._id) return;
+        
+        dispatch(fetchMessages({ chatId: selectedChat._id, page: 1 }));
+        
+        ChatApi.markMessagesAsRead(selectedChat._id)
+            .then(() => {
+                dispatch(updateUnreadCount({
+                    chatId: selectedChat._id,
+                    recipientType: 'developer'
+                }));
+            })
+            .catch(err => console.error("Error marking messages as read:", err));
+    }, [selectedChat?._id, dispatch]);
 
     useEffect(() => {
         if (!token) return;
-
-        const handleNewMessage = (data: any) => {
-            if (!isSubscribedRef.current) return;
-            console.log("Developer received new message:", data);
+        
+        if (token && (!socketService.isConnected() || socketService.getCurrentRole() !== 'developer')) {
+            socketService.connect(token, 'developer');
+        }
+        
+        socketService.onNewMessage((data) => {
             
-            // Handle both message formats
-            if (data.message) {
-                dispatch(addMessage(data.message));
+            const messageChatId = data.chatId || 
+                                 (data.message && data.message.chatId) || 
+                                 (data.chat && data.chat._id);
+            
+            const chatIdStr = typeof messageChatId === 'object' ? 
+                            messageChatId.toString() : messageChatId;
+            
+            if (selectedChat?._id === chatIdStr) {
+                dispatch(addMessage(data.message || data));
                 
-                // If this is the currently selected chat, mark as read
-                if (selectedChat && data.chatId === selectedChat._id) {
-                    ChatApi.markMessagesAsRead(selectedChat._id)
-                        .then(() => console.log("Messages marked as read after receiving new message"))
-                        .catch(err => console.error("Error marking messages as read:", err));
-                }
+                dispatch(updateUnreadCount({
+                    chatId: chatIdStr,
+                    recipientType: 'developer'
+                }));
                 
-                // Refresh chats to update unread counts and last message
-                refreshChats();
-            } else {
-                dispatch(addMessage(data));
-                
-                // Refresh chats to update unread counts and last message
-                refreshChats();
+                ChatApi.markMessagesAsRead(selectedChat._id)
+                    .then(() => console.log("Messages marked as read after receiving new message"))
+                    .catch(err => console.error("Error marking messages as read:", err));
+            }
+            
+            dispatch(updateChatWithNewMessage({
+                chatId: chatIdStr,
+                message: data.message || data
+            }));
+        });
+        
+        if (!socketService.isConnected()) return;
+        
+        const handleMessagesRead = (data: any) => {
+            dispatch(updateMessageReadStatus(data));
+            
+            if (data.chatId && data.recipientType) {
+                dispatch(updateUnreadCount({
+                    chatId: data.chatId,
+                    recipientType: data.recipientType
+                }));
             }
         };
-
-        socketService.connect(token, 'developer');
-        socketService.onNewMessage(handleNewMessage);
-
-        // Listen for new message notifications (for unselected chats)
-        socketService.on('new-message-notification', (data: any) => {
-            console.log("New message notification received:", data);
-            // Refresh chats to update unread counts and last message
-            refreshChats();
-        });
-
-        socketService.onMessagesRead((data) => {
-            console.log("Messages read event received in developer chat:", data);
-            dispatch(updateMessageReadStatus(data));
-        });
-
-        return () => {
-            isSubscribedRef.current = false;
-            socketService.cleanup();
-        };
-    }, [token, selectedChat?._id, dispatch, refreshChats]);
+        
+        socketService.onMessagesRead(handleMessagesRead);
+        
+        if (selectedChat?._id) {
+            socketService.joinChat(selectedChat._id);
+            subscribedChats.current.add(selectedChat._id);
+        }
+        
+        return () => {};
+    }, [selectedChat?._id, dispatch, refreshChats, token]);
 
     useEffect(() => {
-        const newChats = chats.filter(chat => !subscribedChats.has(chat._id));
+        if (chats.length === 0) return;
         
-        if (newChats.length > 0) {
-            newChats.forEach(chat => {
-                console.log("Developer subscribing to chat:", chat._id);
+        chats.forEach(chat => {
+            if (chat._id && !subscribedChats.current.has(chat._id)) {
                 socketService.joinChat(chat._id);
-            });
-            
-            setSubscribedChats(prev => new Set([...prev, ...newChats.map(chat => chat._id)]));
-        }
+                subscribedChats.current.add(chat._id);
+            }
+        });
+        
+        return () => {};
+    }, [chats]);
 
+    useEffect(() => {
         return () => {
-            subscribedChats.forEach(chatId => {
+            subscribedChats.current.forEach(chatId => {
                 socketService.leaveChat(chatId);
             });
+            subscribedChats.current.clear();
+            socketService.cleanup();
         };
-    }, [chats]);
+    }, []);
 
     const loadMoreMessages = useCallback(() => {
         if (selectedChat?._id && hasMore && !messageLoading) {
             dispatch(fetchMessages({ chatId: selectedChat._id, page }));
         }
-    }, [selectedChat?._id, hasMore, messageLoading, page]);
+    }, [selectedChat?._id, hasMore, messageLoading, page, dispatch]);
+
+    const forceRefreshChats = useCallback(async () => {
+        ChatApi.clearDeveloperChatsCache();
+        return dispatch(fetchDeveloperChats()).unwrap();
+    }, [dispatch]);
 
     const handleSendMessage = useCallback((content: string) => {
         if (selectedChat?._id && content.trim()) {
-            dispatch(sendMessage({ chatId: selectedChat._id, content: content.trim() }));
+            dispatch(sendMessage({ 
+                chatId: selectedChat._id, 
+                content: content.trim() 
+            }))
+            .unwrap()
+            .then(result => {
+                forceRefreshChats();
+            })
+            .catch(error => {
+                console.error('📤 DEVELOPER MESSAGE SEND ERROR', error);
+            });
         }
-    }, [selectedChat?._id]);
+    }, [selectedChat?._id, dispatch, forceRefreshChats]);
 
     const debouncedTypingStart = useRef(
         debounce((chatId: string) => {

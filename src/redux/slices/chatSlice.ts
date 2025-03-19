@@ -62,7 +62,8 @@ export const sendMessage = createAsyncThunk(
             const response = await ChatApi.sendMessage(chatId, content);
             return response.message;
         } catch (error: any) {
-            toast.error(error.message);
+            console.error('Redux: Error sending message:', error);
+            toast.error(error.message || 'Failed to send message');
             return rejectWithValue(error.message);
         }
     }
@@ -97,9 +98,10 @@ const chatSlice = createSlice({
             state.page = 1;
             state.hasMore = true;
         },
-        addMessage: (state, action) => {
+        addMessage: (state, action) => {          
             if (state.messages) {
                 const messageExists = state.messages.some(msg => msg._id === action.payload._id);
+                
                 if (!messageExists) {
                     state.messages.unshift(action.payload);
                 }
@@ -120,6 +122,53 @@ const chatSlice = createSlice({
             state.messages = [];
             state.page = 1;
             state.hasMore = true;
+        },
+        updateChatWithNewMessage: (state, action) => {
+            const { chatId, message } = action.payload;
+            
+            if (!chatId) {
+                console.error('🔄 REDUX: Missing chatId in updateChatWithNewMessage');
+                return;
+            }
+            
+            const chatIndex = state.chats.findIndex(chat => chat._id === chatId);
+            if (chatIndex !== -1) {
+                if (message?.content) {
+                    state.chats[chatIndex].lastMessage = message.content;
+                }
+                if (message?.createdAt) {
+                    state.chats[chatIndex].lastMessageTime = message.createdAt;
+                }
+                
+                if (state.selectedChat?._id !== chatId) {
+                    if (message?.senderType === 'user') {
+                        state.chats[chatIndex].developerUnreadCount += 1;
+                    } else {
+                        state.chats[chatIndex].userUnreadCount += 1;
+                    }
+                }
+                
+                const updatedChat = { ...state.chats[chatIndex] };
+                state.chats.splice(chatIndex, 1);
+                state.chats.unshift(updatedChat);
+            }
+        },
+        updateUnreadCount: (state, action) => {
+            const { chatId, recipientType } = action.payload;
+            
+            const chatIndex = state.chats.findIndex(chat => chat._id === chatId);
+            if (chatIndex !== -1) {
+                const updatedChat = { ...state.chats[chatIndex] };
+                
+                if (recipientType === 'user') {
+                    updatedChat.userUnreadCount = 0;
+                } else if (recipientType === 'developer') {
+                    updatedChat.developerUnreadCount = 0;
+                }
+                
+                state.chats[chatIndex] = updatedChat;
+                state.chats = [...state.chats];
+            }
         }
     },
     extraReducers: (builder) => {
@@ -132,7 +181,6 @@ const chatSlice = createSlice({
                 state.chats = action.payload;
             })
             .addCase(fetchChats.rejected, (state,action) => {
-                console.error("Rejected with:", action.payload);
                 state.loading = false;
                 toast.error('Failed to load chats from slice');
             })
@@ -164,8 +212,10 @@ const chatSlice = createSlice({
                 state.messageLoading = false;
                 toast.error('Failed to fetch messages');
             })
+            .addCase(sendMessage.pending, (state) => {
+                console.log('Redux: Message sending in progress');
+            })
             .addCase(sendMessage.fulfilled, (state, action) => {
-
                 if (action.payload) {
                     const messageExists = state.messages.some(msg => msg._id === action.payload._id);
                     if (!messageExists) {
@@ -175,7 +225,7 @@ const chatSlice = createSlice({
                     console.warn("Message sent but payload was undefined");
                 }
             })
-            .addCase(sendMessage.rejected, (state) => {
+            .addCase(sendMessage.rejected, (state, action) => {
                 toast.error('Failed to send message');
             })
             .addCase(fetchDeveloperChats.pending, (state) => {
@@ -196,7 +246,9 @@ export const {
     setSelectedChat,
     addMessage,
     updateMessageReadStatus,
-    resetChat
+    resetChat,
+    updateChatWithNewMessage,
+    updateUnreadCount
 } = chatSlice.actions;
 
 export default chatSlice.reducer

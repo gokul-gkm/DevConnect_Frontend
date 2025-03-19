@@ -40,7 +40,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) 
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className="bg-white/5 border-white/10 text-white
-                         hover:bg-white/10 disabled:opacity-50"
+                         hover:bg-white/10 disabled:opacity-50 rounded-full"
             >
                 <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -51,7 +51,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) 
                     variant={page === currentPage ? 'default' : 'outline'}
                     onClick={() => typeof page === 'number' && onPageChange(page)}
                     disabled={typeof page !== 'number'}
-                    className={`min-w-[2.5rem] ${
+                    className={`min-w-[2.5rem] rounded-full ${
                         page === currentPage
                             ? 'bg-indigo-500 hover:bg-indigo-600'
                             : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
@@ -67,7 +67,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) 
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className="bg-white/5 border-white/10 text-white
-                         hover:bg-white/10 disabled:opacity-50"
+                         hover:bg-white/10 disabled:opacity-50 rounded-full"
             >
                 <ChevronRight className="w-4 h-4" />
             </Button>

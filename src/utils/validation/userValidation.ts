@@ -114,7 +114,11 @@ export const changePasswordSchema = z.object({
     .regex(/[0-9]/, "Password must contain at least one number")
     .regex(/[@$!%*?&#^]/, "Password must contain at least one special character"),
   confirmPassword: z.string().min(1, "Please confirm your password"),
-}).refine((data) => data.newPassword === data.confirmPassword, {
+}).refine((data) => data.currentPassword !== data.newPassword, {
+    message: 'New password should not be the same as the current password',
+    path: ["newPassword"]
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
 });

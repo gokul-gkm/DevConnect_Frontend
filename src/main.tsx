@@ -10,6 +10,8 @@ import { persistStore } from "redux-persist";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { QueryProvider } from "./context/QueryProvider.tsx";
 
+import { SocketManager } from '@/components/socket/SocketManager';
+
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
 
 
@@ -19,7 +21,8 @@ createRoot(document.getElementById("root")!).render(
     <QueryProvider>
       <GoogleOAuthProvider clientId={googleClientId}>
         <Provider store={store}>
-          <PersistGate persistor={persistor}>              
+        <PersistGate persistor={persistor}>             
+            <SocketManager />
             <CustomToaster />
             <RouterProvider router={Router} />         
           </PersistGate>

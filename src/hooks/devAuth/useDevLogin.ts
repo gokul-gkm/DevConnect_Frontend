@@ -20,7 +20,7 @@ export const useDevLogin = () => {
       const response = await DevAuthApi.login(email, password);
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data.success && data.user) {
         dispatch(
           setCredentials({
@@ -30,7 +30,16 @@ export const useDevLogin = () => {
             _id: data.user.id
           })
         );
-        socketService.connect(data.token!);
+        
+        try {
+          await socketService.connect(data.token!, 'developer');
+        } catch (error) {
+          console.error("Error connecting socket:", error);
+        }
+        
+        localStorage.setItem("access-token", data.token!);
+        localStorage.setItem("user-role", 'developer');
+        
         toast.success("Login successful!");
         navigate("/developer/dashboard");
       }

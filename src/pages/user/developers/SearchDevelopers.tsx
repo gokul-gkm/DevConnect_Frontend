@@ -17,7 +17,7 @@ const SearchDevelopers = () => {
         languages: [] as string[],
         priceRange: {
             min: 0,
-            max: 500
+            max: 1000
         },
         location: ''
     });

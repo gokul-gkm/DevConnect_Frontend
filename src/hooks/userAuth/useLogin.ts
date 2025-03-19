@@ -28,9 +28,11 @@ export const useLogin = () => {
         throw error;
       }
     },
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       if (response.success && response.user) {
         localStorage.setItem("access-token", response.token!);
+        localStorage.setItem("user-role", response.user.role || 'user');
+        
         dispatch(
           setCredentials({
             username: response.user.username,
@@ -39,7 +41,16 @@ export const useLogin = () => {
             _id: response.user.id
           })
         );
-        socketService.connect(response.token!);
+        
+ 
+        const userRole = response.user.role || 'user';
+        
+        try {
+          await socketService.connect(response.token!, userRole);       
+        } catch (error) {
+          console.error("Error connecting socket:", error);
+        }
+        
         toast.success("Login successful!");
         navigate("/");
       }

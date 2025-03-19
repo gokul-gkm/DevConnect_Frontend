@@ -3,9 +3,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, X, Menu, User, LogOut } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
-import AuthApi from '@/service/Api/AuthApi';
 import { logout } from '@/redux/slices/authSlice';
-import toast from 'react-hot-toast';
 import { socketService } from '@/service/socket/socketService';
 
 const navItems = [
@@ -40,17 +38,11 @@ const Navbar: React.FC = () => {
     };
 }, [isAuthenticated, _id]);
 
-  const handleLogout = async () => {
-    try {
-      await AuthApi.logOut();
-      dispatch(logout());
-      setIsProfileOpen(false);
-      setIsMobileMenuOpen(false);
-      toast.success('Logout Successfully');
-    } catch (error) {
-      console.error('Logout failed: ', error);
-      toast.error('Logout failed')
-    }
+  const handleLogout = () => {
+    socketService.cleanup();
+    
+    dispatch(logout());
+    navigate('/auth/login');
   }
 
   useEffect(() => {
@@ -161,6 +153,12 @@ const Navbar: React.FC = () => {
       </div>
     );
   };
+
+  useEffect(() => {
+    return () => {
+        socketService.cleanup();
+    };
+  }, []);
 
   return (
     <motion.nav

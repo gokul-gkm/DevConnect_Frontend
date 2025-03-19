@@ -36,7 +36,7 @@ const UserApi = {
       return response.data;
     } catch (error: any) {
       console.error('API Error:', error.response?.data || error)
-          throw error
+      throw error
     }
   },
 

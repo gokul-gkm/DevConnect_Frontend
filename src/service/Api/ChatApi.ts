@@ -7,7 +7,7 @@ interface CacheItem {
 
 export class ChatApi {
   private static cache: Map<string, CacheItem> = new Map();
-    private static CACHE_DURATION = 30000; 
+  private static CACHE_DURATION = 5000; 
 
   static async createChat(developerId: string) {
     const response = await axiosClient.post('/chats/create', { developerId });
