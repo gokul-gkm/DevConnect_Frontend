@@ -5,7 +5,6 @@ import {
   User,
   MessageSquare,
   GalleryVerticalEnd,
-  BookOpen,
   DollarSign,
   Users,
   Star,
@@ -71,11 +70,6 @@ const menuItems = [
     title: 'Analytics',
     icon: BarChart,
     path: '/developer/analytics'
-  },
-  {
-    title: 'Resources',
-    icon: BookOpen,
-    path: '/developer/resources'
   },
   {
     title: 'Availability',

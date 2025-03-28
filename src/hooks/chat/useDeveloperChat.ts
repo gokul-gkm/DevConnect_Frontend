@@ -166,21 +166,27 @@ export const useDeveloperChat = () => {
         return dispatch(fetchDeveloperChats()).unwrap();
     }, [dispatch]);
 
-    const handleSendMessage = useCallback((content: string) => {
+    const handleSendMessage = useCallback(async (content: string) => {
         if (selectedChat?._id && content.trim()) {
-            dispatch(sendMessage({ 
-                chatId: selectedChat._id, 
-                content: content.trim() 
-            }))
-            .unwrap()
-            .then(result => {
-                forceRefreshChats();
-            })
-            .catch(error => {
+            try {
+                const result = await dispatch(sendMessage({ 
+                    chatId: selectedChat._id, 
+                    content: content.trim() 
+                })).unwrap();
+                
+                await ChatApi.markMessagesAsRead(selectedChat._id);
+                dispatch(updateUnreadCount({
+                    chatId: selectedChat._id,
+                    recipientType: 'developer'
+                }));
+                
+                return result;
+            } catch (error) {
                 console.error('📤 DEVELOPER MESSAGE SEND ERROR', error);
-            });
+                throw error;
+            }
         }
-    }, [selectedChat?._id, dispatch, forceRefreshChats]);
+    }, [selectedChat?._id, dispatch]);
 
     const debouncedTypingStart = useRef(
         debounce((chatId: string) => {

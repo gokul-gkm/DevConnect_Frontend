@@ -1,10 +1,11 @@
 import { useChat } from '@/hooks/chat/useChat';
 import { useEffect, useRef, useState } from 'react';
 import { Spinner } from '../ui/spinner';
-import { Send, MoreVertical, ArrowDown } from 'lucide-react';
+import { Send, MoreVertical, ArrowDown, Smile } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LiaCheckDoubleSolid } from "react-icons/lia";
 import { formatChatMessageTime } from '@/utils/date';
+import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 
 export const ChatWindow = () => {
     const { selectedChat, messages, messageLoading, hasMore, loadMoreMessages, handleSendMessage, handleTyping } = useChat();
@@ -13,6 +14,8 @@ export const ChatWindow = () => {
     const messageContainerRef = useRef<HTMLDivElement>(null);
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [isSending, setIsSending] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const emojiPickerRef = useRef<HTMLDivElement>(null);
     
     useEffect(() => {
         if (messageContainerRef.current && messages.length > 0 && !messageLoading) {
@@ -43,6 +46,24 @@ export const ChatWindow = () => {
             messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
             setShowScrollButton(false);
         }
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+                setShowEmojiPicker(false);
+            }
+        };
+        
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+    
+    const handleEmojiClick = (emojiData: EmojiClickData) => {
+        setNewMessage(prev => prev + emojiData.emoji);
+        setShowEmojiPicker(false);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -118,7 +139,7 @@ export const ChatWindow = () => {
 
             <div
                 ref={messageContainerRef}
-                className="flex-1 overflow-y-auto px-4 pt-[140px] pb-20"
+                className="flex-1 overflow-y-auto px-4 pt-[140px] pb-24 md:pb-32 lg:pb-40"
             >
                 {messageLoading && messages.length === 0 ? (
                     <div className="flex justify-center items-center h-full">
@@ -202,6 +223,31 @@ export const ChatWindow = () => {
                     className="px-4 py-4"
                 >
                     <div className="flex items-center space-x-2 bg-zinc-800/80 rounded-full px-4 py-1 backdrop-blur-sm shadow-lg max-w-[1800px] mx-auto">
+                        <div className="relative">
+                            <button 
+                                type="button"
+                                onClick={() => setShowEmojiPicker(prev => !prev)}
+                                className="text-zinc-400 hover:text-zinc-200 transition-colors p-2"
+                            >
+                                <Smile className="w-5 h-5" />
+                            </button>
+                            {showEmojiPicker && (
+                                <div 
+                                    ref={emojiPickerRef}
+                                    className="absolute bottom-12 left-0 z-50"
+                                >
+                                    <EmojiPicker 
+                                        onEmojiClick={handleEmojiClick}
+                                        theme={Theme.DARK}
+                                        width={300}
+                                        height={400}
+                                        skinTonesDisabled
+                                        searchDisabled
+                                        lazyLoadEmojis
+                                    />
+                                </div>
+                            )}
+                        </div>
                         <input
                             type="text"
                             value={newMessage}

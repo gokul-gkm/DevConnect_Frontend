@@ -86,6 +86,15 @@ export const useChat = () => {
                 
                 if (selectedChat?._id === chatIdStr) {
                     dispatch(addMessage(data.message || data));
+
+                    dispatch(updateUnreadCount({
+                        chatId: chatIdStr,
+                        recipientType: 'user'
+                    }));
+                    
+                    ChatApi.markMessagesAsRead(selectedChat._id)
+                        .then(() => console.log("Messages marked as read after receiving new message"))
+                        .catch(err => console.error("Error marking messages as read:", err));
                 }
                 
                 dispatch(updateChatWithNewMessage({
@@ -162,6 +171,12 @@ export const useChat = () => {
                     chatId: selectedChat._id,
                     content: content.trim()
                 })).unwrap();
+
+                await ChatApi.markMessagesAsRead(selectedChat._id);
+                dispatch(updateUnreadCount({
+                    chatId: selectedChat._id,
+                    recipientType: 'user'
+                }));
                 
                 return result;
             } catch (error) {

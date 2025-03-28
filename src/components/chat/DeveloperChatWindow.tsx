@@ -1,10 +1,11 @@
 import { useDeveloperChat } from '@/hooks/chat/useDeveloperChat';
 import { useEffect, useRef, useState } from 'react';
 import { Spinner } from '../ui/spinner';
-import { Send, MoreVertical, ArrowDown } from 'lucide-react';
+import { Send, MoreVertical, ArrowDown, Smile } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LiaCheckDoubleSolid } from "react-icons/lia";
 import { formatChatMessageTime } from '@/utils/date';
+import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 
 export const DeveloperChatWindow = () => {
     const { selectedChat, messages, messageLoading, hasMore, loadMoreMessages, handleSendMessage, handleTyping } = useDeveloperChat();
@@ -12,6 +13,9 @@ export const DeveloperChatWindow = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messageContainerRef = useRef<HTMLDivElement>(null);
     const [showScrollButton, setShowScrollButton] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const emojiPickerRef = useRef<HTMLDivElement>(null);
+    const [isSending, setIsSending] = useState(false);
     
     useEffect(() => {
         if (messageContainerRef.current && messages.length > 0 && !messageLoading) {
@@ -43,12 +47,37 @@ export const DeveloperChatWindow = () => {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+                setShowEmojiPicker(false);
+            }
+        };
+        
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+    
+    const handleEmojiClick = (emojiData: EmojiClickData) => {
+        setNewMessage(prev => prev + emojiData.emoji);
+        setShowEmojiPicker(false);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (newMessage.trim()) {
-            handleSendMessage(newMessage);
-            setNewMessage('');
-            setTimeout(scrollToBottom, 100);
+        if (newMessage.trim() && !isSending) {
+            setIsSending(true);
+            try {
+                await handleSendMessage(newMessage);
+                setNewMessage('');
+                scrollToBottom();
+            } catch (error) {
+                console.error("Error sending message:", error);
+            } finally {
+                setIsSending(false);
+            }
         }
     };
 
@@ -109,7 +138,7 @@ export const DeveloperChatWindow = () => {
 
             <div
                 ref={messageContainerRef}
-                className="flex-1 overflow-y-auto px-4 pt-[140px] pb-20"
+                className="flex-1 overflow-y-auto px-4 pt-[140px] pb-24 md:pb-40 lg:pb-40"
             >
                 {messageLoading && messages.length === 0 ? (
                     <div className="flex justify-center items-center h-full">
@@ -196,6 +225,31 @@ export const DeveloperChatWindow = () => {
                     className="px-4 py-4"
                 >
                     <div className="flex items-center space-x-2 bg-zinc-800/80 rounded-full px-4 py-1 backdrop-blur-sm shadow-lg max-w-[1800px] mx-auto">
+                        <div className="relative">
+                            <button 
+                                type="button"
+                                onClick={() => setShowEmojiPicker(prev => !prev)}
+                                className="text-zinc-400 hover:text-zinc-200 transition-colors p-2"
+                            >
+                                <Smile className="w-5 h-5" />
+                            </button>
+                            {showEmojiPicker && (
+                                <div 
+                                    ref={emojiPickerRef}
+                                    className="absolute bottom-12 left-0 z-50"
+                                >
+                                    <EmojiPicker 
+                                        onEmojiClick={handleEmojiClick}
+                                        theme={Theme.DARK}
+                                        width={300}
+                                        height={400}
+                                        skinTonesDisabled
+                                        searchDisabled
+                                        lazyLoadEmojis
+                                    />
+                                </div>
+                            )}
+                        </div>
                         <input
                             type="text"
                             value={newMessage}
@@ -210,11 +264,11 @@ export const DeveloperChatWindow = () => {
                         
                         <motion.button
                             type="submit"
-                            disabled={!newMessage.trim()}
+                            disabled={!newMessage.trim() || isSending}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             className={`rounded-full p-2 md:p-2.5 ${
-                                newMessage.trim()
+                                newMessage.trim() && !isSending
                                     ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md shadow-blue-700/20'
                                     : 'bg-zinc-700 text-zinc-500'
                             }`}

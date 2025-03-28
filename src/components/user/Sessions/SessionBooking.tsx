@@ -159,7 +159,8 @@ export default function SessionBooking() {
                       selected={selectedDate}
                       onSelect={setSelectedDate}
                       disabled={{ before: new Date() }}
-                      className="rounded-xl w-full [&_.rdp-nav]:text-white [&_.rdp-table]:w-full [&_.rdp-cell]:w-12 [&_.rdp-head_th]:w-12"
+                      className="rounded-xl w-full"
+                      inline={true}
                     />
                   </div>
 
