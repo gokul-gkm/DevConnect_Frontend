@@ -21,7 +21,11 @@ class SocketService {
     private hasTypingStopListener = false;
     private reconnectTimer: NodeJS.Timeout | null = null;
     private autoReconnect = true;
-    private reconnectInterval = 3000; // 3 seconds
+    private reconnectInterval = 3000;
+    private hasNewNotificationListener = false;
+    private hasNotificationReadListener = false;
+    private hasNotificationAllReadListener = false;
+    private hasUnreadCountListener = false;
     
     connect(token?: string | null, role?: string): Promise<boolean> {
         
@@ -360,6 +364,26 @@ class SocketService {
                 this.socket.off('typing:stop');
                 this.hasTypingStopListener = false;
             }
+            
+            if (this.hasNewNotificationListener) {
+                this.socket.off('notification:new');
+                this.hasNewNotificationListener = false;
+            }
+            
+            if (this.hasNotificationReadListener) {
+                this.socket.off('notification:marked-read');
+                this.hasNotificationReadListener = false;
+            }
+            
+            if (this.hasNotificationAllReadListener) {
+                this.socket.off('notification:all-marked-read');
+                this.hasNotificationAllReadListener = false;
+            }
+            
+            if (this.hasUnreadCountListener) {
+                this.socket.off('notification:unread-count');
+                this.hasUnreadCountListener = false;
+            }
         }
     }
 
@@ -520,6 +544,70 @@ class SocketService {
                 console.log('No token available for reconnection');
             }
         }, this.reconnectInterval);
+    }
+
+    onNewNotification(callback: (data: any) => void) {
+        if (!this.socket) return;
+        
+        if (this.hasNewNotificationListener) {
+            this.socket.off('notification:new');
+        }
+        
+        this.socket.on('notification:new', callback);
+        this.hasNewNotificationListener = true;
+    }
+
+    onNotificationRead(callback: (data: any) => void) {
+        if (!this.socket) return;
+        
+        if (this.hasNotificationReadListener) {
+            this.socket.off('notification:marked-read');
+        }
+        
+        this.socket.on('notification:marked-read', callback);
+        this.hasNotificationReadListener = true;
+    }
+
+    onAllNotificationsRead(callback: (data: any) => void) {
+        if (!this.socket) return;
+        
+        if (this.hasNotificationAllReadListener) {
+            this.socket.off('notification:all-marked-read');
+        }
+        
+        this.socket.on('notification:all-marked-read', callback);
+        this.hasNotificationAllReadListener = true;
+    }
+
+    onUnreadCountUpdate(callback: (data: any) => void) {
+        if (!this.socket) return;
+        
+        if (this.hasUnreadCountListener) {
+            this.socket.off('notification:unread-count');
+        }
+        
+        this.socket.on('notification:unread-count', callback);
+        this.hasUnreadCountListener = true;
+    }
+
+    markNotificationAsRead(notificationId: string) {
+        if (!this.socket) {
+            console.warn('Cannot mark notification as read: Socket not connected');
+            return false;
+        }
+        
+        this.socket.emit('notification:mark-read', notificationId);
+        return true;
+    }
+
+    markAllNotificationsAsRead() {
+        if (!this.socket) {
+            console.warn('Cannot mark all notifications as read: Socket not connected');
+            return false;
+        }
+        
+        this.socket.emit('notification:mark-all-read');
+        return true;
     }
 }
 

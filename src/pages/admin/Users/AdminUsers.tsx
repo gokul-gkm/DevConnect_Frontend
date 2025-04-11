@@ -1,28 +1,17 @@
 import { useMemo, useState } from "react";
-import {
-  useReactTable,
-  getCoreRowModel,
-  ColumnDef,
-  flexRender,
-} from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { User } from "@/types/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/shadcn-button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Users, ArrowUpDown, Search, Shield, Mail, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { debounce } from "lodash";
-import Pagination from "@/components/ui/Pagination";
 import { cn } from "@/lib/utils";
 import { useAdminUsers } from "@/hooks/admin/useAdminUsers";
+import AdminTable from "@/components/admin/AdminTable";
+import StatsCards from '@/components/admin/StatsCards';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 function UsersListPage() {
   const navigate = useNavigate();
@@ -79,7 +68,7 @@ function UsersListPage() {
               {row.original.profilePicture ? (
                 <img
                   src={row.original.profilePicture}
-                  className="object-cover rounded-full"
+                  className="object-cover rounded-full w-10 h-10"
                   alt={row.original.username}
                 />
               ) : (
@@ -218,29 +207,44 @@ function UsersListPage() {
         ),
       },
     ],
-    [queryParams.sortOrder]
+    [queryParams.sortOrder, toggleStatusMutation]
   );
 
-  const table = useReactTable({
-    data: users,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
+  const stats = [
+    {
+      title: "Total Users",
+      value: pagination?.total || 0,
+      icon: Users,
+      color: "from-blue-600/20 to-blue-800/20",
+      borderColor: "border-blue-500/20",
+    },
+    {
+      title: "Active Users",
+      value: users.filter((u) => u.status === "active").length,
+      icon: Shield,
+      color: "from-green-600/20 to-green-800/20",
+      borderColor: "border-green-500/20",
+    },
+    {
+      title: "Verified Users",
+      value: users.filter((u) => u.isVerified).length,
+      icon: Mail,
+      color: "from-purple-600/20 to-purple-800/20",
+      borderColor: "border-purple-500/20",
+    },
+  ];
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 to-slate-900">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center gap-4"
-        >
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500" />
-          <div className="text-slate-400 animate-pulse">Loading users...</div>
-        </motion.div>
-      </div>
+      <LoadingSpinner
+      size="lg"
+      text="Loading users..."
+      color="indigo"
+      fullScreen={true}
+    />
     );
   }
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 to-slate-900 p-6">
       <motion.div
@@ -249,6 +253,7 @@ function UsersListPage() {
         transition={{ duration: 0.5 }}
         className="max-w-7xl mx-auto space-y-8"
       >
+
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -276,105 +281,15 @@ function UsersListPage() {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[
-            {
-              title: "Total Users",
-              value: pagination?.total || 0,
-              icon: Users,
-              color: "from-blue-600/20 to-blue-800/20",
-              borderColor: "border-blue-500/20",
-            },
-            {
-              title: "Active Users",
-              value: users.filter((u) => u.status === "active").length,
-              icon: Shield,
-              color: "from-green-600/20 to-green-800/20",
-              borderColor: "border-green-500/20",
-            },
-            {
-              title: "Verified Users",
-              value: users.filter((u) => u.isVerified).length,
-              icon: Mail,
-              color: "from-purple-600/20 to-purple-800/20",
-              borderColor: "border-purple-500/20",
-            },
-          ].map((stat, index) => (
-            <motion.div
-              key={stat.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + index * 0.1 }}
-              className={`bg-gradient-to-br ${stat.color} rounded-2xl p-6 border ${stat.borderColor} shadow-xl backdrop-blur-sm`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-slate-400 text-sm font-medium">
-                    {stat.title}
-                  </div>
-                  <div className="text-3xl font-bold text-slate-100 mt-1">
-                    {stat.value?.toLocaleString()}
-                  </div>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                  <stat.icon className="h-5 w-5 text-slate-300" />
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        <StatsCards stats={stats} columns={3} />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="rounded-2xl border border-slate-800/50 bg-slate-900/50 shadow-2xl backdrop-blur-sm overflow-hidden"
-        >
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow
-                    key={headerGroup.id}
-                    className="border-slate-800/50"
-                  >
-                    {headerGroup.headers.map((header) => (
-                      <TableHead
-                        key={header.id}
-                        className="text-slate-400 bg-slate-900/90 first:rounded-tl-2xl last:rounded-tr-2xl py-5"
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className="border-slate-800/50 hover:bg-slate-800/50"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="py-3 text-slate-300">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          {pagination && (
-            <Pagination pagination={pagination} updateParams={updateParams} />
-          )}
-        </motion.div>
+        <AdminTable
+          data={users}
+          columns={columns}
+          pagination={pagination}
+          updateParams={updateParams}
+          emptyMessage="No users found"
+        />
       </motion.div>
     </div>
   );

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, X, Menu, User, LogOut } from 'lucide-react';
+import { Search, X, Menu, User, LogOut, Bell } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
 import { logout } from '@/redux/slices/authSlice';
 import { socketService } from '@/service/socket/socketService';
+import { useNotifications } from '@/hooks/notification/useNotifications';
 
 const navItems = [
   { name: 'Home', delay: 0, url: '/' },
@@ -24,10 +25,11 @@ const Navbar: React.FC = () => {
   const { scrollY } = useScroll();
   const dispatch = useAppDispatch();
   const { isAuthenticated, username, email, _id } = useAppSelector((state) => state.user);
+  const { unreadCount } = useNotifications();
 
   useEffect(() => {
     if (isAuthenticated && _id) {
-        const token = localStorage.getItem('accessToken');
+        const token = localStorage.getItem('access-token');
         if (token) {
             socketService.connect(token);
         }
@@ -240,6 +242,23 @@ const Navbar: React.FC = () => {
                        backdrop-blur-sm transition-all duration-300"
             >
               <Search className="w-4 h-4 md:w-5 md:h-5 text-white" />
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => navigate('/notifications')}
+              className="p-2 rounded-full
+                       bg-white/5 hover:bg-white/10
+                       border border-white/10 hover:border-white/20
+                       backdrop-blur-sm transition-all duration-300"
+            >
+              <Bell className="w-4 h-4 md:w-5 md:h-5 text-white" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </motion.button>
 
             {renderAuthSection()}

@@ -125,7 +125,7 @@ const AdminLayout = () => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors
                   ${location.pathname === item.path 
                     ? 'bg-[#7C3AED] text-white' 
                     : 'text-gray-400 hover:bg-[#1B2559]/20'}`}
@@ -141,7 +141,7 @@ const AdminLayout = () => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors
                   ${location.pathname === item.path 
                     ? 'bg-[#7C3AED] text-white' 
                     : 'text-gray-400 hover:bg-[#1B2559]/20'}`}
@@ -155,14 +155,14 @@ const AdminLayout = () => {
 
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden md:flex items-center justify-center p-2 mx-4 mb-2 text-gray-400 hover:bg-[#1B2559]/20 rounded-md"
+          className="hidden md:flex items-center justify-center p-2 mx-4 mb-2 text-gray-400 hover:bg-[#1B2559]/20 rounded-xl"
         >
           <ChevronRight className={`w-5 h-5 transform transition-transform ${isCollapsed ? 'rotate-0' : 'rotate-180'}`} />
         </button>
 
 
         <div className="p-4">
-          <button className="w-full bg-[#7C3AED] text-white rounded-md p-2 flex items-center justify-center gap-2 hover:bg-[#6D28D9] transition-colors"
+          <button className="w-full bg-[#7C3AED] text-white rounded-xl p-2 flex items-center justify-center gap-2 hover:bg-[#6D28D9] transition-colors"
             onClick={ handleLogout}>
             <LogOut className="w-5 h-5" />
             {!isCollapsed && <span>Logout</span>}

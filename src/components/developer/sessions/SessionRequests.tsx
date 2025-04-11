@@ -21,6 +21,7 @@ import { SessionRejectionDialog } from './SessionRejectionDialog';
 import { useSessionRequests } from '@/hooks/session/useSessionRequests';
 import { useRejectionDialog } from '@/hooks/session/useRejectionDialog';
 import { useState } from 'react';
+import Pagination from '@/components/ui/Pagination';
 
 interface Session {
   _id: string;
@@ -65,11 +66,14 @@ export default function SessionRequests() {
 
   const {
     sessions,
+    pagination,
+    stats,
     isLoading,
     acceptSession,
     rejectSession,
     isAccepting,
     isRejecting,
+    updatePage
   } = useSessionRequests();
 
   const {
@@ -121,34 +125,34 @@ export default function SessionRequests() {
     );
   }
 
-  const stats = [
+  const statsData = [
     {
       label: 'Total Requests',
-      value: sessions?.length || 0,
+      value: stats?.total || 0,
       icon: Clock,
       gradient: 'from-gray-900 to-black',
     },
     {
       label: 'Pending',
-      value: sessions?.filter((s: Session) => s.status === 'pending').length || 0,
+      value: stats?.pending || 0,
       icon: Clock,
       gradient: 'from-amber-950 to-black',
     },
     {
       label: 'Approved',
-      value: sessions?.filter((s: Session) => s.status === 'approved').length || 0,
+      value: stats?.approved || 0,
       icon: CheckCircle,
       gradient: 'from-emerald-950 to-black',
     },
     {
       label: 'Rejected',
-      value: sessions?.filter((s: Session) => s.status === 'rejected').length || 0,
+      value: stats?.rejected || 0,
       icon: XCircle,
       gradient: 'from-rose-950 to-black',
     },
     {
       label: 'Scheduled',
-      value: sessions?.filter((s: Session) => s.status === 'scheduled').length || 0,
+      value: stats?.scheduled || 0,
       icon: Calendar,
       gradient: 'from-blue-950 to-black',
     }
@@ -186,7 +190,7 @@ export default function SessionRequests() {
       </motion.div>
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4">
-        {stats.map((stat, index) => (
+        {statsData.map((stat, index) => (
           <motion.div
             key={stat.label}
             initial={{ opacity: 0, scale: 0.95 }}
@@ -349,6 +353,16 @@ export default function SessionRequests() {
               Try adjusting your search criteria
             </p>
           </motion.div>
+        )}
+        
+        {pagination && pagination.totalPages > 1 && (
+          <Pagination
+            pagination={{
+              currentPage: pagination.currentPage,
+              totalPages: pagination.totalPages
+            }}
+            updateParams={(params) => updatePage(params.page)}
+          />
         )}
       </div>        
 

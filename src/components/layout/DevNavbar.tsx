@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, X, Menu, User, LogOut } from 'lucide-react';
+import { Search, X, Menu, User, LogOut, Bell } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
 import AuthApi from '@/service/Api/AuthApi';
 import { logout } from '@/redux/slices/authSlice';
 import toast from 'react-hot-toast';
+import { useNotifications } from '@/hooks/notification/useNotifications';
+import { socketService } from '@/service/socket/socketService';
 
 const navItems = [
-  { name: 'Home', delay: 0, url: '/' },
+  { name: 'Home', delay: 0, url: '/developer/dashboard' },
   { name: 'Sessions', delay: 0.1, url: '/developer/session-requests' },
   { name: 'Blog', delay: 0.4, url: '/blog' },
   { name: 'Quiz', delay: 0.5, url: '/quiz' },
@@ -24,8 +26,9 @@ const DevNavbar: React.FC = () => {
   const location = useLocation();
   const { scrollY } = useScroll();
   const dispatch = useAppDispatch();
-  const { isAuthenticated, username, email } = useAppSelector((state) => state.user);
-  const navigate = useNavigate()
+  const { isAuthenticated, username, email, _id } = useAppSelector((state) => state.user);
+  const navigate = useNavigate();
+  const { unreadCount } = useNotifications();
 
   const handleLogout = async () => {
     try {
@@ -54,6 +57,25 @@ const DevNavbar: React.FC = () => {
       setIsProfileOpen(false);
     }
   }, [isSearchOpen, isMobile]);
+
+  useEffect(() => {
+    if (isAuthenticated && _id) {
+      const token = localStorage.getItem('access-token');
+      if (token) {
+        socketService.connect(token);
+      }
+    }
+    
+    return () => {
+      socketService.cleanup();
+    };
+  }, [isAuthenticated, _id]);
+
+  useEffect(() => {
+    return () => {
+      socketService.cleanup();
+    };
+  }, []);
 
   const navBackground = useTransform(scrollY, [0, 100], ["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0.95)"]);
   const navHeight = useTransform(scrollY, [0, 100], ["5rem", "4rem"]);
@@ -279,6 +301,23 @@ const DevNavbar: React.FC = () => {
                 {isSearchOpen ? <X className="w-4 h-4 md:w-5 md:h-5" /> : <Search className="w-4 h-4 md:w-5 md:h-5" />}
               </motion.button>
             </motion.div>
+
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => navigate('/developer/notifications')}
+              className="p-2 rounded-full
+                       bg-white/5 hover:bg-white/10
+                       border border-white/10 hover:border-white/20
+                       backdrop-blur-sm transition-all duration-300"
+            >
+              <Bell className="w-4 h-4 md:w-5 md:h-5 text-white" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </motion.button>
 
             {!(isMobile && isSearchOpen) && renderAuthSection()}
           </div>

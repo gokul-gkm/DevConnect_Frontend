@@ -1,6 +1,5 @@
 import { useChat } from '@/hooks/chat/useChat';
 import { useEffect, useRef, useState } from 'react';
-import { Spinner } from '../ui/spinner';
 import { Send, MoreVertical, ArrowDown, Smile } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LiaCheckDoubleSolid } from "react-icons/lia";
@@ -120,10 +119,7 @@ export const ChatWindow = () => {
                                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold">
                                     {selectedChat.developerId.username?.charAt(0)?.toUpperCase()}
                                 </div>
-                            )}
-                            <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-black ${
-                                selectedChat.isOnline ? 'bg-green-500' : 'bg-zinc-500'
-                            }`}></div>
+                            )}                          
                         </div>
                         <div>
                             <h2 className="font-bold text-white text-sm md:text-base">
@@ -141,15 +137,6 @@ export const ChatWindow = () => {
                 ref={messageContainerRef}
                 className="flex-1 overflow-y-auto px-4 pt-[140px] pb-24 md:pb-32 lg:pb-40"
             >
-                {messageLoading && messages.length === 0 ? (
-                    <div className="flex justify-center items-center h-full">
-                        <Spinner />
-                    </div>
-                ) : messageLoading ? (
-                    <div className="flex justify-center py-4">
-                        <Spinner />
-                    </div>
-                ) : null}
                 <AnimatePresence>
                     {messages
                         .slice()

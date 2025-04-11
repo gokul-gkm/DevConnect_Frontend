@@ -1,21 +1,16 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { Button } from '@/components/ui/shadcn-button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Users, Search, ArrowUpDown, Eye, CheckCircle, XCircle, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Users, Search, ArrowUpDown, Eye, CheckCircle, XCircle, Mail } from 'lucide-react';
 import { useDevRequests } from '@/hooks/admin/useDevRequests';
+import { ColumnDef } from '@tanstack/react-table';
+import AdminTable from '@/components/admin/AdminTable';
+import { cn } from '@/lib/utils';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import RejectDialog from '@/components/admin/RejectDialog';
 
 export default function DevRequests() {
     const navigate = useNavigate();
@@ -73,18 +68,134 @@ export default function DevRequests() {
         }
     };
 
+    const columns = useMemo<ColumnDef<any>[]>(() => [
+        {
+            accessorKey: 'username',
+            header: () => (
+                <Button
+                    variant="ghost"
+                    onClick={() => handleSort('username')}
+                    className="text-slate-400 hover:text-slate-100"
+                >
+                    Username
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            ),
+            cell: ({ row }) => (
+                <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center shadow-lg ring-1 ring-slate-700/50">
+                        {row.original.userId.profilePicture ? (
+                            <img
+                                src={row.original.userId.profilePicture}
+                                alt={row.original.userId.username}
+                                className="h-10 w-10 rounded-full object-cover"
+                            />
+                        ) : (
+                            <Users className="h-5 w-5 text-slate-300" />
+                        )}
+                    </div>
+                    <div>
+                        <div className="font-medium text-slate-100">
+                            {row.original.userId.username}
+                        </div>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            accessorKey: 'email',
+            header: () => (
+                <Button
+                    variant="ghost"
+                    onClick={() => handleSort('email')}
+                    className="text-slate-400 hover:text-slate-100"
+                >
+                    Email
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            ),
+            cell: ({ row }) => (
+                <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-slate-400" />
+                    <span className="text-slate-300">{row.original.userId.email}</span>
+                </div>
+            ),
+        },
+        {
+            accessorKey: 'status',
+            header: 'Status',
+            cell: ({ row }) => (
+                <Badge
+                    variant={row.original.userId.status === 'active' ? 'success' : 'destructive'}
+                    className={cn("font-medium shadow-lg", row.original.userId.status === 'active' ? "bg-emerald-950/50 text-emerald-200 border-emerald-900/50" : "bg-red-950/50 text-red-200 border-red-900/50")}
+                >
+                    <span className={cn("mr-1 h-2 w-2 rounded-full inline-block", row.original.userId.status === 'active' ? "bg-emerald-400" : "bg-red-400")} />
+                    {row.original.userId.status === 'active' ? 'Active' : 'Blocked'}
+                </Badge>
+            ),
+        },
+        {
+            accessorKey: 'isVerified',
+            header: 'Verified',
+            cell: ({ row }) => (
+                <Badge
+                    variant={row.original.userId.isVerified ? 'success' : 'warning'}
+                    className={cn("font-medium shadow-lg", row.original.userId.isVerified ? "bg-blue-950/50 text-blue-200 border-blue-900/50" : "bg-amber-950/50 text-amber-200 border-amber-900/50")}
+                >
+                    {row.original.userId.isVerified ? '✓ Verified' : '⚠ Pending'}
+                </Badge>
+            ),
+        },
+        {
+            id: 'actions',
+            header: 'Actions',
+            cell: ({ row }) => (
+                <div className="flex justify-end gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewDetails(row.original._id)}
+                        className="bg-slate-800/50 text-slate-300 border-slate-700 hover:bg-slate-800 rounded-xl"
+                    >
+                        <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => approveDeveloper(row.original._id)}
+                        disabled={isApproving}
+                        className="bg-emerald-950/50 text-emerald-400 border-emerald-800/50 hover:bg-emerald-900/50 rounded-xl"
+                    >
+                        <CheckCircle className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleReject(row.original._id)}
+                        disabled={isRejecting}
+                        className="bg-red-950/50 text-red-400 border-red-800/50 hover:bg-red-900/50 rounded-xl"
+                    >
+                        <XCircle className="h-4 w-4" />
+                    </Button>
+                </div>
+            ),
+        },
+    ], [
+        approveDeveloper, 
+        handleReject, 
+        handleViewDetails, 
+        isApproving, 
+        isRejecting
+    ]);
+
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 to-slate-900">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex flex-col items-center gap-4"
-                >
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500" />
-                    <div className="text-slate-400 animate-pulse">Loading requests...</div>
-                </motion.div>
-            </div>
+            <LoadingSpinner
+                size="lg"
+                text="Loading requests..."
+                color="indigo"
+                fullScreen={true}
+            />
         );
     }
 
@@ -119,206 +230,24 @@ export default function DevRequests() {
                     </div>
                 </motion.div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="rounded-2xl border border-slate-800/50 bg-slate-900/50 shadow-2xl backdrop-blur-sm overflow-hidden"
-                >
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="border-slate-800/50">
-                                    <TableHead className="text-slate-400">Developer</TableHead>
-                                    <TableHead>
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() => handleSort('expertise')}
-                                            className="text-slate-400 hover:text-slate-100"
-                                        >
-                                            Expertise
-                                            <ArrowUpDown className="ml-2 h-4 w-4" />
-                                        </Button>
-                                    </TableHead>
-                                    <TableHead>
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() => handleSort('experience')}
-                                            className="text-slate-400 hover:text-slate-100"
-                                        >
-                                            Experience
-                                            <ArrowUpDown className="ml-2 h-4 w-4" />
-                                        </Button>
-                                    </TableHead>
-                                    <TableHead>
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() => handleSort('hourlyRate')}
-                                            className="text-slate-400 hover:text-slate-100"
-                                        >
-                                            Hourly Rate
-                                            <ArrowUpDown className="ml-2 h-4 w-4" />
-                                        </Button>
-                                    </TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {developers.map((developer: any) => (
-                                    <TableRow key={developer._id} className="border-slate-800/50">
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center shadow-lg ring-1 ring-slate-700/50">
-                                                    {developer.userId.profilePicture ? (
-                                                        <img
-                                                            src={developer.userId.profilePicture}
-                                                            alt={developer.userId.username}
-                                                            className="h-10 w-10 rounded-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <Users className="h-5 w-5 text-slate-300" />
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <div className="font-medium text-slate-100">
-                                                        {developer.userId.username}
-                                                    </div>
-                                                    <div className="text-sm text-slate-400">
-                                                        {developer.userId.email}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-wrap gap-1">
-                                                {developer.expertise.slice(0, 2).map((skill: string) => (
-                                                    <Badge
-                                                        key={skill}
-                                                        className="bg-blue-500/10 text-blue-400 border-blue-500/20"
-                                                    >
-                                                        {skill}
-                                                    </Badge>
-                                                ))}
-                                                {developer.expertise.length > 2 && (
-                                                    <Badge variant="outline">
-                                                        +{developer.expertise.length - 2}
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {developer.workingExperience.experience} years
-                                        </TableCell>
-                                        <TableCell>${developer.hourlyRate}/hr</TableCell>
-                                        <TableCell>
-                                            <div className="flex justify-end gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleViewDetails(developer._id)}
-                                                    className="bg-slate-800/50 text-slate-300 border-slate-700 hover:bg-slate-800 rounded-xl"
-                                                >
-                                                    <Eye className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => approveDeveloper(developer._id)}
-                                                    disabled={isApproving}
-                                                    className="bg-emerald-950/50 text-emerald-400 border-emerald-800/50 hover:bg-emerald-900/50 rounded-xl"
-                                                >
-                                                    <CheckCircle className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleReject(developer._id)}
-                                                    disabled={isRejecting}
-                                                    className="bg-red-950/50 text-red-400 border-red-800/50 hover:bg-red-900/50 rounded-xl"
-                                                >
-                                                    <XCircle className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                    {pagination && (
-                        <div className="flex items-center justify-between px-4 py-4 border-t border-slate-800/50">
-                            <div className="text-sm text-slate-400">
-                                Showing {((queryParams.page - 1) * queryParams.limit) + 1} to {Math.min(queryParams.page * queryParams.limit, pagination.total)} of {pagination.total} results
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    className="p-1 hover:bg-white/5 rounded disabled:opacity-50"
-                                    onClick={() => handlePageChange(1)}
-                                    disabled={queryParams.page === 1}
-                                >
-                                    <ChevronsLeft className="w-5 h-5" />
-                                </button>
-                                <button
-                                    className="p-1 hover:bg-white/5 rounded disabled:opacity-50"
-                                    onClick={() => handlePageChange(queryParams.page - 1)}
-                                    disabled={queryParams.page === 1}
-                                >
-                                    <ChevronLeft className="w-5 h-5" />
-                                </button>
-                                <span className="text-sm text-gray-400">
-                                    Page {queryParams.page} of {pagination.totalPages}
-                                </span>
-                                <button
-                                    className="p-1 hover:bg-white/5 rounded disabled:opacity-50"
-                                    onClick={() => handlePageChange(queryParams.page + 1)}
-                                    disabled={queryParams.page === pagination.totalPages}
-                                >
-                                    <ChevronRight className="w-5 h-5" />
-                                </button>
-                                <button
-                                    className="p-1 hover:bg-white/5 rounded disabled:opacity-50"
-                                    onClick={() => handlePageChange(pagination.totalPages)}
-                                    disabled={queryParams.page === pagination.totalPages}
-                                >
-                                    <ChevronsRight className="w-5 h-5" />
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </motion.div>
+                <AdminTable
+                    data={developers}
+                    columns={columns}
+                    pagination={pagination}
+                    updateParams={updateParams}
+                    emptyMessage="No developer requests found"
+                />
             </motion.div>
 
-            <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Reject Developer Request</DialogTitle>
-                        <DialogDescription>
-                            Please provide a reason for rejecting this developer request.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <Textarea
-                        value={rejectionReason}
-                        onChange={(e) => setRejectionReason(e.target.value)}
-                        placeholder="Enter rejection reason..."
-                        className="min-h-[100px]"
-                    />
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => setRejectDialogOpen(false)}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={handleRejectConfirm}
-                            disabled={!rejectionReason.trim()}
-                        >
-                            Reject
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <RejectDialog
+                isOpen={rejectDialogOpen}
+                onClose={() => setRejectDialogOpen(false)}
+                reason={rejectionReason}
+                onReasonChange={(value) => setRejectionReason(value)}
+                onReject={handleRejectConfirm}
+                title="Reject Developer Request"
+                entityName="Developer"
+            />
         </div>
     );
 }

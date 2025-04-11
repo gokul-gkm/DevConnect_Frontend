@@ -54,6 +54,9 @@ import UserWalletPage from '@/pages/user/Wallet/UserWalletPage';
 import { Role } from '@/types/types';
 import ChatPage from '@/pages/chat/ChatPage';
 import DeveloperChatPage from '@/pages/chat/DeveloperChatPage';
+import UserNotificationPage from '@/pages/user/Notification/NotificationPage';
+import DeveloperNotificationPage from '@/pages/developer/Notification/DeveloperNotificationPage';
+import AboutUs from '@/pages/user/AboutUs/AboutUs';
 
 
 export const Router = createBrowserRouter([
@@ -143,6 +146,13 @@ export const Router = createBrowserRouter([
                 path: 'wallet',
                 element: <ProtectedRoute allowedRole={Role.DEVELOPER}><DeveloperWalletPage/></ProtectedRoute>
             },      
+            {
+                path: 'notifications',
+                element:
+                    <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                    <DeveloperNotificationPage />
+                </ProtectedRoute>
+            },      
         ]
     },
 
@@ -230,6 +240,10 @@ export const Router = createBrowserRouter([
         element: <ProtectedRoute allowedRole={Role.USER}><UserWalletPage/></ProtectedRoute>
     },
     {
+        path: 'about',
+        element: <AboutUs/>
+    },
+    {
         path: '/',
         element: <RootPage/>
     },
@@ -286,6 +300,10 @@ export const Router = createBrowserRouter([
     {
         path: '/chats/:chatId',
         element: <ProtectedRoute allowedRole={Role.USER}><ChatPage/></ProtectedRoute>
+    },
+    {
+        path: '/notifications',
+        element: <ProtectedRoute allowedRole={Role.USER}><UserNotificationPage/></ProtectedRoute>
     },
     {
         path: '*',

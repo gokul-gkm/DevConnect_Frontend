@@ -70,9 +70,11 @@ const SessionApi = {
 
   //Developer side
 
-  async getDeveloperSessionRequests() {
-    const response = await axiosClient.get('/sessions/developer/requests');
-    return response.data.data;
+  async getDeveloperSessionRequests(page = 1, limit = 5) {
+    const response = await axiosClient.get('/sessions/developer/requests', {
+      params: { page, limit }
+    });
+    return response.data;
   },
 
   async acceptSession(sessionId: string) {

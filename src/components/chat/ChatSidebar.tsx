@@ -77,9 +77,7 @@ export const ChatSidebar = () => {
                                                 {chat.developerId.username?.charAt(0)?.toUpperCase()}
                                             </div>
                                         )}
-                                        <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-black ${
-                                            chat.isOnline ? 'bg-green-500' : 'bg-zinc-500'
-                                        }`}></div>
+                                        
                                     </div>
                                     {(!isMobile || isOpen) && (
                                         <div className="flex-1 min-w-0">

@@ -2,6 +2,7 @@ import axios from 'axios';
 import store from '@/redux/store/store';
 import { logout } from '@/redux/slices/authSlice';
 import toast from 'react-hot-toast';
+import { StatusCodes } from 'http-status-codes';
 
 const axiosClient = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -19,7 +20,7 @@ axiosClient.interceptors.response.use(
     (response) => response,
     (error) => {
 
-        if (error.response.status === 403) {
+        if (error.response.status === StatusCodes.FORBIDDEN) {
             toast.error("Your account has been blocked. Logging out...");
             store.dispatch(logout());
             localStorage.removeItem("access-token");
@@ -27,7 +28,7 @@ axiosClient.interceptors.response.use(
           }
     
         
-        if (error.response?.status === 401) {
+        if (error.response?.status === StatusCodes.UNAUTHORIZED) {
             console.error('Unauthorized, please log in.');
         }
         
