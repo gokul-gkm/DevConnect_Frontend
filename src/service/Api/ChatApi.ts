@@ -10,7 +10,7 @@ export class ChatApi {
   private static CACHE_DURATION = 5000; 
 
   static async createChat(developerId: string) {
-    const response = await axiosClient.post('/chats/create', { developerId });
+    const response = await axiosClient.post('/chats', { developerId });
     return response.data;
   }
 

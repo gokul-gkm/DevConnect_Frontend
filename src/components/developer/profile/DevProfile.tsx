@@ -48,17 +48,17 @@ const DeveloperProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black/80 space-y-8 px-4">
+    <div className="min-h-screen bg-black/80 space-y-8 px-4 pb-20">
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="sticky top-0 z-50 backdrop-blur-xl bg-black/80 border-b border-white/5 -mx-4 px-4 py-6"
+        className="pt-20 backdrop-blur-xl bg-black/80 border-b border-white/5 -mx-4 px-4 py-6"
       >
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
           <motion.h1 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent"
+            className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent"
           >
             Developer Profile
           </motion.h1>

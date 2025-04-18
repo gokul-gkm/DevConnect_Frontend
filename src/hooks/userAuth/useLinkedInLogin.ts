@@ -20,6 +20,7 @@ export const useLinkedInLogin = () => {
             username: response.user.username,
             email: response.user.email,
             role: response.user.role,
+            _id: response.user.id
           })
         );
         toast.success("Login successful!");

@@ -1,4 +1,3 @@
-
 import { FaLinkedinIn, FaTwitter, FaInstagram } from "react-icons/fa";
 
 export function Footer() {
@@ -57,54 +56,54 @@ export function Footer() {
       
 
   return (
-    <footer className="bg-black text-gray-300 py-12 px-4 md:px-6 lg:px-8">
-
-      <div className="max-w-7xl mx-auto mb-12 flex flex-col md:flex-row justify-between items-center">
-        <a href="/" className="mb-6 md:mb-0">
+    <footer className="bg-black text-gray-300 py-8 sm:py-12 px-4 md:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto mb-8 sm:mb-12 flex flex-col md:flex-row justify-between items-center">
+        <a href="/" className="mb-4 md:mb-0">
           <img
             src="https://i.imghippo.com/files/NPo1259thc.png" 
             alt="Company Logo"
-            className="w-auto h-10"
+            className="w-auto h-8 sm:h-10"
           />
         </a>
-        <div className="flex flex-col md:flex-row items-center gap-4">
-          <span className="text-sm text-gray-400">Follow Us On Social Media</span>
+        <div className="flex flex-col md:flex-row items-center gap-3 sm:gap-4">
+          <span className="text-xs sm:text-sm text-gray-400">Follow Us On Social Media</span>
           <div className="flex gap-4">
             <a
               href="https://linkedin.com"
               className="hover:text-white transition-colors"
               aria-label="LinkedIn"
             >
-              <FaLinkedinIn className="w-5 h-5" />
+              <FaLinkedinIn className="w-4 h-4 sm:w-5 sm:h-5" />
             </a>
             <a
               href="https://instagram.com"
               className="hover:text-white transition-colors"
               aria-label="Instagram"
             >
-              <FaInstagram className="w-5 h-5" />
+              <FaInstagram className="w-4 h-4 sm:w-5 sm:h-5" />
             </a>
             <a
               href="https://twitter.com"
               className="hover:text-white transition-colors"
               aria-label="Twitter"
             >
-              <FaTwitter className="w-5 h-5" />
+              <FaTwitter className="w-4 h-4 sm:w-5 sm:h-5" />
             </a>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-12">
+
+      <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-y-8 gap-x-4 sm:gap-x-8 mb-8 sm:mb-12">
         {mainSections.map((section) => (
           <div key={section.title} className="flex flex-col">
-            <h3 className="text-white font-medium mb-4">{section.title}</h3>
-            <ul className="space-y-2">
+            <h3 className="text-white text-sm sm:text-base font-medium mb-2 sm:mb-4">{section.title}</h3>
+            <ul className="space-y-1 sm:space-y-2">
               {section.links.map((link) => (
                 <li key={link.name}>
                   <a
                     href={link.href}
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                    className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors"
                   >
                     {link.name}
                   </a>
@@ -115,12 +114,11 @@ export function Footer() {
         ))}
       </div>
 
-
-      <div className="max-w-7xl mx-auto pt-8 border-t border-gray-800">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-400">
-          <div>©2024 DevConnect. All Rights Reserved</div>
+      <div className="max-w-7xl mx-auto pt-6 sm:pt-8 border-t border-gray-800">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-400">
+          <div className="text-center sm:text-left mb-3 sm:mb-0">©2025 DevConnect. All Rights Reserved</div>
           
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
             <a href="/privacy" className="hover:text-white transition-colors">
               Privacy Policy
             </a>

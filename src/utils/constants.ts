@@ -29,16 +29,16 @@ export const devAuthRoutes = {
 
 export const userRoutes = {
     getProfile: '/users/profile',
-    updateProfile: '/users/profile/update'  
+    updateProfile: '/users/profile'  
 }
 
 export const DeveloperRoutes = {
     getProfile: '/developer/profile',
-    updateProfile: '/developer/profile/update',
+    updateProfile: '/developer/profile',
     getProjects: '/developer/projects',
-    addProject: '/developer/add-project',
+    addProject: '/developer/projects',
     getProject: '/developer/projects',
-    editProject: '/developer/project/edit',
-    deleteProject: '/developer/project/remove'
+    editProject: '/developer/projects',
+    deleteProject: '/developer/projects'
 
 }

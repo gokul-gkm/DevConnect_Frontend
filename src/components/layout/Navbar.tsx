@@ -6,6 +6,8 @@ import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
 import { logout } from '@/redux/slices/authSlice';
 import { socketService } from '@/service/socket/socketService';
 import { useNotifications } from '@/hooks/notification/useNotifications';
+import { cn } from '@/lib/utils';
+import { useNotificationContext } from '@/contexts/NotificationContext';
 
 const navItems = [
   { name: 'Home', delay: 0, url: '/' },
@@ -25,8 +27,8 @@ const Navbar: React.FC = () => {
   const { scrollY } = useScroll();
   const dispatch = useAppDispatch();
   const { isAuthenticated, username, email, _id } = useAppSelector((state) => state.user);
-  const { unreadCount } = useNotifications();
-
+  // const { unreadCount } = useNotifications();
+  const { unreadCount } = useNotificationContext();
   useEffect(() => {
     if (isAuthenticated && _id) {
         const token = localStorage.getItem('access-token');
@@ -38,7 +40,7 @@ const Navbar: React.FC = () => {
     return () => {
         socketService.cleanup();
     };
-}, [isAuthenticated, _id]);
+  }, [isAuthenticated, _id]);
 
   const handleLogout = () => {
     socketService.cleanup();
@@ -84,18 +86,18 @@ const Navbar: React.FC = () => {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.8, y: 20 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="absolute right-0 mt-3 w-72 bg-black rounded-2xl shadow-2xl overflow-hidden border border-gray-800"
+                className="absolute right-0 mt-3 w-72 bg-black rounded-2xl shadow-2xl overflow-hidden border border-gray-800 z-50"
               >
                 <div className="p-4 border-b border-gray-800">
                   <div className="flex items-center space-x-4">
                     <img
                       src="https://i.imghippo.com/files/GFY5894omo.jpg"
                       alt="Profile"
-                      className="w-12 h-12 rounded-full object-cover"
+                      className="w-12 h-12 rounded-full object-cover shrink-0"
                     />
-                    <div>
-                      <p className="text-white font-semibold">{username}</p>
-                      <p className="text-gray-400 text-sm">{email}</p>
+                    <div className="overflow-hidden">
+                      <p className="text-white font-semibold truncate">{username}</p>
+                      <p className="text-gray-400 text-sm truncate">{email}</p>
                     </div>
                   </div>
                 </div>
@@ -164,8 +166,12 @@ const Navbar: React.FC = () => {
 
   return (
     <motion.nav
-      style={{ background: navBackground, height: navHeight, backdropFilter: "blur(10px)" }}
-      className="fixed w-full top-0 left-0 z-50"
+      style={{ background: navBackground, height: navHeight }}
+      className={cn(
+        "fixed w-full top-0 left-0 z-50",
+        "bg-black md:bg-transparent",
+        "md:backdrop-blur-xl"
+      )}
     >
       <motion.div
         className="max-w-7xl mx-auto px-4 md:px-6 h-full"
@@ -230,8 +236,7 @@ const Navbar: React.FC = () => {
             })}
           </div>
 
-          <div className="flex items-center space-x-4">
-    
+          <div className="flex items-center space-x-3">
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -248,7 +253,7 @@ const Navbar: React.FC = () => {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => navigate('/notifications')}
-              className="p-2 rounded-full
+              className="p-2 rounded-full relative
                        bg-white/5 hover:bg-white/10
                        border border-white/10 hover:border-white/20
                        backdrop-blur-sm transition-all duration-300"
@@ -321,7 +326,7 @@ const Navbar: React.FC = () => {
                           <Link 
                             to={item.url}
                             onClick={() => setIsMobileMenuOpen(false)}
-                            className={`flex items-center w-full py-2.5 px-4 rounded-lg transition-all group
+                            className={`flex items-center w-full py-2.5 px-4 rounded-xl transition-all group
                               ${location.pathname === item.url ? 
                                 'bg-blue-600/20 text-blue-400 border-l-4 border-blue-600' : 
                                 'hover:bg-zinc-800/50 text-white border-l-4 border-transparent'
@@ -349,18 +354,18 @@ const Navbar: React.FC = () => {
                         <img
                           src="https://i.imghippo.com/files/GFY5894omo.jpg"
                           alt="Profile"
-                          className="w-12 h-12 rounded-full object-cover border-2 border-zinc-700"
+                          className="w-12 h-12 rounded-full object-cover border-2 border-zinc-700 shrink-0"
                         />
-                        <div>
-                          <p className="text-white font-medium">{username}</p>
-                          <p className="text-zinc-400 text-sm">{email}</p>
+                        <div className="overflow-hidden">
+                          <p className="text-white font-medium truncate">{username}</p>
+                          <p className="text-zinc-400 text-xs sm:text-sm truncate max-w-[180px]">{email}</p>
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <motion.button
                           whileTap={{ scale: 0.97 }}
-                          className="w-full flex items-center space-x-3 px-4 py-3 bg-zinc-800/30 hover:bg-zinc-800/60 rounded-lg transition-colors"
+                          className="w-full flex items-center space-x-3 px-4 py-3 bg-zinc-800/30 hover:bg-zinc-800/60 rounded-xl transition-colors"
                           onClick={() => {
                             setIsMobileMenuOpen(false);
                             navigate('/profile');
@@ -372,7 +377,7 @@ const Navbar: React.FC = () => {
 
                         <motion.button
                           whileTap={{ scale: 0.97 }}
-                          className="w-full flex items-center space-x-3 px-4 py-3 bg-zinc-800/30 hover:bg-red-900/20 rounded-lg transition-colors"
+                          className="w-full flex items-center space-x-3 px-4 py-3 bg-zinc-800/30 hover:bg-red-900/20 rounded-xl transition-colors"
                           onClick={handleLogout}
                         >
                           <LogOut className="w-5 h-5 text-zinc-400" />
@@ -390,7 +395,7 @@ const Navbar: React.FC = () => {
                         <motion.button
                           whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
-                          className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+                          className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center space-x-2"
                         >
                           <span>Sign In</span>
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1">

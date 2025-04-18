@@ -1,5 +1,5 @@
 import { Footer } from '@/components/layout/Footer'
-import DeveloperNotificationList from './DeveloperNotificationList'
+import DeveloperNotificationList from '../../../components/developer/notification/DeveloperNotificationList'
 
 
 const DeveloperNotificationPage = () => {

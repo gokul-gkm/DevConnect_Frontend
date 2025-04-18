@@ -19,7 +19,6 @@ import {
 import { Button } from "@/components/ui/shadcn-button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/badge";
-import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -29,7 +28,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useNotifications } from '@/hooks/notification/useNotifications';
+import { StatsCard } from '@/components/ui/StatsCard';
+import { StatsCardGrid } from '@/components/ui/StatsCardGrid';
+import { useNotificationContext } from '@/contexts/NotificationContext';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 type NotificationType = 'message' | 'session' | 'update' | 'alert';
 
@@ -70,15 +72,9 @@ const cardVariants = {
   }
 };
 
-export default function UserNotificationList() {
-  const { 
-    notifications, 
-    unreadCount, 
-    isLoading, 
-    markAsRead, 
-    markAllAsRead, 
-    deleteNotification 
-  } = useNotifications();
+export default function DeveloperNotificationList() {
+  
+  const { notifications, unreadCount, isLoading, markAsRead, markAllAsRead, deleteNotification } = useNotificationContext();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<NotificationType | 'all'>('all');
@@ -134,17 +130,19 @@ export default function UserNotificationList() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="relative">
-          <div className="absolute inset-0 bg-white/5 blur-xl rounded-full" />
-          <Spinner className="w-12 h-12 text-white" />
-        </div>
-      </div>
+      <LoadingSpinner
+        size="lg"
+        text="Loading notifications..."
+        color="white"
+        bgColor="dark"
+        fullScreen={true}
+      />
     );
   }
 
   return (
     <div className="min-h-screen bg-black/80 space-y-6 px-4">
+
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -254,37 +252,18 @@ export default function UserNotificationList() {
         </div>
       </motion.div>
 
-      <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+      <StatsCardGrid>
         {stats.map((stat, index) => (
-          <motion.div
+          <StatsCard
             key={stat.label}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.1 }}
-            className={cn(
-              "relative overflow-hidden rounded-2xl",
-              "p-4 min-h-[110px]",
-              "bg-gradient-to-br",
-              stat.gradient,
-              "border border-white/5 hover:border-white/10",
-              "transition-all duration-300",
-              "shadow-lg shadow-black/40 hover:shadow-xl hover:shadow-black/50",
-              "flex items-center" 
-            )}
-          >
-            <div className="flex items-center gap-3 w-full">
-              <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 shrink-0">
-                <stat.icon className="w-4 h-4 text-white" />
-              </div>
-              <div className="flex flex-col min-w-0"> 
-                <span className="text-xs text-gray-400 truncate">{stat.label}</span>
-                <span className="text-xl font-bold text-white truncate">{stat.value}</span>
-              </div>
-            </div>
-          </motion.div>
+            label={stat.label}
+            value={stat.value}
+            icon={stat.icon}
+            gradient={stat.gradient}
+            delay={index * 0.1}
+          />
         ))}
-      </div>
-
+      </StatsCardGrid>
 
       <div className="max-w-5xl mx-auto grid gap-5">
         <AnimatePresence mode="popLayout">

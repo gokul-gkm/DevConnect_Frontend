@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { socketService } from '@/service/socket/socketService';
 import { toast } from 'react-hot-toast';
 import NotificationApi from '@/service/Api/NotificationApi';
@@ -20,6 +20,13 @@ export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  // Use a ref to track the latest notifications without triggering dependency changes
+  const notificationsRef = useRef<Notification[]>([]);
+
+  // Update ref whenever notifications change
+  useEffect(() => {
+    notificationsRef.current = notifications;
+  }, [notifications]);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -56,38 +63,54 @@ export const useNotifications = () => {
 
   const markAsRead = useCallback(async (id: string) => {
     try {
+      // Find the notification and check if it was unread before marking it as read
+      const notification = notificationsRef.current.find(n => n.id === id);
+      const wasUnread = notification && !notification.isRead;
+      
+      // Update UI first for better user experience
       setNotifications(prev => prev.map(n => 
         n.id === id ? { ...n, isRead: true } : n
       ));
-  
+      
+      // Separately update the count to ensure it updates immediately
+      if (wasUnread) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+        console.log('Decreasing unread count, notification was unread:', id);
+      }
+      
+      // Socket notification
       socketService.markNotificationAsRead(id);
       
+      // API call
       await NotificationApi.markAsRead(id);
-      
-      setUnreadCount(prev => Math.max(0, prev - 1));
       
       return true;
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
-    
       fetchNotifications();
       return false;
     }
-  }, [fetchNotifications]);
+  }, [fetchNotifications]); // No notifications dependency
 
   const markAllAsRead = useCallback(async () => {
     try {
+      // Count how many unread notifications we had
+      const unreadNotifications = notificationsRef.current.filter(n => !n.isRead).length;
+      console.log(`Marking all ${unreadNotifications} notifications as read`);
+      
+      // Update UI first
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       setUnreadCount(0);
       
+      // Socket notification
       socketService.markAllNotificationsAsRead();
       
+      // API call
       await NotificationApi.markAllAsRead();
       
       return true;
     } catch (error) {
       console.error('Failed to mark all notifications as read:', error);
-      
       fetchNotifications();
       return false;
     }
@@ -95,14 +118,20 @@ export const useNotifications = () => {
 
   const deleteNotification = useCallback(async (id: string) => {
     try {
-      const wasUnread = notifications.find(n => n.id === id)?.isRead === false;
+      // Find the notification and check if it was unread before deleting
+      const notification = notificationsRef.current.find(n => n.id === id);
+      const wasUnread = notification && !notification.isRead;
       
+      // Update UI first
       setNotifications(prev => prev.filter(n => n.id !== id));
       
+      // Separately update the count if it was unread
       if (wasUnread) {
         setUnreadCount(prev => Math.max(0, prev - 1));
+        console.log('Decreasing unread count after deletion, notification was unread:', id);
       }
       
+      // API call
       await NotificationApi.deleteNotification(id);
       
       toast.success('Notification deleted', {
@@ -116,18 +145,17 @@ export const useNotifications = () => {
       return true;
     } catch (error) {
       console.error('Failed to delete notification:', error);
-
       fetchNotifications();
       return false;
     }
-  }, [notifications, fetchNotifications]);
+  }, [fetchNotifications]); // No notifications dependency
 
   useEffect(() => {
     const handleNewNotification = (data: any) => {
       if (data && data.notification) {
+        console.log('New notification received:', data.notification);
 
         setNotifications(prev => [data.notification, ...prev]);
-
         setUnreadCount(prev => prev + 1);
         
         toast.custom((t) => (
@@ -192,36 +220,41 @@ export const useNotifications = () => {
 
     const handleUnreadCountUpdate = (data: any) => {
       if (data && typeof data.count === 'number') {
+        console.log('Unread count update received:', data.count);
         setUnreadCount(data.count);
       }
+    };
+
+    const handleNotificationRead = (data: any) => {
+      if (data && data.success && data.id) {
+        console.log('Notification marked as read:', data.id);
+        setNotifications(prev => prev.map(n => 
+          n.id === data.id ? { ...n, isRead: true } : n
+        ));
+      }
+    };
+    
+    const handleAllNotificationsRead = () => {
+      console.log('All notifications marked as read');
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setUnreadCount(0);
     };
 
     if (socketService.isConnected()) {
       socketService.onNewNotification(handleNewNotification);
       socketService.onUnreadCountUpdate(handleUnreadCountUpdate);
-      
-      socketService.onNotificationRead((data) => {
-        if (data && data.success && data.id) {
-          setNotifications(prev => prev.map(n => 
-            n.id === data.id ? { ...n, isRead: true } : n
-          ));
-        }
-      });
-      
-      socketService.onAllNotificationsRead(() => {
-        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-        setUnreadCount(0);
-      });
+      socketService.onNotificationRead(handleNotificationRead);
+      socketService.onAllNotificationsRead(handleAllNotificationsRead);
     }
 
     fetchNotifications();
 
     return () => {
       if (socketService.isConnected()) {
-        
+        // Cleanup if needed
       }
     };
-  }, [fetchNotifications, markAsRead]);
+  }, [fetchNotifications, markAsRead]); // Add markAsRead as dependency
 
   return {
     notifications,

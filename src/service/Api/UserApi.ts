@@ -17,7 +17,7 @@ const UserApi = {
     updateProfile: async (formData: FormData) => {
         try {
     
-          const response = await axiosClient.put('/users/profile/update', formData, {
+          const response = await axiosClient.put('/users/profile', formData, {
             headers: {
               'Content-Type': 'multipart/form-data'
             }

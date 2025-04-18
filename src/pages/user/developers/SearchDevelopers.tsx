@@ -37,6 +37,7 @@ const SearchDevelopers = () => {
         limit: 8,
         ...filters
     });
+
   
     useEffect(() => {
         setCurrentPage(1);

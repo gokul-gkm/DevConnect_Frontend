@@ -22,6 +22,8 @@ import { useSessionRequests } from '@/hooks/session/useSessionRequests';
 import { useRejectionDialog } from '@/hooks/session/useRejectionDialog';
 import { useState } from 'react';
 import Pagination from '@/components/ui/Pagination';
+import { StatsCard } from '@/components/ui/StatsCard';
+import { StatsCardGrid } from '@/components/ui/StatsCardGrid';
 
 interface Session {
   _id: string;
@@ -189,36 +191,19 @@ export default function SessionRequests() {
         </div>
       </motion.div>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4">
+      <StatsCardGrid cols={5} className="max-w-7xl">
         {statsData.map((stat, index) => (
-          <motion.div
+          <StatsCard
             key={stat.label}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.1 }}
-            className={cn(
-              "relative overflow-hidden rounded-2xl",
-              "p-4 min-h-[120px]",
-              "bg-gradient-to-br",
-              stat.gradient,
-              "border border-white/5 hover:border-white/10",
-              "transition-all duration-300",
-              "shadow-lg shadow-black/40 hover:shadow-xl hover:shadow-black/50",
-              "flex items-center" 
-            )}
-          >
-            <div className="flex items-center gap-3 w-full">
-              <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 shrink-0">
-                <stat.icon className="w-4 h-4 text-white" />
-              </div>
-              <div className="flex flex-col min-w-0"> 
-                <span className="text-xs text-gray-400 truncate">{stat.label}</span>
-                <span className="text-xl font-bold text-white truncate">{stat.value}</span>
-              </div>
-            </div>
-          </motion.div>
+            label={stat.label}
+            value={stat.value}
+            icon={stat.icon}
+            gradient={stat.gradient}
+            delay={index * 0.1}
+            className="min-h-[120px]"
+          />
         ))}
-      </div>
+      </StatsCardGrid>
 
       <div className="max-w-7xl mx-auto grid gap-6">
         <AnimatePresence mode="popLayout">

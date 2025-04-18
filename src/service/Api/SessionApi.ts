@@ -5,7 +5,7 @@ import { UpcomingSession } from "@/types/types";
 
 const SessionApi = {
   async createBooking(developerId: string, data: BookingFormData) {
-    const response = await axiosClient.post('/sessions/create-session', {
+    const response = await axiosClient.post('/sessions', {
       ...data,
       developerId
     });
@@ -41,7 +41,7 @@ const SessionApi = {
   },
 
   async getUpcomingSessions(): Promise<UpcomingSession[]> {
-    const response = await axiosClient.get('/sessions/upcoming-sessions');
+    const response = await axiosClient.get('/sessions/upcoming');
     
     return response.data.data.map((session: any) => ({
       id: session._id,

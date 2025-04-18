@@ -7,6 +7,7 @@ interface LoadingSpinnerProps {
   text?: string;
   textSize?: 'xs' | 'sm' | 'base' | 'lg';
   color?: 'default' | 'blue' | 'green' | 'red' | 'purple' | 'indigo' | string;
+  bgColor?: 'default' | 'blue' | 'green' | 'red' | 'purple' | 'indigo' | 'black' | string;
   fullScreen?: boolean;
   className?: string;
   textClassName?: string;
@@ -29,6 +30,16 @@ const colorMap = {
   indigo: 'border-indigo-500',
 };
 
+const bgColorMap = {
+  default: 'bg-gradient-to-br from-slate-950 to-slate-900',
+  blue: 'bg-gradient-to-br from-blue-950 to-blue-900',
+  green: 'bg-gradient-to-br from-green-950 to-green-900',
+  red: 'bg-gradient-to-br from-red-950 to-red-900',
+  purple: 'bg-gradient-to-br from-purple-950 to-purple-900',
+  indigo: 'bg-gradient-to-br from-indigo-950 to-indigo-900',
+  black: 'bg-gradient-to-br from-black to-gray-900',
+};
+
 const textSizeMap = {
   xs: 'text-xs',
   sm: 'text-sm',
@@ -41,17 +52,19 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   text = 'Loading...',
   textSize = 'sm',
   color = 'indigo',
+  bgColor = 'default',
   fullScreen = true,
   className,
   textClassName,
   spinnerClassName,
 }) => {
   const sizeClasses = typeof size === 'string' ? sizeMap[size] : { 
-    spinner: `h-[${typeof size === 'number' ? size : 12}px] w-[${typeof size === 'number' ? size : 12}px]`, 
+    spinner: `h-${typeof size === 'number' ? Math.min(Math.round(size/4), 64) : 12} w-${typeof size === 'number' ? Math.min(Math.round(size/4), 64) : 12}`,
     border: 'border-2'
   };
 
   const colorClass = color in colorMap ? colorMap[color as keyof typeof colorMap] : color;
+  const backgroundClass = bgColor in bgColorMap ? bgColorMap[bgColor as keyof typeof bgColorMap] : bgColor;
   
   const textSizeClass = textSizeMap[textSize];
   
@@ -89,7 +102,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 
   if (fullScreen) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 to-slate-900">
+      <div className={cn("flex items-center justify-center min-h-screen", backgroundClass)}>
         {spinnerContent}
       </div>
     );
@@ -98,4 +111,4 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   return spinnerContent;
 };
 
-export default LoadingSpinner; 
+export default LoadingSpinner;

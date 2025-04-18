@@ -81,17 +81,17 @@ export default function SessionDetails() {
   };
 
   return (
-    <div className="min-h-screen bg-black/80 space-y-8 px-4 py-8">
+    <div className="min-h-screen bg-black/80 space-y-4 sm:space-y-8 px-2 sm:px-4 py-4 sm:py-8">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="top-0 z-50 backdrop-blur-xl bg-black/80 border-b border-white/5 -mx-4 px-4 py-4"
+        className="top-0 z-50 backdrop-blur-xl bg-black/80 border-b border-white/5 -mx-2 sm:-mx-4 px-4 py-3 sm:py-4"
       >
         <div className="max-w-7xl mx-auto">
           <motion.h1 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent"
+            className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent"
           >
             Session Details
           </motion.h1>
@@ -103,23 +103,23 @@ export default function SessionDetails() {
           variants={cardVariants}
           initial="hidden"
           animate="visible"
-          className="space-y-8"
+          className="space-y-4 sm:space-y-8"
         >
           <div className={cn(
-            "relative overflow-hidden rounded-2xl border p-8",
+            "relative overflow-hidden rounded-xl sm:rounded-2xl border p-4 sm:p-8",
             "bg-gradient-to-br from-black to-gray-900/50",
             "border-white/5 hover:border-white/10 transition-all duration-300",
             "shadow-lg shadow-black/40 hover:shadow-xl hover:shadow-black/50"
           )}>
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="space-y-2">
-                <h1 className="text-2xl font-semibold text-white">
+                <h1 className="text-xl sm:text-2xl font-semibold text-white">
                   {session.title}
                 </h1>
-                <p className="text-gray-400">{session.description}</p>
+                <p className="text-sm sm:text-base text-gray-400">{session.description}</p>
               </div>
               <Badge className={cn(
-                "px-4 py-2 rounded-xl border font-medium backdrop-blur-xl",
+                "self-start px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl border font-medium backdrop-blur-xl",
                 statusColors[session.status as SessionStatus]
               )}>
                 {session.status.replace('_', ' ')}
@@ -129,20 +129,20 @@ export default function SessionDetails() {
             <div className="absolute inset-0 -z-10 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl" />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-8">
               <motion.div
                 variants={cardVariants}
                 className={cn(
-                  "relative overflow-hidden rounded-2xl border p-8",
+                  "relative overflow-hidden rounded-xl sm:rounded-2xl border p-4 sm:p-8",
                   "bg-gradient-to-br from-black to-gray-900/50",
                   "border-white/5 hover:border-white/10 transition-all duration-300",
                   "shadow-lg shadow-black/40 hover:shadow-xl hover:shadow-black/50"
                 )}
               >
-                <h2 className="text-xl font-semibold text-white mb-6">Session Information</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6">Session Information</h2>
                 
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {[
                     {
                       icon: Calendar,
@@ -167,14 +167,14 @@ export default function SessionDetails() {
                   ))}
                 </div>
 
-                <div className="mt-6 space-y-4">
+                <div className="mt-4 sm:mt-6 space-y-4">
                   <h3 className="text-sm font-medium text-gray-400">Topics</h3>
                   <div className="flex flex-wrap gap-2">
                     {session.topics.map((topic: string) => (
                       <Badge
                         key={topic}
                         variant="outline"
-                        className="px-4 py-2 rounded-xl bg-white/5 text-white border-white/10 hover:bg-white/10"
+                        className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl bg-white/5 text-white border-white/10 hover:bg-white/10 text-sm"
                       >
                         {topic}
                       </Badge>
@@ -183,7 +183,7 @@ export default function SessionDetails() {
                 </div>
               </motion.div>
 
-              <div className="flex gap-4">
+              <div className="flex gap-3 sm:gap-4">
                 {renderActionButtons()}
               </div>
             </div>
@@ -191,24 +191,24 @@ export default function SessionDetails() {
             <motion.div
               variants={cardVariants}
               className={cn(
-                "relative overflow-hidden rounded-2xl border p-8",
+                "relative overflow-hidden rounded-xl sm:rounded-2xl border p-4 sm:p-8",
                 "bg-gradient-to-br from-black to-gray-900/50",
                 "border-white/5 hover:border-white/10 transition-all duration-300",
                 "shadow-lg shadow-black/40 hover:shadow-xl hover:shadow-black/50"
               )}
             >
-              <h2 className="text-xl font-semibold text-white mb-6">Developer</h2>
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6">Developer</h2>
               
-              <div className="flex items-center gap-4">
-                <Avatar className="w-16 h-16 ring-2 ring-purple-500/30">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <Avatar className="w-12 h-12 sm:w-16 sm:h-16 ring-2 ring-purple-500/30">
                   <AvatarImage src={session.developerId.profilePicture} />
                   <AvatarFallback>{session.developerId.username[0]}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-lg font-medium text-white">
+                  <h3 className="text-base sm:text-lg font-medium text-white">
                     {session.developerId.username}
                   </h3>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-xs sm:text-sm text-gray-400">
                     {session.developerId.email}
                   </p>
                 </div>
