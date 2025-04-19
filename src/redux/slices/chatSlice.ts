@@ -57,9 +57,9 @@ export const fetchMessages = createAsyncThunk(
 
 export const sendMessage = createAsyncThunk(
     'chat/sendMessage',
-    async ({ chatId, content }: { chatId: string; content: string }, { rejectWithValue }) => {
+    async (formData: FormData, { rejectWithValue }) => {
         try {
-            const response = await ChatApi.sendMessage(chatId, content);
+            const response = await ChatApi.sendMessage(formData);
             return response.message;
         } catch (error: any) {
             console.error('Redux: Error sending message:', error);

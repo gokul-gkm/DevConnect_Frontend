@@ -164,13 +164,19 @@ export const useChat = () => {
         return dispatch(fetchChats()).unwrap();
     }, [dispatch]);
 
-    const handleSendMessage = useCallback(async (content: string) => {
-        if (selectedChat?._id && content.trim()) {
+    const handleSendMessage = useCallback(async (content: string, mediaFile?: File) => {
+        if (selectedChat?._id && (content.trim() || mediaFile)) {
             try {
-                const result = await dispatch(sendMessage({
-                    chatId: selectedChat._id,
-                    content: content.trim()
-                })).unwrap();
+                const formData = new FormData();
+                formData.append('chatId', selectedChat._id);
+                formData.append('content', content.trim() || (mediaFile ? 'Sent a file' : ''));
+                
+                if (mediaFile) {
+                    formData.append('mediaFile', mediaFile);
+                    formData.append('mediaType', ChatApi.getMediaType(mediaFile.type));
+                }
+                
+                const result = await dispatch(sendMessage(formData)).unwrap();
 
                 await ChatApi.markMessagesAsRead(selectedChat._id);
                 dispatch(updateUnreadCount({
@@ -209,6 +215,7 @@ export const useChat = () => {
         loadMoreMessages,
         handleSendMessage,
         handleTyping,
-        refreshChats
+        refreshChats,
+        forceRefreshChats
     };
 };

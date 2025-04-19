@@ -81,12 +81,27 @@ export class ChatApi {
     }
 }
 
-  static async sendMessage(chatId: string, content: string) {
-    const response = await axiosClient.post('/chats/message', {
-      chatId,
-      content
-    });
-    return response.data;
+  static async sendMessage(formData: FormData) {
+    try {
+      const response = await axiosClient.post('/chats/message', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error("Error sending message with media:", error);
+      throw error;
+    }
+  }
+
+  static getMediaType(mimeType: string): string {
+    if (mimeType.startsWith('image/')) return 'image';
+    if (mimeType.startsWith('video/')) return 'video';
+    if (mimeType.startsWith('audio/')) return 'audio';
+    if (mimeType === 'application/pdf') return 'pdf';
+    return 'document';
   }
 
   static async markMessagesAsRead(chatId: string) {

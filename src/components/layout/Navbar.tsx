@@ -5,7 +5,6 @@ import { Search, X, Menu, User, LogOut, Bell } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
 import { logout } from '@/redux/slices/authSlice';
 import { socketService } from '@/service/socket/socketService';
-import { useNotifications } from '@/hooks/notification/useNotifications';
 import { cn } from '@/lib/utils';
 import { useNotificationContext } from '@/contexts/NotificationContext';
 
