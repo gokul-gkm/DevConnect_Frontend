@@ -8,6 +8,7 @@ import { MessageCircle, ChevronRight } from 'lucide-react';
 import { formatMessageTime } from '@/utils/date';
 import { SocketStatusIndicator } from '../socket/SocketStatusIndicator';
 import { useState, useEffect } from 'react';
+import { TypingIndicator } from './TypingIndicator';
 
 export const DeveloperChatSidebar = () => {
     const navigate = useNavigate();
@@ -16,6 +17,7 @@ export const DeveloperChatSidebar = () => {
     const selectedChat = useAppSelector(state => state.chat.selectedChat);
     const [isOpen, setIsOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const typingStatus = useAppSelector(state => state.chat.typingStatus);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -85,9 +87,16 @@ export const DeveloperChatSidebar = () => {
                                             <p className="text-white font-medium truncate">
                                                 {chat.userId?.username || "User"}
                                             </p>
-                                            <p className="text-sm text-zinc-400 truncate">
-                                                {chat.lastMessage || 'Start a conversation'}
-                                            </p>
+                                            {typingStatus[chat._id] ? (
+                                                <div className="flex items-center">
+                                                    <span className="text-xs text-zinc-400 mr-1">typing</span>
+                                                    <TypingIndicator isTyping={true} />
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-zinc-400 truncate">
+                                                    {chat.lastMessage || 'Start a conversation'}
+                                                </p>
+                                            )}
                                         </div>
                                     )}
                                     {(!isMobile || isOpen) && (

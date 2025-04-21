@@ -7,9 +7,12 @@ import { MessageBubble } from './MessageBubble';
 import { AvatarIcon } from './AvatarIcon';
 import { MessageMediaContent } from './MessageMediaContent';
 import { FilePreview } from './FilePreview';
+import { TypingIndicator } from './TypingIndicator';
+import { useAppSelector } from '@/hooks/useAppSelector';
 
 export const DeveloperChatWindow = () => {
     const { selectedChat, messages, messageLoading, hasMore, loadMoreMessages, handleSendMessage, handleTyping } = useDeveloperChat();
+    const typingStatus = useAppSelector(state => state.chat.typingStatus);
     const [newMessage, setNewMessage] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -229,6 +232,9 @@ export const DeveloperChatWindow = () => {
                             <h2 className="font-bold text-white text-sm md:text-base">
                                 {selectedChat.userId?.username || "User"}
                             </h2>
+                            {selectedChat?._id && typingStatus[selectedChat._id] && (
+                                <TypingIndicator isTyping={true} inline className="mt-1" />
+                            )}
                         </div>
                     </div>
                     <button className="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 transition-colors text-zinc-300">

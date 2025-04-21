@@ -1,6 +1,6 @@
-import { useEffect,  useCallback, useRef } from 'react';
+import { useEffect,  useCallback, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../useAppSelector';
-import { fetchMessages, sendMessage, addMessage, setSelectedChat, fetchDeveloperChats, updateMessageReadStatus, updateChatWithNewMessage, updateUnreadCount } from '@/redux/slices/chatSlice';
+import { fetchMessages, sendMessage, addMessage, setSelectedChat, fetchDeveloperChats, updateMessageReadStatus, updateChatWithNewMessage, updateUnreadCount, setTypingStatus } from '@/redux/slices/chatSlice';
 import { useParams } from 'react-router-dom';
 import { socketService } from '@/service/socket/socketService';
 import { debounce } from 'lodash';
@@ -10,7 +10,7 @@ import { useAuth } from '../useAuth';
 export const useDeveloperChat = () => {
     const dispatch = useAppDispatch();
     const { chatId } = useParams();
-    const { chats, selectedChat, messages, loading, messageLoading, hasMore, page } = useAppSelector(state => state.chat);
+    const { chats, selectedChat, messages, loading, messageLoading, hasMore, page, typingStatus } = useAppSelector(state => state.chat);
     const subscribedChats = useRef<Set<string>>(new Set());
     const { token } = useAuth();
     const initialFetchRef = useRef(false);
@@ -216,6 +216,22 @@ export const useDeveloperChat = () => {
         }
     }, [selectedChat?._id, debouncedTypingStart, debouncedTypingStop]);
 
+    useEffect(() => {
+        socketService.onTypingStart((data) => {
+            console.log("Typing start in useDeveloperChat:", data);
+            if (data.chatId && data.userId) {
+                dispatch(setTypingStatus({ chatId: data.chatId, isTyping: true }));
+            }
+        });
+
+        socketService.onTypingStop((data) => {
+            console.log("Typing stop in useDeveloperChat:", data);
+            if (data.chatId && data.userId) {
+                dispatch(setTypingStatus({ chatId: data.chatId, isTyping: false }));
+            }
+        });
+    }, [selectedChat?._id, dispatch]);
+
     return {
         chats,
         selectedChat,
@@ -227,6 +243,8 @@ export const useDeveloperChat = () => {
         handleSendMessage,
         handleTyping,
         refreshChats,
-        forceRefreshChats
+        forceRefreshChats,
+        typingStatus,
+        isTyping: selectedChat?._id ? typingStatus[selectedChat._id] : false
     };
 };

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../useAppSelector"
-import { addMessage, fetchChats, fetchMessages, sendMessage, updateMessageReadStatus, updateChatWithNewMessage, updateUnreadCount } from "@/redux/slices/chatSlice";
+import { addMessage, fetchChats, fetchMessages, sendMessage, updateMessageReadStatus, updateChatWithNewMessage, updateUnreadCount, setTypingStatus } from "@/redux/slices/chatSlice";
 import { socketService } from "@/service/socket/socketService";
 import { debounce } from "lodash";
 import toast from "react-hot-toast";
@@ -16,7 +16,8 @@ export const useChat = () => {
         loading,
         messageLoading,
         hasMore,
-        page
+        page,
+        typingStatus
     } = useAppSelector(state => state.chat);
 
     const initialFetchDone = useRef(false);
@@ -129,6 +130,22 @@ export const useChat = () => {
                 }
             });
             
+            socketService.onTypingStart((data) => {
+                console.log("🚀 TYPING START in useChat:", data);
+                if (data.chatId && data.developerId) {
+                    console.log(`Setting typing status for chat ${data.chatId} to TRUE`);
+                    dispatch(setTypingStatus({ chatId: data.chatId, isTyping: true }));
+                }
+            });
+            
+            socketService.onTypingStop((data) => {
+                console.log("⏹️ TYPING STOP in useChat:", data);
+                if (data.chatId && data.developerId) {
+                    console.log(`Setting typing status for chat ${data.chatId} to FALSE`);
+                    dispatch(setTypingStatus({ chatId: data.chatId, isTyping: false }));
+                }
+            });
+            
             if (selectedChat?._id) {
                 socketService.joinChat(selectedChat._id);
                 subscribedChats.current.add(selectedChat._id);
@@ -216,6 +233,8 @@ export const useChat = () => {
         handleSendMessage,
         handleTyping,
         refreshChats,
-        forceRefreshChats
+        forceRefreshChats,
+        isTyping: selectedChat?._id ? typingStatus[selectedChat._id] : false,
+        typingStatus
     };
 };

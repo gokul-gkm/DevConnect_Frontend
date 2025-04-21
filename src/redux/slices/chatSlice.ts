@@ -10,6 +10,7 @@ interface ChatState {
     messageLoading: boolean;
     hasMore: boolean;
     page: number;
+    typingStatus: Record<string, boolean>;
 }
 
 const initialState: ChatState = {
@@ -19,7 +20,8 @@ const initialState: ChatState = {
     loading: false,
     messageLoading: false,
     hasMore: true,
-    page: 1
+    page: 1,
+    typingStatus: {}
 }
 
 export const fetchChats = createAsyncThunk(
@@ -169,6 +171,15 @@ const chatSlice = createSlice({
                 state.chats[chatIndex] = updatedChat;
                 state.chats = [...state.chats];
             }
+        },
+        setTypingStatus: (state, action) => {
+            const { chatId, isTyping } = action.payload;
+            if (chatId) {
+                state.typingStatus[chatId] = isTyping;
+            }
+        },
+        clearTypingStatus: (state) => {
+            state.typingStatus = {};
         }
     },
     extraReducers: (builder) => {
@@ -248,7 +259,9 @@ export const {
     updateMessageReadStatus,
     resetChat,
     updateChatWithNewMessage,
-    updateUnreadCount
+    updateUnreadCount,
+    setTypingStatus,
+    clearTypingStatus
 } = chatSlice.actions;
 
 export default chatSlice.reducer
