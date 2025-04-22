@@ -45,7 +45,7 @@ export function UpcomingSessions() {
   
   const debouncedSearch = useDebounce(searchValue, 300)
 
-  const { sessions,filteredSessions, isLoading, stats } = useUpcomingSessions(
+  const { filteredSessions, isLoading, stats } = useUpcomingSessions(
     debouncedSearch,
     statusFilter
   )

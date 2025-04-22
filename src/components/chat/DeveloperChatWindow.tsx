@@ -9,10 +9,12 @@ import { MessageMediaContent } from './MessageMediaContent';
 import { FilePreview } from './FilePreview';
 import { TypingIndicator } from './TypingIndicator';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { OnlineStatusDot } from './OnlineStatusDot';
 
 export const DeveloperChatWindow = () => {
     const { selectedChat, messages, messageLoading, hasMore, loadMoreMessages, handleSendMessage, handleTyping } = useDeveloperChat();
     const typingStatus = useAppSelector(state => state.chat.typingStatus);
+    const onlineStatus = useAppSelector(state => state.chat.onlineStatus);
     const [newMessage, setNewMessage] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -217,14 +219,26 @@ export const DeveloperChatWindow = () => {
                     <div className="flex items-center space-x-3">
                         <div className="relative">
                             {selectedChat.userId?.profilePicture ? (
-                                <img
-                                    src={selectedChat.userId.profilePicture}
-                                    alt={selectedChat.userId.username || "User"}
-                                    className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-zinc-800"
-                                />
+                                <div className="relative">
+                                    <img
+                                        src={selectedChat.userId.profilePicture}
+                                        alt={selectedChat.userId.username || "User"}
+                                        className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-zinc-800"
+                                    />
+                                    <OnlineStatusDot 
+                                        userId={selectedChat.userId._id}
+                                        className="absolute bottom-0 right-0"
+                                    />
+                                </div>
                             ) : (
-                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold">
-                                    {selectedChat.userId?.username?.charAt(0)?.toUpperCase() || "U"}
+                                <div className="relative">
+                                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold">
+                                        {selectedChat.userId?.username?.charAt(0)?.toUpperCase() || "U"}
+                                    </div>
+                                    <OnlineStatusDot 
+                                        userId={selectedChat.userId._id}
+                                        className="absolute bottom-0 right-0"
+                                    />
                                 </div>
                             )}                          
                         </div>
@@ -232,8 +246,12 @@ export const DeveloperChatWindow = () => {
                             <h2 className="font-bold text-white text-sm md:text-base">
                                 {selectedChat.userId?.username || "User"}
                             </h2>
-                            {selectedChat?._id && typingStatus[selectedChat._id] && (
+                            {selectedChat?._id && typingStatus[selectedChat._id] ? (
                                 <TypingIndicator isTyping={true} inline className="mt-1" />
+                            ) : (
+                                <div className="text-xs text-zinc-400 flex items-center mt-1">
+                                    {onlineStatus[selectedChat.userId._id] ? 'Online' : 'Offline'}
+                                </div>
                             )}
                         </div>
                     </div>

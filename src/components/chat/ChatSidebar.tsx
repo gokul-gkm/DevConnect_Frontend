@@ -9,6 +9,7 @@ import { formatMessageTime } from '@/utils/date';
 import { SocketStatusIndicator } from '../socket/SocketStatusIndicator';
 import { useState, useEffect } from 'react';
 import { TypingIndicator } from './TypingIndicator';
+import { OnlineStatusDot } from './OnlineStatusDot';
 
 export const ChatSidebar = () => {
     const navigate = useNavigate();
@@ -69,17 +70,30 @@ export const ChatSidebar = () => {
                                 <div className="flex items-center space-x-3">
                                     <div className="relative flex-shrink-0">
                                         {chat.developerId.profilePicture ? (
-                                            <img
-                                                src={chat.developerId.profilePicture}
-                                                alt={chat.developerId.username}
-                                                className="w-12 h-12 rounded-full object-cover border-2 border-zinc-800"
-                                            />
+                                            <div className="relative">
+                                                <img
+                                                    src={chat.developerId.profilePicture}
+                                                    alt={chat.developerId.username}
+                                                    className="w-12 h-12 rounded-full object-cover border-2 border-zinc-800"
+                                                />
+                                                <OnlineStatusDot 
+                                                    developerId={chat.developerId._id}
+                                                    className="absolute bottom-0 right-0"
+                                                    pulseAnimation={false}
+                                                />
+                                            </div>
                                         ) : (
-                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold">
-                                                {chat.developerId.username?.charAt(0)?.toUpperCase()}
+                                            <div className="relative">
+                                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold">
+                                                    {chat.developerId.username?.charAt(0)?.toUpperCase()}
+                                                </div>
+                                                <OnlineStatusDot 
+                                                    developerId={chat.developerId._id}
+                                                    className="absolute bottom-0 right-0"
+                                                    pulseAnimation={false}
+                                                />
                                             </div>
                                         )}
-                                        
                                     </div>
                                     {(!isMobile || isOpen) && (
                                         <div className="flex-1 min-w-0">

@@ -1,7 +1,12 @@
 import { logout } from '@/redux/slices/authSlice';
-import store from '@/redux/store/store';
 import toast from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
+
+let storeRef: any = null;
+
+export const injectStore = (store: any) => {
+  storeRef = store;
+};
 
 class SocketService {
     private socket: Socket | null = null;
@@ -206,7 +211,7 @@ class SocketService {
             }
         });
         
-        store.dispatch(logout());
+        logout();
         
         
         setTimeout(() => {
@@ -608,6 +613,84 @@ class SocketService {
         
         this.socket.emit('notification:mark-all-read');
         return true;
+    }
+
+    emit(event: string, data: any) {
+        if (!this.socket) {
+            console.warn('Socket not connected, cannot emit event:', event);
+            return;
+        }
+        
+        this.socket.emit(event, data);
+    }
+
+    checkOnlineStatus(userId?: string, developerId?: string) {
+        if (!this.socket) {
+            console.warn('Socket not connected, cannot check online status');
+            return Promise.resolve(false);
+        }
+        
+        return new Promise((resolve) => {
+            const timeoutId = setTimeout(() => {
+                console.warn('Online status check timed out');
+                resolve(false);
+            }, 3000);
+            
+            const eventName = userId ? 'user:online' : 'developer:online';
+            const callback = (data: any) => {
+                clearTimeout(timeoutId);
+                
+                if (userId && data.userId === userId) {
+                    this.socket?.off(eventName, callback);
+                    resolve(!!data.isOnline);
+                } else if (developerId && data.developerId === developerId) {
+                    this.socket?.off(eventName, callback);
+                    resolve(!!data.isOnline);
+                }
+            };
+            
+            if (this.socket) {
+                this.socket.on(eventName, callback);
+                
+                if (userId) {
+                    this.socket.emit('check:online', { userId });
+                } else if (developerId) {
+                    this.socket.emit('check:online', { developerId });
+                }
+            } else {
+                clearTimeout(timeoutId);
+                resolve(false);
+            }
+        });
+    }
+
+    logout() {
+        let userId = null;
+        let userRole = localStorage.getItem('user-role') || 'user';
+        
+        if (storeRef) {
+            try {
+                userId = storeRef.getState().user._id;
+            } catch (e) {
+                console.error('Error accessing store state:', e);
+            }
+        }
+        
+        if (this.socket && userId) {
+            if (userRole === 'developer') {
+                this.socket.emit('developer:set-offline', { developerId: userId });
+            } else {
+                this.socket.emit('user:set-offline', { userId });
+            }
+            
+            setTimeout(() => {
+                this.cleanup();
+                this.disconnect();
+            }, 200);
+        } else {
+            this.cleanup();
+            this.disconnect();
+        }
     }
 }
 

@@ -42,11 +42,16 @@ export const useLogin = () => {
           })
         );
         
- 
         const userRole = response.user.role || 'user';
         
         try {
-          await socketService.connect(response.token!, userRole);       
+          await socketService.connect(response.token!, userRole);
+          
+          if (userRole === 'developer') {
+            socketService.emit('developer:set-online', { developerId: response.user.id });
+          } else {
+            socketService.emit('user:set-online', { userId: response.user.id });
+          }
         } catch (error) {
           console.error("Error connecting socket:", error);
         }

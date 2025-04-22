@@ -1,6 +1,6 @@
-import { useEffect,  useCallback, useRef, useState } from 'react';
+import { useEffect,  useCallback, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../useAppSelector';
-import { fetchMessages, sendMessage, addMessage, setSelectedChat, fetchDeveloperChats, updateMessageReadStatus, updateChatWithNewMessage, updateUnreadCount, setTypingStatus } from '@/redux/slices/chatSlice';
+import { fetchMessages, sendMessage, addMessage, setSelectedChat, fetchDeveloperChats, updateMessageReadStatus, updateChatWithNewMessage, updateUnreadCount, setTypingStatus, setOnlineStatus } from '@/redux/slices/chatSlice';
 import { useParams } from 'react-router-dom';
 import { socketService } from '@/service/socket/socketService';
 import { debounce } from 'lodash';
@@ -60,6 +60,9 @@ export const useDeveloperChat = () => {
     }, [chatId, chats, dispatch]);
 
     useEffect(() => {
+
+        dispatch({ type: 'chat/clearOnlineStatus' });
+
         if (!selectedChat?._id) return;
         
         dispatch(fetchMessages({ chatId: selectedChat._id, page: 1 }));
@@ -129,8 +132,34 @@ export const useDeveloperChat = () => {
             subscribedChats.current.add(selectedChat._id);
         }
         
+        socketService.on('user:online', (data) => {
+            if (data.userId && typeof data.isOnline === 'boolean') {
+                dispatch(setOnlineStatus({ 
+                    userId: data.userId, 
+                    isOnline: data.isOnline 
+                }));
+            }
+        });
+        
+        socketService.on('user:offline', (data) => {
+            if (data.userId) {
+                dispatch(setOnlineStatus({ 
+                    userId: data.userId, 
+                    isOnline: false 
+                }));
+            }
+        });
+        
+        if (chats.length > 0) {
+            chats.forEach(chat => {
+                if (chat.userId && chat.userId._id) {
+                    socketService.checkOnlineStatus(chat.userId._id);
+                }
+            });
+        }
+        
         return () => {};
-    }, [selectedChat?._id, dispatch, refreshChats, token]);
+    }, [selectedChat?._id, dispatch, refreshChats, token, chats]);
 
     useEffect(() => {
         if (chats.length === 0) return;
@@ -245,6 +274,7 @@ export const useDeveloperChat = () => {
         refreshChats,
         forceRefreshChats,
         typingStatus,
-        isTyping: selectedChat?._id ? typingStatus[selectedChat._id] : false
+        isTyping: selectedChat?._id ? typingStatus[selectedChat._id] : false,
+        onlineStatus: useAppSelector(state => state.chat.onlineStatus)
     };
 };

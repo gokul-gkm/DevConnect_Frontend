@@ -33,7 +33,8 @@ const initialState: UserState = {
         state.role = null;
         state.isAuthenticated = false;
         state._id = null
-        localStorage.removeItem("access-token");
+      localStorage.removeItem("access-token");
+      localStorage.removeItem("user-role")
     }
   },
 });

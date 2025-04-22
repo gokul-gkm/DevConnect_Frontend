@@ -3,7 +3,6 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, X, Menu, User, LogOut, Bell } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
-import AuthApi from '@/service/Api/AuthApi';
 import { logout } from '@/redux/slices/authSlice';
 import toast from 'react-hot-toast';
 import { useNotificationContext } from '@/contexts/NotificationContext';
@@ -31,16 +30,16 @@ const DevNavbar: React.FC = () => {
   const navigate = useNavigate();
   const { unreadCount } = useNotificationContext();
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     try {
-      await AuthApi.logOut();
-      dispatch(logout());
-      setIsProfileOpen(false);
-      setIsMobileMenuOpen(false);
-      toast.success('Logout Successfully');
+        socketService.logout()
+        dispatch(logout());
+        setIsProfileOpen(false);
+        setIsMobileMenuOpen(false);
+        toast.success('Logout Successfully');
     } catch (error) {
-      console.error('Logout failed: ', error);
-      toast.error('Logout failed')
+        console.error('Logout failed: ', error);
+        toast.error('Logout failed')
     }
   }
 

@@ -11,6 +11,7 @@ interface ChatState {
     hasMore: boolean;
     page: number;
     typingStatus: Record<string, boolean>;
+    onlineStatus: Record<string, boolean>;
 }
 
 const initialState: ChatState = {
@@ -21,7 +22,8 @@ const initialState: ChatState = {
     messageLoading: false,
     hasMore: true,
     page: 1,
-    typingStatus: {}
+    typingStatus: {},
+    onlineStatus: {}
 }
 
 export const fetchChats = createAsyncThunk(
@@ -180,6 +182,19 @@ const chatSlice = createSlice({
         },
         clearTypingStatus: (state) => {
             state.typingStatus = {};
+        },
+        setOnlineStatus: (state, action) => {
+            const { userId, developerId, isOnline } = action.payload;
+            const id = userId || developerId;
+            
+            if (id) {
+                if (typeof isOnline === 'boolean') {
+                    state.onlineStatus[id] = isOnline;
+                }
+            }
+        },
+        clearOnlineStatus: (state) => {
+            state.onlineStatus = {};
         }
     },
     extraReducers: (builder) => {
@@ -261,7 +276,9 @@ export const {
     updateChatWithNewMessage,
     updateUnreadCount,
     setTypingStatus,
-    clearTypingStatus
+    clearTypingStatus,
+    setOnlineStatus,
+    clearOnlineStatus
 } = chatSlice.actions;
 
 export default chatSlice.reducer

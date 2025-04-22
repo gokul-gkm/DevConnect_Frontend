@@ -42,8 +42,7 @@ const Navbar: React.FC = () => {
   }, [isAuthenticated, _id]);
 
   const handleLogout = () => {
-    socketService.cleanup();
-    
+    socketService.logout();
     dispatch(logout());
     navigate('/auth/login');
   }
