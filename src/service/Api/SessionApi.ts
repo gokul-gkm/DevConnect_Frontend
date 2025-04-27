@@ -77,6 +77,17 @@ const SessionApi = {
     return response.data;
   },
 
+  async getSessionRequestDetails(sessionId: string) {
+    try {
+      const response = await axiosClient.get(`/sessions/developer/requests/${sessionId}`);
+      
+      return response;
+    } catch (error) {
+      console.error("Error fetching session details:", error);
+      throw error;
+    }
+  },
+
   async acceptSession(sessionId: string) {
     const response = await axiosClient.patch(`/sessions/${sessionId}/accept`);
     return response.data;

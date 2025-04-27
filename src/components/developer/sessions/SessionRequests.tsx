@@ -1,70 +1,22 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { format } from 'date-fns';
-import { toast } from 'react-hot-toast';
-import { 
-  Search, 
-  Clock, 
-  Calendar, 
-  DollarSign, 
-  User, 
-  Mail, 
-  CheckCircle, 
-  XCircle,
-  Zap
-} from 'lucide-react';
-import { Button } from "@/components/ui/shadcn-button";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Search } from 'lucide-react';
 import { Input } from "@/components/ui/Input";
-import { Badge } from "@/components/ui/badge";
-import { Spinner } from '@/components/ui/spinner';
-import { cn } from '@/lib/utils';
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { SessionRejectionDialog } from './SessionRejectionDialog';
 import { useSessionRequests } from '@/hooks/session/useSessionRequests';
 import { useRejectionDialog } from '@/hooks/session/useRejectionDialog';
-import { useState } from 'react';
+import { StatsPanel } from './StatsPanel';
+import { SessionsTable } from './SessionsTable';
 import Pagination from '@/components/ui/Pagination';
-import { StatsCard } from '@/components/ui/StatsCard';
-import { StatsCardGrid } from '@/components/ui/StatsCardGrid';
-
-interface Session {
-  _id: string;
-  title: string;
-  description: string;
-  status: 'pending' | 'approved' | 'rejected' | 'scheduled';
-  userId: {
-    username: string;
-    email: string;
-  };
-  sessionDate: string;
-  startTime: string;
-  duration: number;
-  price: number;
-  topics: string[];
-}
-
-const statusColors = {
-  pending: 'bg-amber-900/20 text-amber-400 border-amber-400/30',
-  approved: 'bg-emerald-900/20 text-emerald-400 border-emerald-400/30',
-  rejected: 'bg-rose-900/20 text-rose-400 border-rose-400/30',
-  scheduled: 'bg-blue-900/20 text-blue-400 border-blue-400/30'
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { type: 'spring', stiffness: 100, damping: 20 }
-  },
-  exit: { 
-    opacity: 0, 
-    scale: 0.95,
-    transition: { duration: 0.2 }
-  }
-};
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 export default function SessionRequests() {
-
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentTab, setCurrentTab] = useState('all');
+  const [expandedSession, setExpandedSession] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const {
     sessions,
@@ -86,29 +38,20 @@ export default function SessionRequests() {
     handleCloseDialog,
   } = useRejectionDialog();
 
+  const filteredSessions = sessions?.filter((session: any) => {
+    const matchesSearch = 
+      session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      session.userId.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      session.topics.some((topic: any) => topic.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    const filteredSessions = sessions?.filter((session: Session) =>
-        session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        session.userId.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        session.topics.some((topic: string) => topic.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
-
-  const handleAccept = (sessionId: string) => {
-    acceptSession(sessionId);
-  };
+    const matchesStatus = currentTab === 'all' || session.status === currentTab;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   const handleReject = () => {
-    if (!rejectionReason.trim()) {
-      toast.error('Please provide a reason', {
-        icon: <Zap className="w-5 h-5 text-rose-400" />,
-        style: {
-          background: '#1a0d0f',
-          border: '1px solid #dc262640',
-          color: '#f87171'
-        }
-      });
-      return;
-    }
+    if (!rejectionReason.trim()) return;
+    
     rejectSession({
       sessionId: dialogState.sessionId,
       reason: rejectionReason,
@@ -117,248 +60,116 @@ export default function SessionRequests() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="relative">
-          <div className="absolute inset-0 bg-white/5 blur-xl rounded-full" />
-          <Spinner className="w-12 h-12 text-white" />
-        </div>
-      </div>
-    );
+    return <LoadingSpinner text='Loading Session Requests ...' bgColor='dark' />
   }
 
-  const statsData = [
-    {
-      label: 'Total Requests',
-      value: stats?.total || 0,
-      icon: Clock,
-      gradient: 'from-gray-900 to-black',
-    },
-    {
-      label: 'Pending',
-      value: stats?.pending || 0,
-      icon: Clock,
-      gradient: 'from-amber-950 to-black',
-    },
-    {
-      label: 'Approved',
-      value: stats?.approved || 0,
-      icon: CheckCircle,
-      gradient: 'from-emerald-950 to-black',
-    },
-    {
-      label: 'Rejected',
-      value: stats?.rejected || 0,
-      icon: XCircle,
-      gradient: 'from-rose-950 to-black',
-    },
-    {
-      label: 'Scheduled',
-      value: stats?.scheduled || 0,
-      icon: Calendar,
-      gradient: 'from-blue-950 to-black',
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-black/80 space-y-8 px-4">
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="sticky top-0 z-50 backdrop-blur-xl bg-black/80 border-b border-white/5 -mx-4 px-4 py-6"
-      >
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
-          <div className="space-y-2">
-            <motion.h1 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent"
-            >
-              Session Requests
-            </motion.h1>
-          </div>
-          <div className="relative w-full md:w-96">
-            <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent blur-xl opacity-30 rounded-2xl" />
-            <Input
-              type="text"
-              placeholder="Search sessions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-11 h-12 rounded-2xl backdrop-blur-xl bg-black/40 border-white/10 hover:border-white/20 focus:border-white/30 transition-colors"
-            />
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          </div>
-        </div>
-      </motion.div>
-
-      <StatsCardGrid cols={5} className="max-w-7xl">
-        {statsData.map((stat, index) => (
-          <StatsCard
-            key={stat.label}
-            label={stat.label}
-            value={stat.value}
-            icon={stat.icon}
-            gradient={stat.gradient}
-            delay={index * 0.1}
-            className="min-h-[120px]"
-          />
-        ))}
-      </StatsCardGrid>
-
-      <div className="max-w-7xl mx-auto grid gap-6">
-        <AnimatePresence mode="popLayout">
-          {filteredSessions?.map((session: Session) => (
-            <motion.div
-              key={session._id}
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className={cn(
-                "group relative overflow-hidden rounded-2xl border",
-                "bg-gradient-to-br from-black to-gray-900/50",
-                "border-white/5 hover:border-white/10 transition-all duration-300",
-                "shadow-lg shadow-black/40 hover:shadow-xl hover:shadow-black/50"
-              )}
-            >
-              <div className="p-8 space-y-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-2">
-                    <h2 className="text-2xl font-semibold text-white">
-                      {session.title}
-                    </h2>
-                    <p className="text-gray-400 line-clamp-2">
-                      {session.description}
-                    </p>
-                  </div>
-                  <Badge
-                    className={cn(
-                      "px-4 py-2 rounded-xl border font-medium backdrop-blur-xl",
-                      statusColors[session.status],
-                      session.status === 'pending' && 'animate-pulse'
-                    )}
-                  >
-                    {session.status}
-                  </Badge>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-4 p-5 rounded-xl bg-white/5 border border-white/10">
-                  <div className="flex items-center gap-3">
-                    <User className="w-5 h-5 text-gray-400" />
-                    <span className="text-white">{session.userId.username}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Mail className="w-5 h-5 text-gray-400" />
-                    <span className="text-white">{session.userId.email}</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[
-                    {
-                      icon: Calendar,
-                      value: format(new Date(session.sessionDate), 'dd MMM yyyy')
-                    },
-                    {
-                      icon: Clock,
-                      value: format(new Date(session.startTime), 'hh:mm a')
-                    },
-                    {
-                      icon: Clock,
-                      value: `${session.duration}m`
-                    },
-                    {
-                      icon: DollarSign,
-                      value: `${session.price}`
-                    }
-                  ].map((detail, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10"
-                    >
-                      <detail.icon className="w-5 h-5 text-white" />
-                      <span className="text-white">{detail.value}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {session.topics.map((topic: string) => (
-                    <Badge
-                      key={topic}
-                      variant="outline"
-                      className="px-4 py-2 rounded-xl bg-white/5 text-white border-white/10 hover:bg-white/10"
-                    >
-                      {topic}
-                    </Badge>
-                  ))}
-                </div>
-
-                {session.status === 'pending' && (
-                  <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                    <Button
-                      className="flex-1 h-12 gap-2 rounded-xl bg-emerald-950/50 hover:bg-emerald-900/50 text-emerald-400 border border-emerald-400/20"
-                      onClick={() => handleAccept(session._id)}
-                      disabled={isAccepting}
-                    >
-                      <CheckCircle className="w-5 h-5" />
-                      Accept Request
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      className="flex-1 h-12 gap-2 rounded-xl bg-rose-950/50 hover:bg-rose-900/50 text-rose-400 border border-rose-400/20"
-                      onClick={() => handleOpenDialog(session._id)}
-                      disabled={isRejecting}
-                    >
-                      <XCircle className="w-5 h-5" />
-                      Decline Request
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              <div className="absolute inset-0 -z-10 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl" />
-            </motion.div>
-          ))}
-        </AnimatePresence>
-
-        {filteredSessions?.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-20 space-y-4"
+    <TooltipProvider>
+      <div className="min-h-screen  p-6">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-6xl mx-auto"
+        >
+          <motion.div 
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.7, type: "spring" }}
+            className="relative mb-8 overflow-hidden rounded-2xl"
           >
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white/5 border border-white/10 mb-6">
-              <Search className="w-10 h-10 text-gray-400" />
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-900/20 via-indigo-900/10 to-transparent rounded-2xl blur-3xl opacity-50" />
+            <div className="relative bg-black/40 backdrop-blur-sm border border-white/5 rounded-2xl p-8 overflow-hidden">
+              <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" />
+              
+              <h1 className="text-4xl font-bold text-white mb-3 relative">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-purple-100 to-purple-300">
+                  Session Requests
+                </span>
+              </h1>
+              <p className="text-zinc-400 max-w-md relative">
+                Manage and respond to your incoming session requests efficiently.
+              </p>
             </div>
-            <h3 className="text-2xl font-semibold text-white">
-              No sessions found
-            </h3>
-            <p className="text-gray-400">
-              Try adjusting your search criteria
-            </p>
           </motion.div>
-        )}
-        
-        {pagination && pagination.totalPages > 1 && (
-          <Pagination
-            pagination={{
-              currentPage: pagination.currentPage,
-              totalPages: pagination.totalPages
-            }}
-            updateParams={(params) => updatePage(params.page)}
-          />
-        )}
-      </div>        
 
-      <SessionRejectionDialog
-        isOpen={dialogState.isOpen}
-        onClose={handleCloseDialog}
-        onReject={handleReject}
-        rejectionReason={rejectionReason}
-        setRejectionReason={setRejectionReason}
-        isLoading={isRejecting}
-      />
-    </div>
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mb-6 flex flex-col sm:flex-row gap-4"
+          >
+            <div className="relative flex-grow">
+              <div className="absolute inset-0 bg-purple-600/5 rounded-xl blur-md -z-10" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-300/60" />
+              <Input
+                type="text"
+                placeholder="Search by title, user or topics..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-12 bg-zinc-900/60 border-purple-800/20 focus:border-purple-500/50 rounded-xl backdrop-blur-sm shadow-[0_0_15px_rgba(168,85,247,0.08)] transition-all duration-300"
+              />
+            </div>
+           
+          </motion.div>
+
+          <StatsPanel 
+            stats={stats} 
+            currentTab={currentTab} 
+            setCurrentTab={setCurrentTab} 
+          />
+
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="relative rounded-xl overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-purple-900/10 via-indigo-900/5 to-transparent rounded-xl blur-md -z-10" />
+            <div className="bg-zinc-900/40 backdrop-blur-md border border-purple-800/10 rounded-xl overflow-hidden shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)]">
+              <SessionsTable 
+                sessions={filteredSessions}
+                expandedSession={expandedSession}
+                setExpandedSession={setExpandedSession}
+                handleOpenDialog={handleOpenDialog}
+                acceptSession={acceptSession}
+                isAccepting={isAccepting}
+                isRejecting={isRejecting}
+                navigateToDetails={(id: any) => navigate(`/developer/session-requests/${id}`)}
+                searchQuery={searchQuery}
+              />
+            </div>
+          </motion.div>
+          
+          {pagination && pagination.totalPages > 1 && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="mt-6 flex justify-center"
+            >
+              <Pagination
+                pagination={{
+                  currentPage: pagination.currentPage,
+                  totalPages: pagination.totalPages
+                }}
+                updateParams={(params) => updatePage(params.page)}
+              />
+            </motion.div>
+          )}
+        </motion.div>
+
+        <SessionRejectionDialog
+          isOpen={dialogState.isOpen}
+          onClose={handleCloseDialog}
+          onReject={handleReject}
+          rejectionReason={rejectionReason}
+          setRejectionReason={setRejectionReason}
+          isLoading={isRejecting}
+        />
+      </div>
+    </TooltipProvider>
   );
 }
+

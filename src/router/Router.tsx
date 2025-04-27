@@ -57,6 +57,7 @@ import DeveloperChatPage from '@/pages/chat/DeveloperChatPage';
 import UserNotificationPage from '@/pages/user/Notification/NotificationPage';
 import DeveloperNotificationPage from '@/pages/developer/Notification/DeveloperNotificationPage';
 import AboutUs from '@/pages/user/AboutUs/AboutUs';
+import SessionRequestDetailsPage from '@/pages/developer/Sessions/SessionRequestDetailsPage';
 
 
 export const Router = createBrowserRouter([
@@ -141,6 +142,10 @@ export const Router = createBrowserRouter([
             {
                 path: 'session-requests',
                 element: <ProtectedRoute allowedRole={Role.DEVELOPER}><SessionRequestPage/></ProtectedRoute>
+            },
+            {
+                path: 'session-requests/:sessionId',
+                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><SessionRequestDetailsPage/></ProtectedRoute>
             },
             {
                 path: 'wallet',

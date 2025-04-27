@@ -38,6 +38,7 @@ const bgColorMap = {
   purple: 'bg-gradient-to-br from-purple-950 to-purple-900',
   indigo: 'bg-gradient-to-br from-indigo-950 to-indigo-900',
   black: 'bg-gradient-to-br from-black to-gray-900',
+  dark:'bg-gradient-to-b from-black to-bg-black'
 };
 
 const textSizeMap = {

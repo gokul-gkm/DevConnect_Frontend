@@ -1,4 +1,3 @@
-import { Footer } from '@/components/layout/Footer'
 import { HeroSection } from '@/components/user/home/HeroSection'
 
 
@@ -7,9 +6,7 @@ const DevDashboard = () => {
     <div>
       <div>
         <HeroSection />
-      </div>
-      <Footer/>
-      
+      </div>  
     </div>
   )
 }

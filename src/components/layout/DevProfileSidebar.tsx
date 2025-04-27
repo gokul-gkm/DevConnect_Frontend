@@ -5,11 +5,8 @@ import {
   User,
   MessageSquare,
   GalleryVerticalEnd,
-  DollarSign,
-  Users,
   Star,
   Clock,
-  BarChart,
   Edit,
   CalendarPlus,
   Wallet
@@ -52,26 +49,13 @@ const menuItems = [
     icon: Wallet,
     path: '/developer/wallet'
   },
-  {
-    title: 'Students',
-    icon: Users,
-    path: '/developer/students'
-  },
+  
   {
     title: 'Reviews',
     icon: Star,
     path: '/developer/reviews'
   },
-  {
-    title: 'Earnings',
-    icon: DollarSign,
-    path: '/developer/earnings'
-  },
-  {
-    title: 'Analytics',
-    icon: BarChart,
-    path: '/developer/analytics'
-  },
+
   {
     title: 'Availability',
     icon: Clock,
@@ -106,7 +90,7 @@ export const DeveloperProfileSidebar: React.FC<SidebarProps> = ({ activeItem, se
 
   return (
     <>
-      {/* Desktop Sidebar */}
+  
       <div className="hidden lg:flex flex-col w-72 min-h-screen bg-gradient-to-b from-black to-gray-900/50 border-r border-white/5">
         <div className="top-0 z-10">
           <div className="p-6">
