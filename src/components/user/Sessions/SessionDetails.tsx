@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { Calendar, Clock, DollarSign, MessageCircle, Briefcase, Zap } from 'lucide-react';
@@ -31,6 +31,7 @@ const cardVariants = {
 };
 
 export default function SessionDetails() {
+  const navigate = useNavigate();
   const { sessionId } = useParams();
   const { data: session, isLoading } = useSessionDetails(sessionId as string);
 
@@ -60,7 +61,7 @@ export default function SessionDetails() {
         <div className="flex gap-4">
           <Button
             className="flex-1 h-12 gap-2 rounded-xl bg-emerald-950/50 hover:bg-emerald-900/50 text-emerald-400 border border-emerald-400/20"
-            onClick={() => {}}
+            onClick={() => navigate(`/video-call`)}
           >
             <Zap className="w-5 h-5" />
             Join Session
@@ -68,7 +69,7 @@ export default function SessionDetails() {
           <Button
             variant="outline"
             className="flex-1 h-12 gap-2 rounded-xl bg-blue-950/50 hover:bg-blue-900/50 text-blue-400 border border-blue-400/20"
-            onClick={() => {}}
+            onClick={() => navigate(`/chats/${session.developerId._id}`)}
           >
             <MessageCircle className="w-5 h-5" />
             Message

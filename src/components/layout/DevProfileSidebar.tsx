@@ -9,6 +9,7 @@ import {
   Clock,
   Edit,
   CalendarPlus,
+  CalendarCheck ,
   Wallet
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -38,6 +39,11 @@ const menuItems = [
     title: 'Session Requests',
     icon: CalendarPlus,
     path: '/developer/session-requests'
+  },
+  {
+    title: 'Scheduled Sessions',
+    icon: CalendarCheck ,
+    path: '/developer/sessions/scheduled'
   },
   {
     title: 'Chats',

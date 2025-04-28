@@ -58,6 +58,9 @@ import UserNotificationPage from '@/pages/user/Notification/NotificationPage';
 import DeveloperNotificationPage from '@/pages/developer/Notification/DeveloperNotificationPage';
 import AboutUs from '@/pages/user/AboutUs/AboutUs';
 import SessionRequestDetailsPage from '@/pages/developer/Sessions/SessionRequestDetailsPage';
+import ScheduledSessionsPage from '@/pages/developer/Sessions/ScheduledSessionsPage';
+import ScheduledSessionsDetailsPage from '@/pages/developer/Sessions/ScheduledSessionsDetailsPage';
+import VideoCall from '@/components/video-chat/VideoCall';
 
 
 export const Router = createBrowserRouter([
@@ -146,6 +149,14 @@ export const Router = createBrowserRouter([
             {
                 path: 'session-requests/:sessionId',
                 element: <ProtectedRoute allowedRole={Role.DEVELOPER}><SessionRequestDetailsPage/></ProtectedRoute>
+            },
+            {
+                path: 'sessions/scheduled',
+                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><ScheduledSessionsPage/></ProtectedRoute>
+            },
+            {
+                path: 'sessions/scheduled/:sessionId',
+                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><ScheduledSessionsDetailsPage/></ProtectedRoute>
             },
             {
                 path: 'wallet',
@@ -251,6 +262,10 @@ export const Router = createBrowserRouter([
     {
         path: '/',
         element: <RootPage/>
+    },
+    {
+        path: 'video-call',
+        element: <VideoCall/>
     },
 
     {

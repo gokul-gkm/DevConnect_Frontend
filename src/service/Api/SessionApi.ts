@@ -98,6 +98,23 @@ const SessionApi = {
       rejectionReason: reason
     });
     return response.data;
+  },
+
+  async getDeveloperScheduledSessions(page = 1, limit = 5) {
+    const response = await axiosClient.get('/sessions/developer/scheduled', {
+      params: { page, limit }
+    });
+    return response.data;
+  },
+
+  async getScheduledSessionDetails(sessionId: string) {
+    try {
+      const response = await axiosClient.get(`/sessions/developer/scheduled/${sessionId}`);
+      return response;
+    } catch (error) {
+      console.error("Error fetching scheduled session details:", error);
+      throw error;
+    }
   }
       
 };
