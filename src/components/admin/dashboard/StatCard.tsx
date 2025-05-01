@@ -6,11 +6,10 @@ interface StatCardProps {
   value: string | number;
   icon: LucideIcon;
   description: string;
-  trend: number;
   className?: string;
 }
 
-export const StatCard = ({ title, value, icon: Icon, description, trend, className }: StatCardProps) => {
+export const StatCard = ({ title, value, icon: Icon, description, className }: StatCardProps) => {
   return (
     <Card className={`${className} relative overflow-hidden rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-purple-500/20`}>
       <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-purple-500/10 to-transparent rounded-bl-full"></div>
@@ -24,12 +23,7 @@ export const StatCard = ({ title, value, icon: Icon, description, trend, classNa
           <Icon className="w-6 h-6 text-purple-400" />
         </div>
       </div>
-      <div className={`flex items-center gap-1 mt-4 text-xs ${trend >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-        <span className="flex items-center">
-          {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
-        </span>
-        <span className="text-slate-500">vs last month</span>
-      </div>
+      
     </Card>
   );
 };

@@ -1,6 +1,7 @@
 import axiosClient from "@/service/axiosinstance/axios";
 import { DeveloperProfile, Project } from "@/types/types";
 import { DeveloperRoutes } from "@/utils/constants";
+import { format } from 'date-fns';
 
 const DeveloperApi = {
     getProfile: async () => {
@@ -59,6 +60,20 @@ const DeveloperApi = {
     
 },
   
+  async updateAvailability(date: Date, unavailableSlots: string[]) {
+    const formattedDate = format(date, 'yyyy-MM-dd');
+    const response = await axiosClient.post('/developer/availability', {
+      date: formattedDate,
+      unavailableSlots
+    });
+    return response.data;
+  },
+
+  async getUnavailableSlots(date: Date) {
+    const formattedDate = format(date, 'yyyy-MM-dd');
+    const response = await axiosClient.get(`/developer/availability?date=${formattedDate}`);
+    return response.data.data;
+  }
 }
 
 export default DeveloperApi

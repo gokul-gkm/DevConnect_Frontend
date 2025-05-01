@@ -223,15 +223,7 @@ export default function ScheduledSessionDetails() {
                   </div>
                   
                   <div className="flex flex-col sm:flex-row gap-3">
-                    
-                    
-                    <Button
-                      className="bg-black hover:bg-zinc-900 border border-indigo-500/30 text-indigo-300 rounded-xl flex items-center gap-2 flex-1 justify-center py-2"
-                      onClick={() => navigate(`/developer/chats/${session.userId._id}`)}
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                      Message User
-                    </Button>
+                           
                   </div>
                 </div>
               </div>

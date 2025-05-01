@@ -35,9 +35,11 @@ export default function SessionBooking() {
     developer,
     isLoadingDeveloper,
     isLoadingSlots,
+    isLoadingUnavailableSlots,
     handleBookingSubmit,
     isBooking,
     isSlotBooked,
+    isSlotUnavailable,
     generateTimeSlots
   } = useSessionBooking({
     selectedDate,
@@ -178,20 +180,22 @@ export default function SessionBooking() {
                             <div className="grid grid-cols-4 gap-2">
                               {timeSlots.map((slot: TimeSlot) => {
                                 const isBooked = isSlotBooked(slot.value);
+                                const isUnavailable = isSlotUnavailable(slot.value);
                                 const isSelected = field.value === slot.value;
                                 
                                 return (
                                   <button
                                     key={slot.value}
                                     type="button"
-                                    disabled={isBooked}
+                                    disabled={isBooked || isUnavailable}
                                     onClick={() => field.onChange(slot.value)}
                                     className={cn(
                                       'p-3 rounded-xl border backdrop-blur-xl transition-all flex items-center justify-center gap-2',
                                       {
                                         'bg-indigo-500/20 border-indigo-500/40 text-indigo-300': isSelected,
-                                        'bg-rose-500/10 border-rose-500/30 text-rose-400': isBooked && !isSelected,
-                                        'bg-white/5 border-white/10 hover:border-white/20 text-zinc-400': !isBooked && !isSelected
+                                        'bg-green-500/10 border-green-500/30 text-green-400': isBooked && !isSelected,
+                                        'bg-rose-500/10 border-rose-500/30 text-rose-400': isUnavailable && !isBooked && !isSelected,
+                                        'bg-white/5 border-white/10 hover:border-white/20 text-zinc-400': !isBooked && !isUnavailable && !isSelected
                                       }
                                     )}
                                   >
@@ -200,7 +204,7 @@ export default function SessionBooking() {
                                 );
                               })}
                             </div>
-                            {isLoadingSlots && (
+                            {(isLoadingSlots || isLoadingUnavailableSlots) && (
                               <p className="text-sm text-zinc-400">Loading available slots...</p>
                             )}
                             {errors.time && (

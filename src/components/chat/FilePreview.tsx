@@ -18,7 +18,7 @@ export const FilePreview = ({ fileType, filePreview, fileName, isDeveloperChat =
           <img 
             src={filePreview!} 
             alt="Preview" 
-            className="h-full w-full object-cover"
+            className="h-full w-full max-w-xs max-h-24 rounded-lg object-contain"
           />
           <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-1 text-xs text-zinc-300 truncate backdrop-blur-sm">
             {fileName.length > (isDeveloperChat ? 18 : 15) 
@@ -32,7 +32,7 @@ export const FilePreview = ({ fileType, filePreview, fileName, isDeveloperChat =
         <div className={`relative rounded-xl overflow-hidden h-[${isDeveloperChat ? '100' : '80'}px] w-[${isDeveloperChat ? '200' : '160'}px] border border-zinc-700/50 shadow-md inline-block`}>
           <video 
             src={filePreview!} 
-            className="h-full w-full object-cover"
+            className="h-full w-full max-w-xs max-h-24 rounded-lg object-contain"
           />
           <div className="absolute inset-0 flex items-center justify-center bg-black/40">
             <div className="bg-blue-600/80 p-1.5 rounded-full shadow-lg">

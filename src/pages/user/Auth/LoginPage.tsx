@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-// import { LinkedIn } from "react-linkedin-login-oauth2";
 import { Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/utils";
@@ -12,12 +11,10 @@ import { loginSchema, LoginFormData } from "@/utils/validation/userValidation";
 import { GoogleLogin } from "@react-oauth/google";
 import { useLogin } from "@/hooks/userAuth/useLogin";
 import { useGoogleLogin } from "@/hooks/userAuth/useGoogleLogin";
-// import { useLinkedInLogin } from "@/hooks/userAuth/useLinkedInLogin";
 
 export default function UserLoginPage() {
   const { login, isLogging } = useLogin();
   const { handleGoogleSuccess, handleGoogleError } = useGoogleLogin();
-  // const { handleLinkedInSuccess, handleLinkedInError } = useLinkedInLogin();
 
   const {
     register,
@@ -105,36 +102,6 @@ export default function UserLoginPage() {
               theme="filled_black"
             />
           </div>
-          {/* <div className="flex gap-2 justify-center mt-2">
-            <LinkedIn
-              clientId={import.meta.env.VITE_APP_LINKEDIN_CLIENT_ID}
-              redirectUri={`${window.location.origin}/linkedin-callback`}
-              onSuccess={(code) => handleLinkedInSuccess(code)}
-              onError={handleLinkedInError}
-              scope="openid profile email"
-            >
-              {({ linkedInLogin }) => (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const linkedInOAuthURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${
-                      import.meta.env.VITE_APP_LINKEDIN_CLIENT_ID
-                    }&redirect_uri=${encodeURIComponent(
-                      `${window.location.origin}/linkedin-callback`
-                    )}&scope=${encodeURIComponent("openid profile email")}`;
-                    window.location.href = linkedInOAuthURL;
-                  }}
-                  className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2"
-                  type="button"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
-                  </svg>
-                  Sign in with LinkedIn
-                </button>
-              )}
-            </LinkedIn>
-          </div> */}
         </form>
 
         <div className="text-center">

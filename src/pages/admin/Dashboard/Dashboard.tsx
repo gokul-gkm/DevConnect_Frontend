@@ -61,7 +61,6 @@ const Dashboard = () => {
             value={dashboardStats.totalUsers}
             icon={Users}
             description="Active platform users"
-            trend={12.5}
             className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 border-slate-700/30 shadow-lg backdrop-blur-md"
           />
           <StatCard
@@ -69,7 +68,6 @@ const Dashboard = () => {
             value={dashboardStats.totalDevelopers}
             icon={Code2}
             description="Verified developers"
-            trend={8.2}
             className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 border-slate-700/30 shadow-lg backdrop-blur-md"
           />
           <StatCard
@@ -77,7 +75,6 @@ const Dashboard = () => {
             value={`$${dashboardStats.totalRevenue.toLocaleString()}`}
             icon={DollarSign}
             description="Platform earnings"
-            trend={15.8}
             className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 border-slate-700/30 shadow-lg backdrop-blur-md"
           />
           <StatCard
@@ -85,7 +82,6 @@ const Dashboard = () => {
             value={dashboardStats.totalSessions}
             icon={Calendar}
             description="Completed sessions"
-            trend={-2.4}
             className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 border-slate-700/30 shadow-lg backdrop-blur-md"
           />
         </div>

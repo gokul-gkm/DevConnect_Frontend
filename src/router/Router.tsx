@@ -7,7 +7,6 @@ import UserLoginPage from '@/pages/user/Auth/LoginPage';
 import UserOTPPage from '@/pages/user/Auth/OTPPage';
 import UserForgotPassword from '@/pages/user/Auth/ForgotPassword';
 import UserResetPassword from '@/pages/user/Auth/ResetPassword';
-import LinkedInCallback from '@/components/user/auth/LinkedInCallback';
 import RootPage from '@/pages/user/Home/RootPage';
 import NotFound from '@/components/user/NotFoundPage';
 
@@ -61,6 +60,7 @@ import SessionRequestDetailsPage from '@/pages/developer/Sessions/SessionRequest
 import ScheduledSessionsPage from '@/pages/developer/Sessions/ScheduledSessionsPage';
 import ScheduledSessionsDetailsPage from '@/pages/developer/Sessions/ScheduledSessionsDetailsPage';
 import VideoCall from '@/components/video-chat/VideoCall';
+import DeveloperAvailabilityPage from '@/pages/developer/Profile/DeveloperAvailabilityPage';
 
 
 export const Router = createBrowserRouter([
@@ -168,7 +168,11 @@ export const Router = createBrowserRouter([
                     <ProtectedRoute allowedRole={Role.DEVELOPER}>
                     <DeveloperNotificationPage />
                 </ProtectedRoute>
-            },      
+            },   
+            {
+                path: 'availability',
+                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><DeveloperAvailabilityPage/></ProtectedRoute>
+              },
         ]
     },
 
@@ -234,10 +238,6 @@ export const Router = createBrowserRouter([
             },           
         ]
 
-    },
-    {
-        path: "/linkedin-callback",
-        element: <LinkedInCallback />
     },
     {
         path: 'profile',

@@ -115,7 +115,17 @@ const SessionApi = {
       console.error("Error fetching scheduled session details:", error);
       throw error;
     }
-  }
+  },
+
+  async getUnavailableSlots(developerId: string, date: Date) {
+    const response = await axiosClient.get(`/sessions/unavailable-slots`, {
+      params: {
+        developerId,
+        date: date.toISOString()
+      }
+    });
+    return response.data;
+  },
       
 };
 
