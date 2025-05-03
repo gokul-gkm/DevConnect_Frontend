@@ -99,7 +99,7 @@ export function FeaturesSection() {
               </p>
 
              
-                <HoverButton size='sm' onClick={()=> navigate('/auth/login')}/>
+                <HoverButton size='sm' onClick={()=> navigate('/about')}/>
 
 
               <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-zinc-700/50 rounded-tl-xl

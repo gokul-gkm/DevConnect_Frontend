@@ -32,43 +32,41 @@ export default function AvailabilityManagement() {
 
   if (isLoading && !selectedDate) {
     return (
-        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
         <div className="relative">
           <div className="absolute inset-0 bg-indigo-500/10 blur-[100px] rounded-full -z-10" />
-                <LoadingSpinner
-                    text='Loading slot availability...'
-                    bgColor='dark'
-                />
+          <LoadingSpinner
+            text='Loading slot availability...'
+            bgColor='dark'
+          />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black/80 space-y-8 px-4">
+    <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col px-4 sm:px-6 py-8 lg:py-8">
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mt-16 z-50 backdrop-blur-xl bg-black/80 border-b border-white/5 -mx-4 px-4 py-6"
+        className="backdrop-blur-xl bg-black/80 border-b border-white/5 px-4 py-6 mb-4 rounded-t-xl"
       >
-        <div className="max-w-3xl mx-auto">
-          <motion.h1 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent"
-          >
-            Manage Availability
-          </motion.h1>
-        </div>
+        <motion.h1 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent"
+        >
+          Manage Availability
+        </motion.h1>
       </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-3xl mx-auto"
+        className="flex-1 w-full"
       >
         <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-black to-gray-900/50 border-white/5 shadow-lg shadow-black/40">
-          <div className="p-8 space-y-6">
+          <div className="p-4 sm:p-6 md:p-8 space-y-6">
             <div className="space-y-6">
               <div className="space-y-2">
                 <label className="text-sm text-zinc-400 flex items-center gap-2">
@@ -76,7 +74,7 @@ export default function AvailabilityManagement() {
                   Select Date to Manage Availability
                 </label>
                 <div className="grid gap-6">
-                  <div className="p-4 rounded-xl backdrop-blur-xl bg-white/5 border border-white/10">
+                  <div className="p-3 sm:p-4 rounded-xl backdrop-blur-xl bg-white/5 border border-white/10">
                     <Calendar
                       mode="single"
                       selected={selectedDate}
@@ -89,7 +87,7 @@ export default function AvailabilityManagement() {
 
                   {selectedDate && (
                     <div className="space-y-6">
-                      <div className="flex justify-between items-center">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
                         <div className="text-sm text-zinc-400 flex items-center gap-2">
                           <Clock className="w-4 h-4" />
                           Manage Time Slots Availability
@@ -114,7 +112,7 @@ export default function AvailabilityManagement() {
                           <Loader2 className="w-8 h-8 animate-spin" />
                         </div>
                       ) : (
-                        <div className="grid grid-cols-4 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                           {timeSlots.map((slot: TimeSlot) => {
                             return (
                               <button
@@ -145,13 +143,13 @@ export default function AvailabilityManagement() {
                         </div>
                       )}
 
-                      <div className="flex justify-between">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
                         <div className="text-sm text-zinc-400">
                           {availableCount} of {timeSlots.length} slots available
                         </div>
                         <Button
                           onClick={saveUnavailableSlots}
-                          className="rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-600 hover:via-indigo-700 hover:to-purple-700 text-white border-none shadow-lg shadow-indigo-500/20 transition-all hover:shadow-indigo-500/30 hover:scale-[1.02]"
+                          className="w-full sm:w-auto rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-600 hover:via-indigo-700 hover:to-purple-700 text-white border-none shadow-lg shadow-indigo-500/20 transition-all hover:shadow-indigo-500/30 hover:scale-[1.02]"
                           disabled={isLoading}
                         >
                           {isLoading ? (
