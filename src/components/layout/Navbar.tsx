@@ -26,7 +26,6 @@ const Navbar: React.FC = () => {
   const { scrollY } = useScroll();
   const dispatch = useAppDispatch();
   const { isAuthenticated, username, email, _id } = useAppSelector((state) => state.user);
-  // const { unreadCount } = useNotifications();
   const { unreadCount } = useNotificationContext();
   useEffect(() => {
     if (isAuthenticated && _id) {

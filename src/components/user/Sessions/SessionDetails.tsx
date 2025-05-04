@@ -61,7 +61,7 @@ export default function SessionDetails() {
         <div className="flex gap-4">
           <Button
             className="flex-1 h-12 gap-2 rounded-xl bg-emerald-950/50 hover:bg-emerald-900/50 text-emerald-400 border border-emerald-400/20"
-            onClick={() => navigate(`/video-call`)}
+            onClick={() => navigate(`/video-call/${sessionId}`)}
           >
             <Zap className="w-5 h-5" />
             Join Session

@@ -27,7 +27,7 @@ export const useDevLogin = () => {
             username: data.user.username,
             email: data.user.email,
             role: data.user.role,
-            _id: data.user.id
+            _id: data.user._id
           })
         );
         
@@ -36,7 +36,8 @@ export const useDevLogin = () => {
         } catch (error) {
           console.error("Error connecting socket:", error);
         }
-        
+        console.log(data.user)
+        localStorage.setItem('user-id', data.user._id);
         localStorage.setItem("access-token", data.token!);
         localStorage.setItem("user-role", 'developer');
         
@@ -67,7 +68,7 @@ export const useDevLogin = () => {
             username: data.user.username,
             email: data.user.email,
             role: data.user.role,
-            _id: data.user.id
+            _id: data.user._id
           })
         );
         socketService.connect(data.token!);

@@ -32,13 +32,15 @@ export const useLogin = () => {
       if (response.success && response.user) {
         localStorage.setItem("access-token", response.token!);
         localStorage.setItem("user-role", response.user.role || 'user');
+        console.log(response.user)
+        localStorage.setItem('user-id', response.user._id);
         
         dispatch(
           setCredentials({
             username: response.user.username,
             email: response.user.email,
             role: response.user.role,
-            _id: response.user.id
+            _id: response.user._id
           })
         );
         
@@ -48,9 +50,9 @@ export const useLogin = () => {
           await socketService.connect(response.token!, userRole);
           
           if (userRole === 'developer') {
-            socketService.emit('developer:set-online', { developerId: response.user.id });
+            socketService.emit('developer:set-online', { developerId: response.user._id });
           } else {
-            socketService.emit('user:set-online', { userId: response.user.id });
+            socketService.emit('user:set-online', { userId: response.user._id });
           }
         } catch (error) {
           console.error("Error connecting socket:", error);

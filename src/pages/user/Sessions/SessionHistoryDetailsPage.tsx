@@ -2,16 +2,16 @@
 
 import { useState } from 'react'
 import { Sidebar } from '@/components/layout/ProfileSidebar'
-import { SessionHistory } from '@/components/user/Sessions/SessionHistory'
+import { SessionHistoryDetails } from '@/components/user/Sessions/SessionHistoryDetails'
 import Navbar from '@/components/layout/Navbar'
 import { motion } from 'framer-motion'
 
-export default function SessionHistoryPage() {
+export default function SessionHistoryDetailsPage() {
   const [activeItem, setActiveItem] = useState('Session History');
 
   return (
     <div className="min-h-screen bg-black">
-      <div className="fixed top-0 left-0 right-0 z-50 bg-black">
+      <div className="fixed top-0 left-0 right-0 z-50">
         <Navbar />
       </div>
       
@@ -33,7 +33,7 @@ export default function SessionHistoryPage() {
           transition={{ delay: 0.2 }}
           className="flex-1 w-full"
         >
-          <SessionHistory />
+          <SessionHistoryDetails />
         </motion.div>
       </div>
     </div>

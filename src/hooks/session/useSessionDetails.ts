@@ -27,6 +27,10 @@ export interface Session {
   topics: string[];
   paymentStatus: string;
   developerId: Developer;
+  rejectionReason?: string;
+  feedback?: string;
+  rating?: number;
+  _id: string;
 }
 
 export const useSessionDetails = (sessionId: string | undefined) => {

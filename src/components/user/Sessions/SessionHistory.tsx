@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
   useReactTable,
@@ -29,48 +29,35 @@ import {
   DollarSign,
   Check,
   AlertCircle,
+  Star,
 } from 'lucide-react'
 import { HistorySession } from '@/types/types'
-
-const mockCompletedSessions: HistorySession[] = Array.from({ length: 50 }, (_, i) => ({
-  id: `SES${String(i + 1).padStart(4, '0')}`,
-  developer: {
-    name: `Developer ${i + 1}`,
-    avatar: `https://i.imghippo.com/files/GFY5894omo.jpg`,
-    role: 'Full Stack Developer',
-    status: 'offline'
-  },
-  date: new Date(Date.now() - (i * 24 * 60 * 60 * 1000)),
-  time: '10:00 AM',
-  duration: [30, 45, 60][Math.floor(Math.random() * 3)],
-  cost: [50, 75, 100, 150][Math.floor(Math.random() * 4)],
-  status: ['completed', 'cancelled'][Math.floor(Math.random() * 2)] as HistorySession['status'],
-  rating: Math.floor(Math.random() * 5) + 1,
-  feedback: "Great session! Very helpful and knowledgeable."
-}))
+import { useNavigate } from 'react-router-dom'
+import { useSessionHistory } from '@/hooks/session/useSessionHistory'
+import { useDebounce } from '@/hooks/useDebounce'
+import { Spinner } from '@/components/ui/spinner'
 
 export function SessionHistory() {
   const [sorting, setSorting] = useState<SortingState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
   const [searchValue, setSearchValue] = useState('')
   const [statusFilter, setStatusFilter] = useState<'completed' | 'cancelled' | 'all'>('all')
   const [isSearching, setIsSearching] = useState(false)
+  const navigate = useNavigate()
+  
+  const debouncedSearch = useDebounce(searchValue, 300)
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setGlobalFilter(searchValue)
-      setIsSearching(false)
-    }, 300)
-
-    return () => clearTimeout(timer)
-  }, [searchValue])
+  const { filteredSessions, isLoading, stats } = useSessionHistory(
+    debouncedSearch,
+    statusFilter
+  )
+  console.log("session history : ", filteredSessions)
 
   const columns = useMemo<ColumnDef<HistorySession>[]>(() => [
     {
       accessorKey: 'id',
       header: 'Session ID',
       cell: (info) => (
-        <span className="font-mono text-sm text-purple-300/90">{info.getValue() as string}</span>
+        <span className="font-mono text-sm text-purple-300/90">{(info.getValue() as string).slice(0,8)}</span>
       )
     },
     {
@@ -157,56 +144,74 @@ export function SessionHistory() {
       )
     },
     {
-        accessorKey: 'status',
-        header: 'Status',
-        cell: (info) => {
-          const status = info.getValue() as HistorySession['status']
-          const statusConfig = {
-            completed: {
-              label: 'Completed',
-              classes: 'bg-green-500/10 text-green-400 border-green-500/20',
-              icon: Check
-            },
-            cancelled: {
-              label: 'Cancelled',
-              classes: 'bg-red-500/10 text-red-400 border-red-500/20',
-              icon: AlertCircle
-            }
-          } as const
-          const StatusIcon = statusConfig[status].icon
-          return (
-            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium border ${statusConfig[status].classes}`}>
-            <StatusIcon className="w-3.5 h-3.5" />
-            {statusConfig[status].label}
-          </div>
-          )
+      accessorKey: 'status',
+      header: 'Status',
+      cell: (info) => {
+        const status = info.getValue() as HistorySession['status']
+        const statusConfig = {
+          completed: {
+            label: 'Completed',
+            classes: 'bg-green-500/10 text-green-400 border-green-500/20',
+            icon: Check
+          },
+          cancelled: {
+            label: 'Cancelled',
+            classes: 'bg-red-500/10 text-red-400 border-red-500/20',
+            icon: AlertCircle
+          }
+        } as const
+        const StatusIcon = statusConfig[status]?.icon || AlertCircle
+        const config = statusConfig[status] || {
+          label: status.charAt(0).toUpperCase() + status.slice(1),
+          classes: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
         }
-      },
+        
+        return (
+          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium border ${config.classes}`}>
+            <StatusIcon className="w-3.5 h-3.5" />
+            {config.label}
+          </div>
+        )
+      }
+    },
+    {
+      accessorKey: 'rating',
+      header: 'Rating',
+      cell: (info) => {
+        const rating = info.getValue() as number
+        return (
+          <div className="flex items-center gap-1">
+            {rating > 0 ? (
+              <div className="flex">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} className={`w-4 h-4 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-500'}`} />
+                ))}
+              </div>
+            ) : (
+              <span className="text-gray-400 text-sm">Not rated</span>
+            )}
+          </div>
+        )
+      }
+    },
     {
       id: 'actions',
       cell: (info) => (
         <Button
           variant="ghost"
           size="sm"
-          className="hover:bg-white/5 text-xs"
-          onClick={() => console.log('View details:', info.row.original)}
+          className="hover:bg-white/5 text-xs border border-white/10 rounded-xl"
+          onClick={() => navigate(`/sessions/history/${info.row.original.id}`)}
         >
           <Eye className="w-4 h-4 mr-1" />
           View Details
         </Button>
       )
     }
-  ], [])
-
-  const filteredData = useMemo(() => 
-    mockCompletedSessions.filter(session => 
-      statusFilter === 'all' ? true : session.status === statusFilter
-    ),
-    [statusFilter]
-  )
+  ], [navigate])
 
   const table = useReactTable({
-    data: filteredData,
+    data: filteredSessions,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -214,10 +219,8 @@ export function SessionHistory() {
     getSortedRowModel: getSortedRowModel(),
     state: {
       sorting,
-      globalFilter,
     },
     onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
     initialState: {
       pagination: {
         pageSize: 10,
@@ -225,16 +228,24 @@ export function SessionHistory() {
     },
   })
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center p-8">
+        <Spinner />
+      </div>
+    )
+  }
+
   return (
-    <main className="flex-1 lg:ml-64">
-      <div className="min-h-screen p-4 lg:p-8 pt-32 lg:pt-8">
-        <div className="max-w-7xl mx-auto space-y-8">
+    <main className="w-full">
+      <div className="min-h-screen p-4 lg:p-8 pt-20">
+        <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: 'Total Sessions', value: '142', icon: History, color: 'blue' },
-              { label: 'Completed', value: '128', icon: Check, color: 'green' },
-              { label: 'Cancelled', value: '14', icon: AlertCircle, color: 'red' },
-              { label: 'Total Spent', value: '$2,450', icon: DollarSign, color: 'yellow' },
+              { label: 'Total Sessions', value: stats.total, icon: History, color: 'blue' },
+              { label: 'Completed', value: stats.completed, icon: Check, color: 'green' },
+              { label: 'Cancelled', value: stats.cancelled, icon: AlertCircle, color: 'red' },
+              { label: 'Total Spent', value: `$${stats.totalSpent}`, icon: DollarSign, color: 'yellow' },
             ].map((stat, index) => (
               <motion.div
                 key={stat.label}
@@ -323,21 +334,29 @@ export function SessionHistory() {
                   </tr>
                 </thead>
                 <tbody>
-                  {table.getRowModel().rows.map((row) => (
-                    <tr
-                      key={row.id}
-                      className="border-b border-white/5 hover:bg-white/5 transition-colors"
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="py-3 px-2 first:pl-4 last:pr-4">
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </td>
-                      ))}
+                  {table.getRowModel().rows.length > 0 ? (
+                    table.getRowModel().rows.map((row) => (
+                      <tr
+                        key={row.id}
+                        className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <td key={cell.id} className="py-3 px-2 first:pl-4 last:pr-4">
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={columns.length} className="text-center py-6 text-gray-400">
+                        No session history found
+                      </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>

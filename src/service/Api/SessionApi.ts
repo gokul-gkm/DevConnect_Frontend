@@ -127,6 +127,27 @@ const SessionApi = {
     return response.data;
   },
       
+  
+  async getSessionHistory() {
+    const response = await axiosClient.get('/sessions/history');
+    
+    return response.data.data.map((session: any) => ({
+      id: session._id,
+      developer: {
+        name: session.developerUser.username,
+        avatar: session.developerUser.profilePicture || 'https://ui-avatars.com/api/?name=' + session.developerUser.username,
+        role: session.developer.expertise?.[0] || 'Developer',
+        status: 'offline' 
+      },
+      date: new Date(session.sessionDate),
+      time: new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      duration: session.duration,
+      cost: session.price,
+      status: session.status === 'rejected' ? 'cancelled' : session.status,
+      rating: session.rating || 0,
+      feedback: session.feedback || ""
+    }));
+  },
 };
 
 export default SessionApi;

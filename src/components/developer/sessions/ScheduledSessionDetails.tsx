@@ -212,7 +212,7 @@ export default function ScheduledSessionDetails() {
                       
                       <div className="mt-3">
                         <Button
-                            onClick={()=> navigate('/video-call')}
+                            onClick={() => navigate(`/video-call/${sessionId}`)}
                           className="bg-black border border-indigo-500/30 hover:bg-zinc-900 text-indigo-300 rounded-xl py-2 px-4 text-sm flex items-center gap-2"
                         >
                           <Link2 className="w-4 h-4" />
