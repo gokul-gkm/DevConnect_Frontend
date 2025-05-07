@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { DeveloperProfileSidebar } from '@/components/layout/DevProfileSidebar';
 import { motion } from 'framer-motion';
-import AvailabilityManagement from '@/components/developer/profile/AvailabilityManagement';
+import AvailabilitySettings from '@/components/developer/profile/AvailabilitySettings';
 
 const DeveloperAvailabilityPage = () => {
   const [activeItem, setActiveItem] = useState('Availability');
@@ -17,7 +17,7 @@ const DeveloperAvailabilityPage = () => {
         <div className="flex flex-col lg:flex-row">
           <DeveloperProfileSidebar activeItem={activeItem} setActiveItem={setActiveItem} />
           <div className="flex-1 flex justify-center">
-            <AvailabilityManagement />
+            <AvailabilitySettings />
           </div>
         </div>
       </div>

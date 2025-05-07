@@ -45,11 +45,11 @@ export default function AvailabilityManagement() {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col px-4 sm:px-6 py-8 lg:py-8">
+    <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col px-4 sm:px-6 py-6 lg:py-6">
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="backdrop-blur-xl bg-black/80 border-b border-white/5 px-4 py-6 mb-4 rounded-t-xl"
+        className="backdrop-blur-xl bg-black/80 border-b border-white/5 px-4 py-3 mb-4 rounded-t-xl"
       >
         <motion.h1 
           initial={{ opacity: 0, x: -20 }}

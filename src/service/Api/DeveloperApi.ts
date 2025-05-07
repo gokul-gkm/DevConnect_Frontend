@@ -73,6 +73,18 @@ const DeveloperApi = {
     const formattedDate = format(date, 'yyyy-MM-dd');
     const response = await axiosClient.get(`/developer/availability?date=${formattedDate}`);
     return response.data.data;
+  },
+
+  async updateDefaultAvailability(unavailableSlots: string[]) {
+    const response = await axiosClient.post('/developer/default-availability', {
+      unavailableSlots
+    });
+    return response.data;
+  },
+
+  async getDefaultUnavailableSlots() {
+    const response = await axiosClient.get(`/developer/default-availability`);
+    return response.data.data;
   }
 }
 
