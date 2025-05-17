@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { format } from 'date-fns'
@@ -23,12 +24,28 @@ import {
 import { Button } from '@/components/ui/shadcn-button'
 import { Spinner } from '@/components/ui/spinner'
 import { useSessionDetails } from '@/hooks/session/useSessionDetails'
+import { RatingModal } from '../rating/RatingModel'
 
 export function SessionHistoryDetails() {
   const { sessionId } = useParams<{ sessionId: string }>()
   const navigate = useNavigate()
-    const { data: session, isLoading, error } = useSessionDetails(sessionId)
-    console.log("session : ", session)
+  const { data: session, isLoading, error, refetch } = useSessionDetails(sessionId)
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+
+  useEffect(() => {
+    if (session && session.status === 'completed' && !session.rating) {
+      const timer = setTimeout(() => {
+        setIsRatingModalOpen(true)
+      }, 1000)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [session])
+  
+  const handleRatingSubmitted = () => {
+    refetch() 
+  }
 
   if (isLoading) {
     return (
@@ -320,9 +337,35 @@ export function SessionHistoryDetails() {
                         />
                       ))}
                       {session.rating ? (
-                        <span className="ml-3 text-white font-medium">{session.rating}/5</span>
+                        <div className="flex items-center">
+                          <span className="ml-3 text-white font-medium">{session.rating}/5</span>
+                          <Button 
+                            size="sm"
+                            variant="outline" 
+                            onClick={() => {
+                              setIsEditing(true);
+                              setIsRatingModalOpen(true);
+                            }}
+                            className="ml-3 border-zinc-700/50 text-zinc-300 hover:bg-zinc-800/50 rounded-xl"
+                          >
+                            Edit Rating
+                          </Button>
+                        </div>
                       ) : (
-                        <span className="ml-3 text-zinc-500">Not rated yet</span>
+                        <div className="flex items-center ml-3">
+                          <span className="text-zinc-500 mr-3">Not rated yet</span>
+                          <Button 
+                            size="sm"
+                            variant="secondary" 
+                            onClick={() => {
+                              setIsEditing(false);
+                              setIsRatingModalOpen(true);
+                            }}
+                            className="bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 border border-purple-600/30 rounded-xl"
+                          >
+                            Rate Now
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -360,6 +403,18 @@ export function SessionHistoryDetails() {
           )}
         </div>
       </div>
+  
+      {sessionId && (
+        <RatingModal 
+          isOpen={isRatingModalOpen}
+          onClose={() => setIsRatingModalOpen(false)}
+          sessionId={sessionId}
+          onRatingSubmitted={handleRatingSubmitted}
+          initialRating={isEditing ? session.rating || 0 : 0}
+          initialFeedback={isEditing ? session.feedback || '' : ''}
+          isEdit={isEditing}
+        />
+      )}
     </motion.main>
   )
 }

@@ -15,6 +15,12 @@ export interface Developer {
   profilePicture: string;
   developerProfile: DeveloperProfile;
 }
+export interface User {
+  _id: string
+  username: string;
+  email: string;
+  profilePicture: string;
+}
 
 export interface Session {
   title: string;
@@ -27,6 +33,7 @@ export interface Session {
   topics: string[];
   paymentStatus: string;
   developerId: Developer;
+  userId: User;
   rejectionReason?: string;
   feedback?: string;
   rating?: number;

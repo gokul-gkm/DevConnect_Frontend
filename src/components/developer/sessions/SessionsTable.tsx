@@ -244,26 +244,39 @@ const TableRow: React.FC<TableRowProps> = ({
 };
 
 interface StatusBadgeProps {
-  status: 'pending' | 'approved' | 'rejected' | 'scheduled';
+  status: string;
 }
 
-const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => (
+const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
+  const isValidStatus = status && ['pending', 'approved', 'rejected', 'scheduled'].includes(status);
+  
+  const config = isValidStatus ? statusConfig[status as keyof typeof statusConfig] : {
+    color: 'text-gray-400',
+    bgColor: 'bg-black/40',
+    borderColor: 'border-gray-800/20',
+    icon: <Clock className="w-3.5 h-3.5 text-gray-400" />
+  };
+
+  return (
   <div className={cn(
     "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium",
     "bg-gradient-to-r from-black/60 to-zinc-900/40",
     "border backdrop-blur-lg shadow-lg transition-all duration-300",
-    status === 'pending' ? "border-amber-500/20 shadow-amber-900/10" : 
+      isValidStatus 
+        ? (status === 'pending' ? "border-amber-500/20 shadow-amber-900/10" : 
     status === 'approved' ? "border-emerald-500/20 shadow-emerald-900/10" : 
     status === 'rejected' ? "border-rose-500/20 shadow-rose-900/10" : 
-    "border-blue-500/20 shadow-blue-900/10",
+           "border-blue-500/20 shadow-blue-900/10")
+        : "border-gray-500/20 shadow-gray-900/10",
     status === 'pending' && "animate-pulse"
   )}>
-    {statusConfig[status].icon}
-    <span className={statusConfig[status].color}>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+      {config.icon}
+      <span className={config.color}>
+        {status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'}
     </span>
   </div>
 );
+};
 
 interface ActionButtonsProps {
   status: 'pending' | 'approved' | 'rejected' | 'scheduled';

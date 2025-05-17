@@ -46,6 +46,64 @@ interface DashboardStats {
   }>;
 }
 
+interface RevenueStats {
+  totalRevenue: number;
+  platformFees: number;
+  developerEarnings: number;
+  sessions: number;
+  monthlyRevenue: Array<{
+    date: string;
+    revenue: number;
+  }>;
+  topEarningDevelopers: Array<{
+    id: string;
+    name: string;
+    email: string;
+    profilePicture: string;
+    sessions: number;
+    averageRating: number;
+    totalEarnings: number;
+  }>;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+  };
+}
+
+interface AdminSessionsResponse {
+  sessions: Array<{
+    _id: string;
+    title: string;
+    description: string;
+    sessionDate: string;
+    startTime: string;
+    duration: number;
+    price: number;
+    status: string;
+    paymentStatus: string;
+    formattedDate: string;
+    formattedTime: string;
+    user: {
+      _id: string;
+      username: string;
+      email: string;
+      profilePicture: string;
+    };
+    developer: {
+      _id: string;
+      username: string;
+      email: string;
+      profilePicture: string;
+    };
+  }>;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+  };
+}
+
 const AdminApi = {
     adminLogin: async (email: string, password: string): Promise<IAdminAuthResponse> => {
         const response = await axiosClient.post(adminRoutes.login, { email, password });
@@ -116,6 +174,44 @@ const AdminApi = {
     async getDashboardStats(): Promise<DashboardStats> {
         const response = await axiosClient.get<DashboardStats>('/admin/dashboard/stats');
         return response.data;
+    },
+
+    async getRevenueStats(params: { page?: number; limit?: number } = {}): Promise<RevenueStats> {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append('page', params.page.toString());
+        if (params.limit) queryParams.append('limit', params.limit.toString());
+        
+        const response = await axiosClient.get<RevenueStats>(
+            `/admin/revenue/stats?${queryParams.toString()}`
+        );
+        return response.data;
+    },
+
+    async getSessions(params: { 
+        page?: number; 
+        limit?: number; 
+        status?: string[];
+        search?: string;
+    }): Promise<AdminSessionsResponse> {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append('page', params.page.toString());
+        if (params.limit) queryParams.append('limit', params.limit.toString());
+        if (params.status && params.status.length > 0) {
+            queryParams.append('status', params.status.join(','));
+        }
+        if (params.search) queryParams.append('search', params.search);
+        
+        const response = await axiosClient.get<AdminSessionsResponse>(
+            `/admin/sessions?${queryParams.toString()}`
+        );
+        return response.data;
+    },
+
+    async getDeveloperLeaderboard(page = 1, limit = 10, sortBy = 'combined') {
+        const response = await axiosClient.get('/admin/developers/leaderboard', {
+            params: { page, limit, sortBy }
+        });
+        return response.data.data;
     }
 }
 

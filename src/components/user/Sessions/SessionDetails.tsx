@@ -10,6 +10,9 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useSessionDetails } from '@/hooks/session/useSessionDetails';
 import { PaymentButton } from '../payments/PaymentButton';
+import { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
+import { socketService } from '@/service/socket/socketService'
 
 type SessionStatus = 'pending' | 'approved' | 'rejected' | 'completed' | 'awaiting_payment';
 
@@ -34,7 +37,35 @@ export default function SessionDetails() {
   const navigate = useNavigate();
   const { sessionId } = useParams();
   const { data: session, isLoading } = useSessionDetails(sessionId as string);
+  const [isSessionActive, setIsSessionActive] = useState(false);
 
+  useEffect(() => {
+    if (!sessionId) return;
+    
+    const handleSessionStarted = (data:any) => {
+      if (data.sessionId === sessionId) {
+        setIsSessionActive(true);
+        toast.success('Your session has started! Developer is waiting for you to join.', {
+          duration: 8000,
+          icon: '🎥',
+        });
+      }
+    };
+    
+    socketService.on('session:started', handleSessionStarted);
+    
+    fetch(`/api/sessions/${sessionId}/status`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'active') {
+          setIsSessionActive(true);
+        }
+      })
+      .catch(err => console.error('Error fetching session status:', err));
+    return () => {
+      socketService.on('session:started', handleSessionStarted);
+    };
+  }, [sessionId]);
 
   if (isLoading || !session) {
     return (
@@ -60,11 +91,14 @@ export default function SessionDetails() {
       return (
         <div className="flex gap-4">
           <Button
-            className="flex-1 h-12 gap-2 rounded-xl bg-emerald-950/50 hover:bg-emerald-900/50 text-emerald-400 border border-emerald-400/20"
-            onClick={() => navigate(`/video-call/${sessionId}`)}
+            className={`flex-1 h-12 gap-2 rounded-xl ${isSessionActive ? 
+              'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500/30 animate-pulse' : 
+              'bg-emerald-950/50 hover:bg-emerald-900/50 text-emerald-400 border border-emerald-400/20'}`}
+            onClick={() => navigate(`/video-call-lobby/${sessionId}`)}
+            disabled={!isSessionActive}
           >
             <Zap className="w-5 h-5" />
-            Join Session
+            {isSessionActive ? 'Join Session Now' : 'Waiting for Developer'}
           </Button>
           <Button
             variant="outline"

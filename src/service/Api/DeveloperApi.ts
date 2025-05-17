@@ -85,6 +85,13 @@ const DeveloperApi = {
   async getDefaultUnavailableSlots() {
     const response = await axiosClient.get(`/developer/default-availability`);
     return response.data.data;
+  },
+
+  async getMyReviews(page = 1, limit = 10, search = '', sortOrder = 'newest') {
+    const response = await axiosClient.get('/developer/reviews', {
+      params: { page, limit, search, sortOrder }
+    });
+    return response.data.data;
   }
 }
 

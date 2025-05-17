@@ -65,6 +65,11 @@ import ScheduledSessionsDetailsPage from "@/pages/developer/Sessions/ScheduledSe
 import VideoCall from "@/components/video-chat/VideoCall";
 import DeveloperAvailabilityPage from "@/pages/developer/Profile/DeveloperAvailabilityPage";
 import SessionHistoryDetailsPage from "@/pages/user/Sessions/SessionHistoryDetailsPage";
+import VideoCallLobby from "@/components/video-chat/VideoCallLobby";
+import Revenue from "@/pages/admin/Revenue/RevenuePage";
+import AdminSessionsPage from "@/pages/admin/Sessions/SessionsPage";
+import ReviewsPage from "@/pages/developer/Reviews/ReviewsPage";
+import DeveloperLeaderboard from "@/pages/admin/Leaderboard/DeveloperLeaderboard";
 
 export const Router = createBrowserRouter([
   {
@@ -260,6 +265,15 @@ export const Router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: "reviews",
+        element: (
+          <ProtectedRoute allowedRole={Role.DEVELOPER}>
+            <ReviewsPage />
+          </ProtectedRoute>
+        ),
+      },
+
     ],
   },
 
@@ -356,6 +370,29 @@ export const Router = createBrowserRouter([
             <AdminWallet />
           </AdminProtectedRoute>
         ),
+      }, {
+        path: "revenue",
+        element: (
+          <AdminProtectedRoute>
+            <Revenue/>
+          </AdminProtectedRoute>
+        )
+      },
+      {
+        path: "sessions",
+        element: (
+          <AdminProtectedRoute>
+            <AdminSessionsPage/>
+          </AdminProtectedRoute>
+        )
+      },
+      {
+        path: "leaderboard",
+        element: (
+          <AdminProtectedRoute>
+            <DeveloperLeaderboard/>
+          </AdminProtectedRoute>
+        )
       },
       {
         path: "*",
@@ -406,6 +443,10 @@ export const Router = createBrowserRouter([
   {
     path: "video-call/:sessionId",
     element: <VideoCall />,
+  },
+  {
+    path: "/video-call-lobby/:sessionId",
+    element: <VideoCallLobby />
   },
 
   {

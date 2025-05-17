@@ -63,7 +63,8 @@ const SessionApi = {
 
 
    async getSessionDetails(sessionId: string) {
-    const response = await axiosClient.get(`/sessions/${sessionId}`);
+     const response = await axiosClient.get(`/sessions/${sessionId}`);
+     console.log(response.data)
     return response.data;
   },
    
@@ -147,6 +148,21 @@ const SessionApi = {
       rating: session.rating || 0,
       feedback: session.feedback || ""
     }));
+  },
+
+  async startSession(sessionId: string) {
+    const response = await axiosClient.post(`/sessions/${sessionId}/start`);
+    return response.data;
+  },
+
+  async rateSession(sessionId: string, data: { rating: number; feedback?: string }) {
+    const response = await axiosClient.post(`/sessions/${sessionId}/rate`, data);
+    return response.data;
+  },
+
+  async updateRating(sessionId: string, data: { rating: number; feedback?: string }) {
+    const response = await axiosClient.put(`/sessions/${sessionId}/rate`, data);
+    return response.data;
   },
 };
 

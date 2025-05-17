@@ -29,7 +29,6 @@ import {
   DollarSign,
   Check,
   AlertCircle,
-  Star,
 } from 'lucide-react'
 import { HistorySession } from '@/types/types'
 import { useNavigate } from 'react-router-dom'
@@ -170,26 +169,6 @@ export function SessionHistory() {
           <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium border ${config.classes}`}>
             <StatusIcon className="w-3.5 h-3.5" />
             {config.label}
-          </div>
-        )
-      }
-    },
-    {
-      accessorKey: 'rating',
-      header: 'Rating',
-      cell: (info) => {
-        const rating = info.getValue() as number
-        return (
-          <div className="flex items-center gap-1">
-            {rating > 0 ? (
-              <div className="flex">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className={`w-4 h-4 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-500'}`} />
-                ))}
-              </div>
-            ) : (
-              <span className="text-gray-400 text-sm">Not rated</span>
-            )}
           </div>
         )
       }
