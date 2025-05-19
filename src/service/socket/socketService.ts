@@ -31,6 +31,7 @@ class SocketService {
     private hasNotificationReadListener = false;
     private hasNotificationAllReadListener = false;
     private hasUnreadCountListener = false;
+    private hasWebRTCListeners = false;
     
     connect(token?: string | null, role?: string): Promise<boolean> {
         
@@ -389,6 +390,15 @@ class SocketService {
                 this.socket.off('notification:unread-count');
                 this.hasUnreadCountListener = false;
             }
+            
+            if (this.hasWebRTCListeners) {
+                this.socket.off('webrtc:offer');
+                this.socket.off('webrtc:answer');
+                this.socket.off('webrtc:ice-candidate');
+                this.socket.off('webrtc:user-disconnected');
+                this.socket.off('webrtc:session-info');
+                this.hasWebRTCListeners = false;
+            }
         }
     }
 
@@ -691,6 +701,52 @@ class SocketService {
             this.cleanup();
             this.disconnect();
         }
+    }
+
+    setupWebRTCListeners() {
+        if (!this.socket) return;
+        
+        if (this.hasWebRTCListeners) {
+            this.socket.off('webrtc:offer');
+            this.socket.off('webrtc:answer');
+            this.socket.off('webrtc:ice-candidate');
+            this.socket.off('webrtc:user-disconnected');
+            this.socket.off('webrtc:session-info');
+        }
+        
+        this.hasWebRTCListeners = true;
+    }
+
+    joinVideoRoom(sessionId: string): boolean {
+        if (!this.socket) {
+            console.warn('Cannot join video room: Socket not connected');
+            return false;
+        }
+        
+        if (this.userRole === 'developer') {
+            this.socket.emit('developer:join-video', sessionId);
+        } else {
+            this.socket.emit('user:join-video', sessionId);
+        }
+        
+        return true;
+    }
+
+    leaveVideoRoom(sessionId: string): boolean {
+        if (!this.socket || !sessionId) {
+            console.warn('Cannot leave video room: Socket not connected or invalid session ID');
+            return false;
+        }
+        
+        if (this.userRole === 'developer') {
+            this.socket.emit('developer:leave-video', sessionId);
+            console.log(`Emitted leave video room event for sessionId: ${sessionId}`);
+        } else {
+            this.socket.emit('user:leave-video', sessionId);
+            console.log(`Emitted leave video room event for sessionId: ${sessionId}`);
+        }
+        
+        return true;
     }
 }
 

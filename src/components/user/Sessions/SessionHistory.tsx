@@ -9,7 +9,6 @@ import {
   getFilteredRowModel,
   getSortedRowModel,
   ColumnDef,
-  flexRender,
   SortingState,
 } from '@tanstack/react-table'
 import { Button } from "@/components/ui/shadcn-button"
@@ -19,10 +18,6 @@ import {
   Search,
   ChevronDown,
   ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
   Eye,
   History,
   Clock,
@@ -35,21 +30,25 @@ import { useNavigate } from 'react-router-dom'
 import { useSessionHistory } from '@/hooks/session/useSessionHistory'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Spinner } from '@/components/ui/spinner'
+import { StatsCard } from '@/components/user/Sessions/StatsCard'
+import { SessionTable } from '@/components/user/Sessions/SessionTable'
+import Pagination from '@/components/ui/Pagination'
 
 export function SessionHistory() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [searchValue, setSearchValue] = useState('')
   const [statusFilter, setStatusFilter] = useState<'completed' | 'cancelled' | 'all'>('all')
   const [isSearching, setIsSearching] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
   const navigate = useNavigate()
   
   const debouncedSearch = useDebounce(searchValue, 300)
 
-  const { filteredSessions, isLoading, stats } = useSessionHistory(
+  const { filteredSessions, isLoading, stats, pagination } = useSessionHistory(
     debouncedSearch,
-    statusFilter
+    statusFilter,
+    currentPage
   )
-  console.log("session history : ", filteredSessions)
 
   const columns = useMemo<ColumnDef<HistorySession>[]>(() => [
     {
@@ -207,6 +206,33 @@ export function SessionHistory() {
     },
   })
 
+  const statsData = [
+    {
+      label: 'Total Sessions',
+      value: stats.total,
+      icon: <History className="w-6 h-6 text-blue-400" />,
+      colorClass: 'bg-blue-500/10'
+    },
+    {
+      label: 'Completed',
+      value: stats.completed,
+      icon: <Check className="w-6 h-6 text-green-400" />,
+      colorClass: 'bg-green-500/10'
+    },
+    {
+      label: 'Cancelled',
+      value: stats.cancelled,
+      icon: <AlertCircle className="w-6 h-6 text-red-400" />,
+      colorClass: 'bg-red-500/10'
+    },
+    {
+      label: 'Total Spent',
+      value: `$${stats.totalSpent}`,
+      icon: <DollarSign className="w-6 h-6 text-yellow-400" />,
+      colorClass: 'bg-yellow-500/10'
+    }
+  ];
+
   if (isLoading) {
     return (
       <div className="flex justify-center p-8">
@@ -219,28 +245,15 @@ export function SessionHistory() {
     <main className="w-full">
       <div className="min-h-screen p-4 lg:p-8 pt-20">
         <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { label: 'Total Sessions', value: stats.total, icon: History, color: 'blue' },
-              { label: 'Completed', value: stats.completed, icon: Check, color: 'green' },
-              { label: 'Cancelled', value: stats.cancelled, icon: AlertCircle, color: 'red' },
-              { label: 'Total Spent', value: `$${stats.totalSpent}`, icon: DollarSign, color: 'yellow' },
-            ].map((stat, index) => (
-              <motion.div
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {statsData.map((stat) => (
+              <StatsCard
                 key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-gradient-to-br from-zinc-900/50 to-black/50 rounded-2xl p-6 backdrop-blur-sm border border-white/5
-                  hover:border-white/10 transition-all group"
-              >
-                <div className={`w-12 h-12 rounded-xl bg-${stat.color}-500/10 flex items-center justify-center mb-4
-                  group-hover:bg-${stat.color}-500/20 transition-colors`}>
-                  <stat.icon className={`w-6 h-6 text-${stat.color}-400`} />
-                </div>
-                <p className="text-sm text-gray-400">{stat.label}</p>
-                <p className="text-2xl font-semibold text-white mt-1">{stat.value}</p>
-              </motion.div>
+                icon={stat.icon}
+                label={stat.label}
+                value={stat.value}
+                colorClass={stat.colorClass}
+              />
             ))}
           </div>
 
@@ -291,113 +304,22 @@ export function SessionHistory() {
               </div>
             </div>
 
-            <div className="relative overflow-x-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-              <table className="w-full border-collapse min-w-[800px]">
-                <thead>
-                  <tr className="border-b border-white/5 bg-white/5">
-                    {table.getHeaderGroups().map((headerGroup) => (
-                      headerGroup.headers.map((header) => (
-                        <th
-                          key={header.id}
-                          className="text-left py-4 px-4 text-sm font-medium text-gray-400 first:pl-6 last:pr-6"
-                        >
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </th>
-                      ))
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {table.getRowModel().rows.length > 0 ? (
-                    table.getRowModel().rows.map((row) => (
-                      <tr
-                        key={row.id}
-                        className="border-b border-white/5 hover:bg-white/5 transition-colors"
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <td key={cell.id} className="py-3 px-2 first:pl-4 last:pr-4">
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </td>
-                        ))}
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={columns.length} className="text-center py-6 text-gray-400">
-                        No session history found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-            <div className="p-4 border-t border-white/5">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.setPageIndex(0)}
-                    disabled={!table.getCanPreviousPage()}
-                    className="border-white/5 hover:bg-white/5"
-                  >
-                    <ChevronsLeft className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                    className="border-white/5 hover:bg-white/5"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                  <span className="text-sm text-gray-400">
-                    Page {table.getState().pagination.pageIndex + 1} of{' '}
-                    {table.getPageCount()}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                    className="border-white/5 hover:bg-white/5"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                    disabled={!table.getCanNextPage()}
-                    className="border-white/5 hover:bg-white/5"
-                  >
-                    <ChevronsRight className="w-4 h-4" />
-                  </Button>
-                </div>
-                <select
-                  value={table.getState().pagination.pageSize}
-                  onChange={(e) => table.setPageSize(Number(e.target.value))}
-                  className="bg-zinc-900/50 border border-white/5 rounded-lg px-3 py-2 text-sm text-white
-                    focus:outline-none focus:border-purple-500/50 transition-colors hover:border-white/10"
-                >
-                  {[10, 20, 30, 40, 50].map((pageSize) => (
-                    <option key={pageSize} value={pageSize}>
-                      Show {pageSize}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <SessionTable
+              table={table}
+              columns={columns}
+              isLoading={isLoading}
+              emptyMessage="No session history found"
+            />
+
+            
           </motion.div>
+          <Pagination
+              pagination={{
+                currentPage: pagination.currentPage,
+                totalPages: pagination.totalPages,
+              }}
+              updateParams={({ page }) => setCurrentPage(page)}
+            />
         </div>
       </div>
     </main>

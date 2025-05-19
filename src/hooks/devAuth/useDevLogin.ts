@@ -71,6 +71,7 @@ export const useDevLogin = () => {
             _id: data.user._id
           })
         );
+        
         socketService.connect(data.token!);
         toast.success("Login successful!");
         navigate("/developer/dashboard");

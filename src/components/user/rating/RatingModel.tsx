@@ -54,11 +54,11 @@ export function RatingModal({
         })
         toast.success("Rating updated successfully!")
       } else {
-        await SessionApi.rateSession(sessionId, {
-          rating,
-          feedback
-        })
-        toast.success("Rating submitted. Thank you for your feedback!")
+      await SessionApi.rateSession(sessionId, {
+        rating,
+        feedback
+      })
+      toast.success("Rating submitted. Thank you for your feedback!")
       }
 
       if (onRatingSubmitted) {
@@ -115,11 +115,11 @@ export function RatingModal({
                 </h2>
               </div>
               <p className="text-zinc-400 text-sm">
-                Your feedback helps developers improve their services
+            Your feedback helps developers improve their services
               </p>
             </div>
           </div>
-          
+
           <div className="px-5 pb-3">
             <AnimatePresence>
               <motion.div 
@@ -129,30 +129,30 @@ export function RatingModal({
                 transition={{ duration: 0.3 }}
               >
                 <div className="bg-zinc-800/20 backdrop-blur-sm rounded-xl border border-zinc-700/20 p-4 w-full">
-                  <div className="flex items-center justify-center space-x-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
+          <div className="flex items-center justify-center space-x-2">
+            {[1, 2, 3, 4, 5].map((star) => (
                       <motion.button
-                        key={star}
-                        type="button"
-                        onClick={() => setRating(star)}
-                        onMouseEnter={() => setHoveredRating(star)}
-                        onMouseLeave={() => setHoveredRating(0)}
+                key={star}
+                type="button"
+                onClick={() => setRating(star)}
+                onMouseEnter={() => setHoveredRating(star)}
+                onMouseLeave={() => setHoveredRating(0)}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
                         className="focus:outline-none"
-                      >
-                        <Star
+              >
+                <Star
                           size={32}
-                          className={`${
-                            star <= (hoveredRating || rating)
-                              ? 'text-yellow-400 fill-yellow-400'
+                  className={`${
+                    star <= (hoveredRating || rating)
+                      ? 'text-yellow-400 fill-yellow-400'
                               : 'text-zinc-700'
                           } drop-shadow-md transition-colors duration-200`}
-                        />
+                />
                       </motion.button>
-                    ))}
-                  </div>
-                  
+            ))}
+          </div>
+
                   <motion.p 
                     key={rating}
                     initial={{ opacity: 0 }}
@@ -162,47 +162,47 @@ export function RatingModal({
                     {getRatingText()}
                   </motion.p>
                 </div>
-                
-                <div className="w-full">
-                  <Textarea
+
+          <div className="w-full">
+            <Textarea
                     placeholder="Share your thoughts (optional)"
                     className="dark:bg-zinc-800/50 dark:border-zinc-700/50 focus:border-purple-500/50 text-white resize-none 
                       rounded-xl shadow-inner placeholder:text-zinc-500 text-sm"
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
                     rows={3}
-                  />
-                </div>
+            />
+          </div>
               </motion.div>
             </AnimatePresence>
-          </div>
-          
+        </div>
+
           <div className="border-t border-zinc-800/50 p-4 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={handleSkip}
-              disabled={isSubmitting}
+          <Button
+            variant="outline"
+            onClick={handleSkip}
+            disabled={isSubmitting}
               size="sm"
               className="border-zinc-700/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-white rounded-xl shadow-sm"
-            >
+          >
               Skip
-            </Button>
-            <Button 
-              onClick={handleSubmit}
-              disabled={isSubmitting}
+          </Button>
+          <Button 
+            onClick={handleSubmit}
+            disabled={isSubmitting}
               size="sm"
               className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 
                 text-white rounded-xl shadow-md transition-all duration-300"
-            >
-              {isSubmitting ? (
-                <>
+          >
+            {isSubmitting ? (
+              <>
                   <Loader className="w-3 h-3 mr-1.5 animate-spin" />
                   {isEdit ? 'Updating...' : 'Submitting...'}
-                </>
-              ) : (
+              </>
+            ) : (
                 isEdit ? 'Update Rating' : 'Submit Rating'
-              )}
-            </Button>
+            )}
+          </Button>
           </div>
         </div>
       </DialogContent>

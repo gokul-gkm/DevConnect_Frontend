@@ -12,7 +12,6 @@ const navItems = [
   { name: 'Home', delay: 0, url: '/' },
   { name: 'developers', delay: 0.1, url: '/search-developers'},
   { name: 'Sessions', delay: 0.2, url: '/sessions/upcoming' },
-  { name: 'Blog', delay: 0.4, url: '/blog' },
   { name: 'About', delay: 0.6, url: '/about' },
 ];
 

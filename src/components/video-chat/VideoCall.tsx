@@ -13,65 +13,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-
-// This would be implemented based on your WebRTC/Socket.io setup
-const useVideoCall = (sessionId: string) => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isVideoEnabled, setIsVideoEnabled] = useState(true);
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [callDuration, setCallDuration] = useState(0);
-  const [sessionData, setSessionData] = useState<any>(null);
-  
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-      setIsConnected(true);
-      setSessionData({
-        title: "React Advanced State Management",
-        user: {
-          username: "Sarah Parker",
-          profilePicture: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
-        }
-      });
-    }, 2000);
-    
-    return () => clearTimeout(timer);
-  }, [sessionId]);
-  
-  // Mock call duration timer
-  useEffect(() => {
-    if (isConnected) {
-      const interval = setInterval(() => {
-        setCallDuration(prev => prev + 1);
-      }, 1000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [isConnected]);
-  
-  const toggleMute = () => setIsMuted(!isMuted);
-  const toggleVideo = () => setIsVideoEnabled(!isVideoEnabled);
-  const toggleScreenShare = () => setIsScreenSharing(!isScreenSharing);
-  const endCall = () => setIsConnected(false);
-  
-  return {
-    isConnected,
-    isLoading,
-    isMuted,
-    isVideoEnabled,
-    isScreenSharing,
-    error,
-    callDuration,
-    sessionData,
-    toggleMute,
-    toggleVideo,
-    toggleScreenShare,
-    endCall
-  };
-};
+import { toast } from 'react-hot-toast';
+import { useVideoCall } from '@/hooks/videoCall/useVideoCall';
 
 const formatDuration = (seconds: number) => {
   const hrs = Math.floor(seconds / 3600);
@@ -84,6 +27,8 @@ const formatDuration = (seconds: number) => {
 export default function VideoCall() {
   const { sessionId = '' } = useParams();
   const navigate = useNavigate();
+  const searchParams = new URLSearchParams(window.location.search);
+  const isHost = searchParams.get('host') === 'true';
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const screenShareRef = useRef<HTMLVideoElement>(null);
@@ -97,58 +42,54 @@ export default function VideoCall() {
   const containerRef = useRef<HTMLDivElement>(null);
   
   const {
-    isConnected,
-    isLoading,
+    localStream,
+    remoteStreams,
+    participants,
+    screenShareStream,
     isMuted,
     isVideoEnabled,
+    isConnected,
+    isLoading,
     isScreenSharing,
-    error,
     callDuration,
+    error,
     sessionData,
+    
     toggleMute,
     toggleVideo,
     toggleScreenShare,
     endCall
-  } = useVideoCall(sessionId);
+  } = useVideoCall({ 
+    sessionId,
+    isHost,
+    onError: (message) => {
+      toast.error(message, {
+        duration: 5000,
+        style: { background: '#991b1b', color: '#fff', border: '1px solid #ef4444' }
+      });
+    }
+  });
 
-  // Set up local video preview
   useEffect(() => {
-    if (isVideoEnabled && localVideoRef.current) {
-      navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-        .then(stream => {
-          if (localVideoRef.current) {
-            localVideoRef.current.srcObject = stream;
-          }
-        })
-        .catch(err => console.error('Error accessing media devices:', err));
+    if (localStream && localVideoRef.current) {
+      localVideoRef.current.srcObject = localStream;
     }
-    
-    // Cleanup function to stop all tracks when component unmounts
-    return () => {
-      if (localVideoRef.current?.srcObject) {
-        const stream = localVideoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [isVideoEnabled]);
-  
-  // Mock remote video with a timer for demonstration
+  }, [localStream]);
+
   useEffect(() => {
-    if (isConnected && remoteVideoRef.current) {
-      // In a real implementation, this would come from your WebRTC connection
-      setTimeout(() => {
-        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-          .then(stream => {
-            if (remoteVideoRef.current) {
-              remoteVideoRef.current.srcObject = stream;
-            }
-          })
-          .catch(err => console.error('Error simulating remote video:', err));
-      }, 1000);
+    if (remoteStreams.size > 0 && remoteVideoRef.current) {
+
+      const stream = Array.from(remoteStreams.values())[0];
+      remoteVideoRef.current.srcObject = stream;
     }
-  }, [isConnected]);
+  }, [remoteStreams]);
   
-  // Update layout based on screen sharing state
+  useEffect(() => {
+    if (screenShareStream && screenShareRef.current) {
+      screenShareRef.current.srcObject = screenShareStream;
+    }
+  }, [screenShareStream]);
+  
   useEffect(() => {
     if (isScreenSharing) {
       setLayout('screenShare');
@@ -157,7 +98,6 @@ export default function VideoCall() {
     }
   }, [isScreenSharing]);
   
-  // Auto-hide controls after inactivity
   useEffect(() => {
     let timeout: NodeJS.Timeout;
     
@@ -181,7 +121,6 @@ export default function VideoCall() {
     };
   }, [isConnected]);
   
-  // Handle fullscreen mode
   const toggleFullscreen = () => {
     if (!document.fullscreenElement && containerRef.current) {
       containerRef.current.requestFullscreen().catch(err => {
@@ -282,7 +221,6 @@ export default function VideoCall() {
         )}
         onMouseMove={() => setShowControls(true)}
       >
-
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/4 w-1/2 h-1/2 bg-indigo-500/5 rounded-full blur-3xl opacity-20"></div>
           <div className="absolute bottom-0 right-1/4 w-1/2 h-1/2 bg-purple-500/5 rounded-full blur-3xl opacity-20"></div>
@@ -306,7 +244,6 @@ export default function VideoCall() {
           </Tooltip>
         </div>
         
-  
         <AnimatePresence>
           {showControls && (
             <motion.div 
@@ -329,7 +266,7 @@ export default function VideoCall() {
                     "font-medium text-white",
                     isCompact ? "text-sm" : "text-lg"
                   )}>
-                    {sessionData?.title}
+                    {sessionData?.title || 'Video Call'}
                   </h3>
                   <div className="flex items-center gap-2">
                     <Clock className="w-3 h-3 text-indigo-400" />
@@ -409,7 +346,6 @@ export default function VideoCall() {
           "grid grid-cols-2 gap-2",
           !isCompact && (windowSize.width < 768 ? "h-[60vh]" : "h-[75vh] aspect-video")
         )}>
-
           <div className="absolute inset-0 bg-gradient-to-br from-zinc-900/90 to-black/95 backdrop-blur-sm"></div>
           
           {isScreenSharing && layout === 'screenShare' && (
@@ -450,17 +386,19 @@ export default function VideoCall() {
                 style={{ opacity: videoOpacity }}
               />
               
-              <div className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-xl text-white text-sm flex items-center gap-2 border border-zinc-800/80 shadow-lg">
-                <div className="h-5 w-5 rounded-full overflow-hidden shadow-inner border border-indigo-500/30">
-                  <Avatar className="h-full w-full">
-                    <AvatarImage src={sessionData?.user?.profilePicture} />
-                    <AvatarFallback className="bg-indigo-900/80 text-white text-xs">
-                      {sessionData?.user?.username?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
+              {participants.length > 1 && (
+                <div className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-xl text-white text-sm flex items-center gap-2 border border-zinc-800/80 shadow-lg">
+                  <div className="h-5 w-5 rounded-full overflow-hidden shadow-inner border border-indigo-500/30">
+                    <Avatar className="h-full w-full">
+                      <AvatarImage src={participants[1]?.profilePicture} />
+                      <AvatarFallback className="bg-indigo-900/80 text-white text-xs">
+                        {participants[1]?.username?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  {participants[1]?.username || 'Remote User'}
                 </div>
-                {sessionData?.user?.username}
-              </div>
+              )}
             </div>
           </div>
           

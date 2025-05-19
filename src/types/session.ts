@@ -21,7 +21,8 @@ export interface Session {
     | 'approved'
     | 'rejected'
     | 'completed'
-    | 'awaiting_payment';
+    | 'awaiting_payment'
+    ;
   
   export type PaymentStatus = 'pending' | 'completed';
   

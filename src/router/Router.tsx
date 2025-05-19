@@ -70,6 +70,8 @@ import Revenue from "@/pages/admin/Revenue/RevenuePage";
 import AdminSessionsPage from "@/pages/admin/Sessions/SessionsPage";
 import ReviewsPage from "@/pages/developer/Reviews/ReviewsPage";
 import DeveloperLeaderboard from "@/pages/admin/Leaderboard/DeveloperLeaderboard";
+import DeveloperSessionHistoryPage from "@/pages/developer/Sessions/DeveloperSessionHistoryPage";
+import DeveloperSessionHistoryDetailsPage from "@/pages/developer/Sessions/DeveloperSessionHistoryDetailsPage";
 
 export const Router = createBrowserRouter([
   {
@@ -242,6 +244,22 @@ export const Router = createBrowserRouter([
         ),
       },
       {
+        path: "sessions/history",
+        element: (
+          <ProtectedRoute allowedRole={Role.DEVELOPER}>
+            <DeveloperSessionHistoryPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "sessions/history/:sessionId",
+        element: (
+          <ProtectedRoute allowedRole={Role.DEVELOPER}>
+            <DeveloperSessionHistoryDetailsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "wallet",
         element: (
           <ProtectedRoute allowedRole={Role.DEVELOPER}>
@@ -292,6 +310,12 @@ export const Router = createBrowserRouter([
         <DeveloperChatPage />
       </ProtectedRoute>
     ),
+  },
+  {
+    path: "/about",
+    element: (
+      <AboutUs />
+),
   },
   {
     path: "admin",

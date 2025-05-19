@@ -2,17 +2,18 @@ import { useQuery } from '@tanstack/react-query';
 import SessionApi from '@/service/Api/SessionApi';
 import { useMemo } from 'react';
 
-export const useSessionHistory = (searchValue: string, statusFilter: string) => {
+export const useSessionHistory = (searchValue: string, statusFilter: string, page: number = 1) => {
   const {
-    data: sessions,
+    data,
     isLoading,
     error
   } = useQuery({
-    queryKey: ['session-history'],
-    queryFn: SessionApi.getSessionHistory
+    queryKey: ['session-history', page],
+    queryFn: () => SessionApi.getSessionHistory(page)
   });
     
-    console.log("session hook : ", sessions)
+  const sessions = data?.data || [];
+  const pagination = data?.pagination || { currentPage: 1, totalPages: 1, totalItems: 0 };
 
   const filteredSessions = useMemo(() => {
     if (!sessions) return [];
@@ -42,19 +43,20 @@ export const useSessionHistory = (searchValue: string, statusFilter: string) => 
     };
 
     return {
-      total: sessions.length,
+      total: pagination.totalItems,
       completed: sessions.filter((s: any) => s.status === 'completed').length,
       cancelled: sessions.filter((s: any) => s.status === 'cancelled').length,
       totalSpent: sessions.reduce((acc: any, curr: any) => 
         curr.status === 'completed' ? acc + curr.cost : acc, 0)
     };
-  }, [sessions]);
+  }, [sessions, pagination]);
 
   return {
     sessions,
     isLoading,
     error,
     filteredSessions,
-    stats
+    stats,
+    pagination
   };
 };

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Calendar, Clock, Layout, Users, ArrowRight, Clock3, User } from 'lucide-react';
+import { Search, Calendar, Clock, Layout, Users, ArrowRight, Clock3, User, Layers, MessageCircle } from 'lucide-react';
 import { Input } from "@/components/ui/Input";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useScheduledSessions } from '@/hooks/session/useScheduledSessions';
@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 export default function ScheduledSessions() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const navigate = useNavigate();
 
   const {
@@ -218,7 +219,7 @@ export default function ScheduledSessions() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.4 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"
+                className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10"
               >
                 {filteredSessions && filteredSessions.length > 0 ? (
                   filteredSessions.map((session: any, index: number) => (
@@ -228,81 +229,91 @@ export default function ScheduledSessions() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 + (index * 0.05) }}
                       className="relative overflow-hidden rounded-2xl group"
-                      whileHover={{ y: -5 }}
+                      whileHover={{ y: -4 }}
+                      onHoverStart={() => setHoveredIndex(index)}
+                      onHoverEnd={() => setHoveredIndex(null)}
                       onClick={() => navigate(`/developer/sessions/scheduled/${session._id}`)}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 via-purple-900/10 to-transparent group-hover:opacity-100 transition-opacity rounded-2xl blur-xl -z-10 opacity-60" />
-                      <div className="relative bg-zinc-900/30 backdrop-blur-xl border border-zinc-800/50 group-hover:border-indigo-500/30 p-6 rounded-2xl transition-all duration-500 h-full flex flex-col shadow-[0_10px_40px_-15px_rgba(0,0,0,0.7)]">
-                        <div className="absolute -right-20 -top-20 w-40 h-40 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-colors duration-500" />
-                        <div className="absolute -left-20 -bottom-20 w-40 h-40 bg-purple-500/5 rounded-full blur-3xl group-hover:bg-purple-500/10 transition-colors duration-500" />
+                      <div className="bg-zinc-800/20 rounded-xl border border-zinc-800/50 shadow-lg overflow-hidden">
+                        <motion.div 
+                          animate={{ 
+                            opacity: hoveredIndex === index ? 0.5 : 0,
+                          }}
+                          className="absolute inset-0 bg-gradient-to-tr from-indigo-600/10 to-indigo-500/5 z-0"
+                        ></motion.div>
                         
-                        <div className="mb-4 flex justify-between items-start relative">
-                          <div>
-                            <Badge className="bg-indigo-950/70 text-indigo-300 border border-indigo-500/20 shadow-[0_2px_10px_-2px_rgba(99,102,241,0.3)] mb-2 px-2.5 py-0.5">
-                              Scheduled
-                            </Badge>
-                            <h3 className="text-xl font-medium text-white line-clamp-2 group-hover:text-indigo-100 transition-colors">{session.title}</h3>
+                        <div className="relative z-10 p-5">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex-1">
+                              <h4 className="text-white font-medium mb-1 truncate">{session.title || "Mentoring Session"}</h4>
+                              <div className="text-zinc-500 text-xs">
+                                Session ID: <span className="font-mono">{session._id.substring(0, 8)}</span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -right-2 -top-2">
-                            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-full blur-2xl" />
+                          
+                          <div className="grid grid-cols-2 gap-3 mt-4">
+                            <div className="bg-zinc-800/30 rounded-xl p-3 border border-zinc-800/50">
+                              <h4 className="text-zinc-300 text-xs flex items-center gap-1.5 mb-1">
+                                <Calendar className="w-3.5 h-3.5 text-zinc-400" />
+                                Date
+                              </h4>
+                              <p className="text-white text-sm">{format(new Date(session.sessionDate), 'MMM dd, yyyy')}</p>
+                            </div>
+                            
+                            <div className="bg-zinc-800/30 rounded-xl p-3 border border-zinc-800/50">
+                              <h4 className="text-zinc-300 text-xs flex items-center gap-1.5 mb-1">
+                                <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                                Time
+                              </h4>
+                              <p className="text-white text-sm">{format(new Date(session.startTime), 'hh:mm a')}</p>
+                            </div>
                           </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-3 mb-5 relative z-10">
-                          <div className="relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/30 to-purple-500/30 rounded-full blur-md opacity-80 group-hover:opacity-100 transition-opacity" />
-                            <Avatar className="h-10 w-10 border border-indigo-500/20 relative z-10 shadow-lg">
-                              <AvatarImage src={session.userId.profilePicture} />
-                              <AvatarFallback className="bg-indigo-950/70 text-indigo-200">
-                                {session.userId.username?.[0]?.toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
+                          
+                          <div className="mt-4">
+                            <h4 className="text-zinc-300 text-xs flex items-center gap-1.5 mb-2">
+                              <Layers className="w-3.5 h-3.5 text-zinc-400" />
+                              Topics
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              {session.topics?.map((topic: string) => (
+                                <span 
+                                  key={topic} 
+                                  className="px-2.5 py-1 bg-zinc-800/50 text-zinc-300 rounded-xl text-xs border border-zinc-700/30"
+                                >
+                                  {topic}
+                                </span>
+                              ))}
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-white group-hover:text-indigo-100 transition-colors">{session.userId.username}</p>
-                            <p className="text-xs text-zinc-400 group-hover:text-zinc-300 transition-colors">{session.userId.email}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-3 mb-5 flex-grow relative z-10">
-                          <div className="flex items-center gap-2 p-2 rounded-xl bg-black/30 border border-zinc-800/50 group-hover:border-indigo-500/20 transition-all duration-300">
-                            <Calendar className="w-4 h-4 text-indigo-400" />
-                            <span className="text-sm text-zinc-300">
-                              {format(new Date(session.sessionDate), 'MMMM d, yyyy')}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 p-2 rounded-xl bg-black/30 border border-zinc-800/50 group-hover:border-indigo-500/20 transition-all duration-300">
-                            <Clock className="w-4 h-4 text-indigo-400" />
-                            <span className="text-sm text-zinc-300">
-                              {format(new Date(session.startTime), 'hh:mm a')} ({session.duration} mins)
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-1.5 mb-5">
-                          {session.topics.slice(0, 3).map((topic: string, i: number) => (
-                            <Badge 
-                              key={i} 
-                              className="bg-black/50 text-zinc-300 border-indigo-500/20 px-2.5 py-0.5 text-xs group-hover:bg-indigo-950/30 group-hover:border-indigo-500/30 transition-all duration-300"
+                          
+                          <div className="flex items-center gap-3 mt-4 pt-3 border-t border-zinc-800/30">
+                            <div className="flex-1 flex items-center gap-2">
+                              <img 
+                                src={session.userId.profilePicture || `https://ui-avatars.com/api/?name=${session.userId.username}`} 
+                                alt={session.userId.username} 
+                                className="w-8 h-8 rounded-xl object-cover border border-zinc-700/50" 
+                              />
+                              <span className="text-sm text-white">{session.userId.username}</span>
+                            </div>
+                            
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className="bg-black hover:bg-zinc-900 text-indigo-300 border border-indigo-800/30 shadow-lg shadow-indigo-900/5 rounded-xl px-4 py-2 text-sm flex items-center gap-2 transition-all duration-300"
+                              onClick={() => navigate(`/developer/chats/${session.userId._id}`)}
                             >
-                              {topic}
-                            </Badge>
-                          ))}
-                          {session.topics.length > 3 && (
-                            <Badge variant="outline" className="bg-black/50 text-zinc-400 border-zinc-700 px-2.5 py-0.5 text-xs">
-                              +{session.topics.length - 3} more
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        <div className="mt-auto">
-                          <Button
-                            onClick={()=> navigate(`/developer/sessions/scheduled/${session._id}`)}
-                            className="w-full bg-black hover:bg-zinc-900 border border-indigo-500/30 text-indigo-300 rounded-xl h-10 group-hover:border-indigo-500/50 group-hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.4)] transition-all duration-300 flex items-center justify-center gap-2"
-                          >
-                            <span>View Details</span>
-                            <ArrowRight className="w-4 h-4 opacity-70 group-hover:translate-x-0.5 transition-transform" />
-                          </Button>
+                              <MessageCircle className="w-4 h-4" /> Chat
+                            </motion.button>
+                          </div>
+                          
+                          <motion.div
+                            animate={{
+                              opacity: hoveredIndex === index ? 1 : 0,
+                              width: hoveredIndex === index ? '100%' : '0%'
+                            }}
+                            className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-indigo-500 to-indigo-600"
+                          ></motion.div>
                         </div>
                       </div>
                     </motion.div>
@@ -351,6 +362,8 @@ export default function ScheduledSessions() {
                       transition={{ delay: 0.1 + (index * 0.05) }}
                       className="relative overflow-hidden rounded-2xl group cursor-pointer"
                       whileHover={{ y: -3 }}
+                      onHoverStart={() => setHoveredIndex(index)}
+                      onHoverEnd={() => setHoveredIndex(null)}
                       onClick={() => navigate(`/developer/sessions/scheduled/${session._id}`)}
                     >
                       <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 via-purple-900/10 to-transparent group-hover:opacity-100 transition-opacity rounded-2xl blur-xl -z-10 opacity-60" />

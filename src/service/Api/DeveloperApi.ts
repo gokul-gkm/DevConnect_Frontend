@@ -92,6 +92,16 @@ const DeveloperApi = {
       params: { page, limit, search, sortOrder }
     });
     return response.data.data;
+  },
+
+  async getDashboardStats(year: number) {
+    const response = await axiosClient.get(`/developer/dashboard/stats?year=${year}`);
+    return response.data.data;
+  },
+
+  async getUpcomingSessionsPreview(limit = 2) {
+    const response = await axiosClient.get(`/developer/dashboard/upcoming?limit=${limit}`);
+    return response.data.data;
   }
 }
 
