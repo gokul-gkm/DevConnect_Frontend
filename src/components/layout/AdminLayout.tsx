@@ -51,7 +51,7 @@ const AdminLayout = () => {
     { icon: <TrendingUp className="w-5 h-5" />, label: 'Revenue', path: '/admin/revenue' },
     { icon: <Award className="w-5 h-5" />, label: 'Leaderboard', path: '/admin/leaderboard' },
     { icon: <Briefcase className="w-5 h-5" />, label: 'Sessions', path: '/admin/sessions' },
-    { icon: <FileText className="w-5 h-5" />, label: 'Blogs', path: '/admin/blogs' },
+    // { icon: <FileText className="w-5 h-5" />, label: 'Blogs', path: '/admin/blogs' },
     { icon: <Wallet className="w-5 h-5" />, label: 'Wallet', path: '/admin/wallet' },
   ];
 

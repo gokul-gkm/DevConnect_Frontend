@@ -1,8 +1,10 @@
 import { socketService } from '../socket/socketService';
+import { toast } from 'react-hot-toast';
 
 interface PeerConnection {
   connection: RTCPeerConnection;
   streams: MediaStream[];
+  pendingCandidates?: RTCIceCandidateInit[];
 }
 
 interface ICECandidate {
@@ -46,6 +48,12 @@ class WebRTCService {
   }
 
   private setupSocketListeners() {
+    socketService.off('webrtc:offer', this.handleRemoteOffer.bind(this));
+    socketService.off('webrtc:answer', this.handleRemoteAnswer.bind(this));
+    socketService.off('webrtc:ice-candidate', this.handleRemoteICECandidate.bind(this));
+    socketService.off('webrtc:user-disconnected', this.handleUserDisconnected.bind(this));
+    socketService.off('webrtc:session-info', this.handleSessionInfo.bind(this));
+
     socketService.on('webrtc:offer', this.handleRemoteOffer.bind(this));
     socketService.on('webrtc:answer', this.handleRemoteAnswer.bind(this));
     socketService.on('webrtc:ice-candidate', this.handleRemoteICECandidate.bind(this));
@@ -54,65 +62,46 @@ class WebRTCService {
   }
 
   public async initialize(sessionId: string, role: 'user' | 'developer', isHost: boolean = false): Promise<boolean> {
-    const currentSocketRole = socketService.getCurrentRole();
-    if (currentSocketRole !== role) {
-      console.log(`Role mismatch in WebRTC (socket: ${currentSocketRole}, requested: ${role})`);
-    
-      const token = localStorage.getItem('access-token');
-      const reconnected = await socketService.connect(token, role);
-      
-      if (!reconnected) {
-        console.error('Failed to reconnect socket with correct role');
-        return false;
-      }
-    }
-    
-    if (this.isInitialized && this.roomId === sessionId && this.participantRole === role) {
-      console.log('Already connected to this room with correct role');
-      return true;
-    }
-    
-    if (this.isInitialized) {
-      console.log('Cleaning up previous connection before initializing new one');
-      this.cleanup();
-    }
-
-    this.roomId = sessionId;
-    this.participantRole = role;
-    
     try {
+      this.setupSocketListeners();
+
+      if (!socketService.isConnected()) {
+        console.log('Waiting for socket connection to stabilize...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      const currentSocketRole = socketService.getCurrentRole();
+      if (currentSocketRole && currentSocketRole !== role) {
+        console.log(`Role mismatch in WebRTC (socket: ${currentSocketRole}, requested: ${role})`);
+        
+        const token = localStorage.getItem('access-token');
+        const reconnected = await socketService.connect(token, role);
+        
+        if (!reconnected) {
+          throw new Error('Failed to reconnect socket with correct role');
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      if (this.isInitialized) {
+        if (this.roomId === sessionId && this.participantRole === role) {
+          return true;
+        }
+        
+        this.cleanup();
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+      this.roomId = sessionId;
+      this.participantRole = role;
+      
       const userId = localStorage.getItem('user-id');
-      console.log('userId', userId);
       if (!userId) {
-        console.error('No user ID found');
-        return false;
+        throw new Error('No user ID found');
       }
       this.userId = userId;
 
-      const isSocketConnected = await socketService.waitForConnection();
-      if (!isSocketConnected) {
-        console.error('Socket not connected, cannot initialize WebRTC');
-        return false;
-      }
-      
-      console.log('Joining WebRTC room with data:', {
-        roomId: sessionId,
-        userId: this.userId,
-        role: this.participantRole,
-        isHost
-      });
-
-      if (!sessionId || typeof sessionId !== 'string') {
-        console.error('Invalid session ID for WebRTC room join');
-        return false;
-      }
-
-      console.log('Joining WebRTC room with data:', {
-        roomId: sessionId,
-        userId: this.userId,
-        role: this.participantRole,
-        isHost
-      });
       socketService.emit('webrtc:join-room', { 
         roomId: sessionId, 
         userId: this.userId,
@@ -124,6 +113,7 @@ class WebRTCService {
       return true;
     } catch (error) {
       console.error('Error initializing WebRTC:', error);
+      toast.error('Failed to initialize video call');
       return false;
     }
   }
@@ -314,11 +304,19 @@ class WebRTCService {
     
     if (roomId !== this.roomId) return;
     
+    this.peerConnections.forEach((peerData, peerId) => {
+        peerData.connection.close();
+    });
+    this.peerConnections.clear();
 
     for (const participant of participants) {
-      if (participant.userId !== this.userId) {
-        await this.createPeerConnection(participant.userId, true);
-      }
+        if (participant.userId === this.userId) {
+            console.log('Skipping self-connection');
+            continue;
+        }
+        
+        const peerConnection = await this.createPeerConnection(participant.userId, true);
+        if (!peerConnection) continue;
     }
   }
 
@@ -330,21 +328,38 @@ class WebRTCService {
     console.log(`Received offer from ${from}`);
     
     try {
-      const peerConnection = await this.createPeerConnection(from, false);
+        const peerConnection = await this.createPeerConnection(from, false);
+        if (!peerConnection) return;
 
-      await peerConnection.connection.setRemoteDescription(new RTCSessionDescription(sdp));
+        if (peerConnection.connection.signalingState === 'stable' || 
+            peerConnection.connection.signalingState === 'have-local-offer') {
+            console.log(`Connection with ${from} already stable or processing offer, skipping`);
+            return;
+        }
 
-      const answer = await peerConnection.connection.createAnswer();
-      await peerConnection.connection.setLocalDescription(answer);
+        await peerConnection.connection.setRemoteDescription(new RTCSessionDescription(sdp));
+        console.log(`Set remote description from ${from}`);
 
-      socketService.emit('webrtc:answer', {
-        sdp: answer,
-        to: from,
-        from: this.userId,
-        sessionId: this.roomId
-      });
+        if (peerConnection.pendingCandidates) {
+            for (const candidate of peerConnection.pendingCandidates) {
+                await peerConnection.connection.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+            peerConnection.pendingCandidates = [];
+        }
+
+        const answer = await peerConnection.connection.createAnswer();
+        await peerConnection.connection.setLocalDescription(answer);
+        console.log(`Created and set local answer for ${from}`);
+
+        socketService.emit('webrtc:answer', {
+            sdp: answer,
+            to: from,
+            from: this.userId,
+            sessionId: this.roomId
+        });
     } catch (error) {
-      console.error('Error handling remote offer:', error);
+        console.error('Error handling remote offer:', error);
+        toast.error('Failed to establish connection');
     }
   }
 
@@ -356,15 +371,21 @@ class WebRTCService {
     console.log(`Received answer from ${from}`);
     
     try {
-      const peerData = this.peerConnections.get(from);
-      if (!peerData) {
-        console.warn(`No peer connection found for ${from}`);
-        return;
-      }
-      
-      await peerData.connection.setRemoteDescription(new RTCSessionDescription(sdp));
+        const peerData = this.peerConnections.get(from);
+        if (!peerData) {
+            throw new Error(`No peer connection found for ${from}`);
+        }
+
+        if (peerData.connection.signalingState === 'stable') {
+            console.log('Connection already stable, skipping answer');
+            return;
+        }
+        
+        await peerData.connection.setRemoteDescription(new RTCSessionDescription(sdp));
+        console.log(`Set remote description from ${from}`);
     } catch (error) {
-      console.error('Error handling remote answer:', error);
+        console.error('Error handling remote answer:', error);
+        toast.error('Failed to complete connection');
     }
   }
 
@@ -374,17 +395,30 @@ class WebRTCService {
     if (from === this.userId) return;
     
     try {
-      const peerData = this.peerConnections.get(from);
-      if (!peerData) {
-        console.warn(`No peer connection found for ${from}`);
-        return;
-      }
-      
-      if (candidate) {
-        await peerData.connection.addIceCandidate(new RTCIceCandidate(candidate));
-      }
+        const peerData = this.peerConnections.get(from);
+        if (!peerData) {
+            console.warn(`No peer connection found for ${from}`);
+            return;
+        }
+
+        if (!peerData.connection.remoteDescription) {
+            console.log('Remote description not set, queuing ICE candidate');
+            if (!peerData.pendingCandidates) {
+                peerData.pendingCandidates = [];
+            }
+            if (candidate) {
+                peerData.pendingCandidates.push(candidate);
+            }
+            return;
+        }
+        
+        if (candidate) {
+            await peerData.connection.addIceCandidate(new RTCIceCandidate(candidate));
+            console.log(`Added ICE candidate from ${from}`);
+        }
     } catch (error) {
-      console.error('Error handling remote ICE candidate:', error);
+        console.error('Error handling remote ICE candidate:', error);
+        toast.error('Failed to establish connection');
     }
   }
 
@@ -404,15 +438,20 @@ class WebRTCService {
     this.onParticipantDisconnectedCallbacks.forEach(callback => callback(userId));
   }
 
-  private async createPeerConnection(peerId: string, isInitiator: boolean): Promise<PeerConnection> {
+  private async createPeerConnection(peerId: string, isInitiator: boolean): Promise<PeerConnection | null> {
+    if (peerId === this.userId) {
+        console.warn('Attempted to create peer connection with self');
+        return null;
+    }
+
     let peerData = this.peerConnections.get(peerId);
-    
     if (peerData) {
-      return peerData;
+        return peerData;
     }
 
     const peerConnection = new RTCPeerConnection({
-      iceServers: this.iceServers
+      iceServers: this.iceServers,
+      iceCandidatePoolSize: 10
     });
     
     peerData = {
@@ -422,24 +461,32 @@ class WebRTCService {
     
     this.peerConnections.set(peerId, peerData);
 
-    this.addLocalTracks(peerConnection);
+    peerConnection.onconnectionstatechange = async () => {
+      console.log(`Connection state with ${peerId}: ${peerConnection.connectionState}`);
+      
+      switch (peerConnection.connectionState) {
+        case 'disconnected':
+          console.log(`Connection with ${peerId} disconnected, attempting recovery...`);
+          await this.handleConnectionRecovery(peerId);
+          break;
+        case 'failed':
+          console.log(`Connection with ${peerId} failed, attempting reconnection...`);
+          await this.handleConnectionRecovery(peerId);
+          break;
+        case 'closed':
+          this.peerConnections.delete(peerId);
+          break;
+      }
+    };
 
     peerConnection.onicecandidate = (event) => {
       if (this.roomId && this.userId) {
+        console.log(`New ICE candidate for ${peerId}:`, event.candidate);
         socketService.emit('webrtc:ice-candidate', {
           candidate: event.candidate,
           to: peerId,
           from: this.userId
         });
-      }
-    };
-
-    peerConnection.onconnectionstatechange = () => {
-      console.log(`Connection state with ${peerId}: ${peerConnection.connectionState}`);
-      
-      if (peerConnection.connectionState === 'failed' || 
-          peerConnection.connectionState === 'closed') {
-        this.peerConnections.delete(peerId);
       }
     };
     
@@ -450,28 +497,52 @@ class WebRTCService {
       
       if (remoteStream) {
         peerData!.streams.push(remoteStream);
-
         this.onTrackCallbacks.forEach(callback => callback(remoteStream, peerId));
       }
     };
 
+    this.addLocalTracks(peerConnection);
+
     if (isInitiator && this.roomId && this.userId) {
-      const offer = await peerConnection.createOffer({
-        offerToReceiveAudio: true,
-        offerToReceiveVideo: true
-      });
-      
-      await peerConnection.setLocalDescription(offer);
-      
-      socketService.emit('webrtc:offer', {
-        sdp: offer,
-        to: peerId,
-        from: this.userId,
-        sessionId: this.roomId
-      });
+      try {
+        const offer = await peerConnection.createOffer({
+          offerToReceiveAudio: true,
+          offerToReceiveVideo: true
+        });
+        
+        await peerConnection.setLocalDescription(offer);
+        console.log(`Created and set local description for ${peerId}`);
+        
+        socketService.emit('webrtc:offer', {
+          sdp: offer,
+          to: peerId,
+          from: this.userId,
+          sessionId: this.roomId
+        });
+      } catch (error) {
+        console.error('Error creating offer:', error);
+        toast.error('Failed to create connection offer');
+      }
     }
     
     return peerData;
+  }
+
+  private async handleConnectionRecovery(peerId: string): Promise<void> {
+    const peerData = this.peerConnections.get(peerId);
+    if (!peerData) return;
+
+    try {
+      await peerData.connection.restartIce();
+      
+      if (peerData.connection.connectionState === 'failed') {
+        this.peerConnections.delete(peerId);
+        await this.createPeerConnection(peerId, true);
+      }
+    } catch (error) {
+      console.error('Error recovering connection:', error);
+      toast.error('Connection recovery failed');
+    }
   }
 
   private addLocalTracks(peerConnection: RTCPeerConnection): void {
@@ -510,5 +581,5 @@ class WebRTCService {
     return this.peerConnections.size;
   }
 }
-
 export const webRTCService = new WebRTCService();
+

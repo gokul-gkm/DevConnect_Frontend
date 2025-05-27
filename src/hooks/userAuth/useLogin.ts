@@ -30,26 +30,24 @@ export const useLogin = () => {
     },
     onSuccess: async (response) => {
       if (response.success && response.user) {
+        const role = response.user.role || 'user';
         localStorage.setItem("access-token", response.token!);
-        localStorage.setItem("user-role", response.user.role || 'user');
-        console.log(response.user)
+        localStorage.setItem("user-role", role);
         localStorage.setItem('user-id', response.user._id);
         
         dispatch(
           setCredentials({
             username: response.user.username,
             email: response.user.email,
-            role: response.user.role,
+            role: role,
             _id: response.user._id
           })
         );
         
-        const userRole = response.user.role || 'user';
-        
         try {
-          await socketService.connect(response.token!, userRole);
+          await socketService.connect(response.token!, 'user');
           
-          if (userRole === 'developer') {
+          if (role === 'developer') {
             socketService.emit('developer:set-online', { developerId: response.user._id });
           } else {
             socketService.emit('user:set-online', { userId: response.user._id });

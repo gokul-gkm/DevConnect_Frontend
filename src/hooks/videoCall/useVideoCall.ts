@@ -59,18 +59,70 @@ export function useVideoCall({ sessionId, isHost = false, onError }: UseVideoCal
   const [isInitializing, setIsInitializing] = useState(false);
   
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const userRole = localStorage.getItem('user-role') || 'developer';
+  const userRole = localStorage.getItem('user-role') || 'user';
   
   const isMountedRef = useRef(true);
   
   useEffect(() => {
     isMountedRef.current = true;
+    let initTimeout: NodeJS.Timeout;
     
-    const initTimeout = setTimeout(() => {
-      if (isMountedRef.current) {
-        initializeCall();
+    const initializeCall = async () => {
+      try {
+        setIsInitializing(true);
+        
+        const socketConnected = await socketService.waitForConnection();
+        if (!socketConnected) {
+          throw new Error('Failed to connect to signaling server');
+        }
+
+        const initialized = await webRTCService.initialize(
+          sessionId, 
+          userRole as 'user' | 'developer',
+          isHost
+        );
+        
+        if (!initialized) {
+          throw new Error('Failed to initialize WebRTC');
+        }
+
+   
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const stream = await webRTCService.startLocalStream({ 
+          audio: true, 
+          video: true 
+        });
+        
+        if (!stream) {
+          throw new Error('Failed to access camera/microphone');
+        }
+
+        if (isMountedRef.current) {
+          setLocalStream(stream);
+          setIsConnected(true);
+          setIsLoading(false);
+          
+          durationIntervalRef.current = setInterval(() => {
+            setCallDuration(prev => prev + 1);
+          }, 1000);
+        }
+      } catch (err: any) {
+        console.error('Error initializing video call:', err);
+        
+        if (isMountedRef.current) {
+          setError(err.message || 'Failed to join video call');
+          setIsLoading(false);
+          onError?.(err.message || 'Failed to join video call');
+        }
+      } finally {
+        if (isMountedRef.current) {
+          setIsInitializing(false);
+        }
       }
-    }, 500);
+    };
+
+    initTimeout = setTimeout(initializeCall, 500);
 
     return () => {
       isMountedRef.current = false;
@@ -78,82 +130,6 @@ export function useVideoCall({ sessionId, isHost = false, onError }: UseVideoCal
       endCall();
     };
   }, [sessionId]);
-  
-  async function initializeCall() {
-    if (isInitializing) return;
-    
-    try {
-      setIsInitializing(true);
-      setIsLoading(true);
-      
-      console.log('Before socket connection attempt');
-      const socketConnected = await socketService.waitForConnection();
-      console.log('Socket connection result:', socketConnected);
-      
-      if (!socketConnected) {
-        throw new Error('Unable to connect to signaling server');
-      }
-      
-      console.log('Using role for WebRTC:', userRole);
-      
-      const initialized = await webRTCService.initialize(
-        sessionId, 
-        userRole as 'user' | 'developer',
-        isHost
-      );
-      
-      if (!initialized) {
-        throw new Error('Failed to initialize WebRTC');
-      }
-      
-      const preferredVideoDevice = localStorage.getItem('preferred-video-device');
-      const preferredAudioDevice = localStorage.getItem('preferred-audio-device');
-      
-      const videoConstraints = preferredVideoDevice 
-        ? { deviceId: { exact: preferredVideoDevice }, width: { ideal: 640 }, height: { ideal: 480 } } 
-        : true;
-        
-      const audioConstraints = preferredAudioDevice
-        ? { deviceId: { exact: preferredAudioDevice }, echoCancellation: true, noiseSuppression: true }
-        : true;
-        
-      const stream = await webRTCService.startLocalStream({ 
-        audio: audioConstraints, 
-        video: videoConstraints 
-      });
-      
-      if (!stream && isMountedRef.current) {
-        throw new Error('Failed to access camera/microphone');
-      }
-      
-      socketService.joinVideoRoom(sessionId);
-      
-      const data = await fetchSessionData(sessionId);
-      
-      if (isMountedRef.current) {
-        setLocalStream(stream);
-        setSessionData(data);
-        setIsConnected(true);
-        setIsLoading(false);
-        
-        durationIntervalRef.current = setInterval(() => {
-          setCallDuration(prev => prev + 1);
-        }, 1000);
-      }
-    } catch (err: any) {
-      console.error('Error initializing video call:', err);
-      
-      if (isMountedRef.current) {
-        setError(err.message || 'Failed to join video call');
-        setIsLoading(false);
-        onError?.(err.message || 'Failed to join video call');
-      }
-    } finally {
-      if (isMountedRef.current) {
-        setIsInitializing(false);
-      }
-    }
-  }
   
   useEffect(() => {
     if (isMountedRef.current) {

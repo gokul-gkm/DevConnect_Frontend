@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, Title, Text } from '@tremor/react';
 import { User, DollarSign, Wallet, Users } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -17,9 +17,11 @@ interface Developer {
   sessions: number;
   averageRating: number;
   totalEarnings: number;
+  ratings: number[];
 }
 
 const RevenuePage = () => {
+  const [activeTab, setActiveTab] = useState<'developers' | 'topics'>('developers');
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10
@@ -72,9 +74,12 @@ const RevenuePage = () => {
       accessorKey: 'averageRating',
       header: 'Average Rating',
       cell: ({ row }) => (
-        <div className="flex items-center">
-          <div className="text-yellow-500">★</div>
-          <div className="text-sm text-slate-300 ml-1">{row.original.averageRating}</div>
+        <div className="flex flex-col">
+          <div className="flex items-center">
+            <div className="text-yellow-500">★</div>
+            <div className="text-sm text-slate-300 ml-1">{row.original.averageRating}</div>
+          </div>
+         
         </div>
       )
     },
@@ -83,6 +88,41 @@ const RevenuePage = () => {
       header: 'Total Earnings',
       cell: ({ row }) => <span className="text-slate-300">₹ {row.original.totalEarnings}</span>
     }
+  ];
+
+  const topicColumns: ColumnDef<any>[] = [
+    {
+      accessorKey: 'topic',
+      header: 'Topic',
+      cell: ({ row }) => (
+        <div className="text-sm font-medium text-white">{row.original.topic}</div>
+      )
+    },
+    {
+      accessorKey: 'sessionCount',
+      header: 'No of Sessions',
+      cell: ({ row }) => <span className="text-slate-300">{row.original.sessionCount}</span>
+    },
+    {
+      accessorKey: 'averageRating',
+      header: 'Average Rating',
+      cell: ({ row }) => (
+        <div className="flex items-center">
+          <div className="text-yellow-500">★</div>
+          <div className="text-sm text-slate-300 ml-1">{row.original.averageRating}</div>
+        </div>
+      )
+    },
+    {
+      accessorKey: 'totalRevenue',
+      header: 'Total Revenue',
+      cell: ({ row }) => <span className="text-slate-300">₹ {row.original.totalRevenue}</span>
+    }
+  ];
+
+  const tabs = [
+    { id: 'developers', label: 'Revenue by Developers', icon: User },
+    { id: 'topics', label: 'Revenue by Topics', icon: DollarSign }
   ];
 
   if (isLoading || !revenueStats) {
@@ -172,19 +212,67 @@ const RevenuePage = () => {
         <div className="grid grid-cols-1 gap-6">
           <div className="overflow-hidden rounded-xl border border-slate-700/30">
             <Card className="bg-slate-900/60 border-0 shadow-xl backdrop-blur-lg rounded-xl p-6">
-              <div className="mb-6">
-                <Title className="text-white text-lg font-semibold">Earnings By Developers</Title>
-                <Text className="text-slate-400 text-sm">Top performing developers by revenue</Text>
+              <div className="grid grid-cols-2 mb-6 bg-slate-800/50 p-1 rounded-xl">
+                {tabs.map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id as 'developers' | 'topics')}
+                      className={`flex items-center justify-center px-4 py-3 rounded-xl transition-all duration-200 w-full ${
+                        activeTab === tab.id
+                          ? 'bg-purple-500/20 text-purple-300 shadow-lg'
+                          : 'text-slate-400 hover:text-slate-300 hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4 mr-2" />
+                      <span className="text-sm font-medium">{tab.label}</span>
+                    </button>
+                  );
+                })}
               </div>
-              
-              <AdminTable
-                data={revenueStats.topEarningDevelopers}
-                columns={columns}
-                pagination={revenueStats.pagination}
-                updateParams={updateParams}
-                isLoading={isLoading}
-                emptyMessage="No developer earnings data available"
-              />
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {activeTab === 'developers' ? (
+                    <>
+                      <div className="mb-6">
+                        <Title className="text-white text-lg font-semibold">Revenue by Developers</Title>
+                        <Text className="text-slate-400 text-sm">Revenue breakdown by developers</Text>
+                      </div>
+                      <AdminTable
+                        data={revenueStats.topEarningDevelopers}
+                        columns={columns}
+                        pagination={revenueStats.pagination}
+                        updateParams={updateParams}
+                        isLoading={isLoading}
+                        emptyMessage="No developer earnings data available"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <div className="mb-6">
+                        <Title className="text-white text-lg font-semibold">Revenue by Topics</Title>
+                        <Text className="text-slate-400 text-sm">Revenue breakdown by session topics</Text>
+                      </div>
+                      <AdminTable
+                        data={revenueStats.topicBasedRevenue}
+                        columns={topicColumns}
+                        pagination={revenueStats.pagination.topicPagination}
+                        updateParams={updateParams}
+                        isLoading={isLoading}
+                        emptyMessage="No topic revenue data available"
+                      />
+                    </>
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </Card>
           </div>
         </div>

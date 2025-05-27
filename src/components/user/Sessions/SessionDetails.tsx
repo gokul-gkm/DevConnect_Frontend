@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
-import { Calendar, Clock, DollarSign, MessageCircle, Briefcase, Zap } from 'lucide-react';
+import { Calendar, Clock, DollarSign, MessageCircle, Briefcase, Video } from 'lucide-react';
 import { Spinner } from '@/components/ui/spinner';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -13,6 +13,7 @@ import { PaymentButton } from '../payments/PaymentButton';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { socketService } from '@/service/socket/socketService'
+import VideoSessionApi from '@/service/Api/VideoSessionApi';
 
 type SessionStatus = 'pending' | 'approved' | 'rejected' | 'completed' | 'awaiting_payment';
 
@@ -38,11 +39,12 @@ export default function SessionDetails() {
   const { sessionId } = useParams();
   const { data: session, isLoading } = useSessionDetails(sessionId as string);
   const [isSessionActive, setIsSessionActive] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
 
   useEffect(() => {
     if (!sessionId) return;
     
-    const handleSessionStarted = (data:any) => {
+    const handleSessionStarted = (data: any) => {
       if (data.sessionId === sessionId) {
         setIsSessionActive(true);
         toast.success('Your session has started! Developer is waiting for you to join.', {
@@ -52,22 +54,49 @@ export default function SessionDetails() {
       }
     };
     
-    socketService.on('session:started', handleSessionStarted);
+    socketService.on('video:session:initiated', handleSessionStarted);
     
-    fetch(`/api/sessions/${sessionId}/status`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'active') {
+
+    const checkSessionStatus = async () => {
+      try {
+        setIsCheckingStatus(true);
+        const response = await VideoSessionApi.getSessionStatus(sessionId);
+        
+        if (response.data?.status === 'active' || response.data?.status === 'pending') {
           setIsSessionActive(true);
+        } else {
+          setIsSessionActive(false);
         }
-      })
-      .catch(err => console.error('Error fetching session status:', err));
+      } catch (error) {
+        console.error('Error checking session status:', error);
+        toast.error('Failed to check session status');
+      } finally {
+        setIsCheckingStatus(false);
+      }
+    };
+
+    checkSessionStatus();
+
     return () => {
-      socketService.on('session:started', handleSessionStarted);
+      socketService.off('video:session:initiated', handleSessionStarted);
     };
   }, [sessionId]);
 
-  if (isLoading || !session) {
+  const handleJoinCall = async () => {
+    if (!sessionId) return;
+    
+    try {
+   
+      await VideoSessionApi.joinSession(sessionId, false);
+      
+      navigate(`/video-call-lobby/${sessionId}?mode=participant`);
+    } catch (error) {
+      console.error('Error joining session:', error);
+      toast.error('Failed to join session. Please try again.');
+    }
+  };
+
+  if (isLoading || !session || isCheckingStatus) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-black/80">
         <div className="relative">
@@ -94,10 +123,10 @@ export default function SessionDetails() {
             className={`flex-1 h-12 gap-2 rounded-xl ${isSessionActive ? 
               'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500/30 animate-pulse' : 
               'bg-emerald-950/50 hover:bg-emerald-900/50 text-emerald-400 border border-emerald-400/20'}`}
-            onClick={() => navigate(`/video-call-lobby/${sessionId}`)}
+            onClick={handleJoinCall}
             disabled={!isSessionActive}
           >
-            <Zap className="w-5 h-5" />
+            <Video className="w-5 h-5" />
             {isSessionActive ? 'Join Session Now' : 'Waiting for Developer'}
           </Button>
           <Button

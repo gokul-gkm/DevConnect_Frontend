@@ -9,13 +9,12 @@ const AuthApi = {
     },
     login: async (email: string, password: string): Promise<IAuthResponse> => {
         try {
-            const response = await axiosClient.post(authRoutes.login, { email, password })
+            const response = await axiosClient.post(authRoutes.login, { email, password });
             return response.data;
         } catch (error: any) {
-          console.error('API Error:', error.response?.data || error)
-          throw error
+            console.error('API Error:', error.response?.data || error);
+            throw error;
         }
-        
     },
     verifyOtp: async (email: string, otp: string): Promise<IAuthResponse> => {
         const response = await axiosClient.post(authRoutes.verifyOtp, { email, otp });
@@ -29,7 +28,7 @@ const AuthApi = {
         await axiosClient.post(authRoutes.logout);
     },
     forgotPassword: async (email: string): Promise<{ message: string, resetToken?: string }> => {
-        const response = await axiosClient.post(authRoutes.forgotPassword, { email })
+        const response = await axiosClient.post(authRoutes.forgotPassword, { email });
         return response.data;
     },
     resetPassword: async (token: string, newPassword: string): Promise<{ message: string }> => {
@@ -38,16 +37,14 @@ const AuthApi = {
     },
     googleLogin: async(token: string): Promise<IAuthResponse> => {
         const response = await axiosClient.post(authRoutes.googleLogin, { token }, {
-            withCredentials: true,
-            headers: { 'Content-Type': 'application/json' }
-          });
+            withCredentials: true
+        });
         return response.data;
     },
     linkedinLogin: async (code: string): Promise<IAuthResponse> => {
-        const response = await axiosClient.post('/auth/linkedin', { code });
-        return response.data
+        const response = await axiosClient.post(authRoutes.linkedinLogin, { code });
+        return response.data;
     }
-   
 }
 
 export default AuthApi

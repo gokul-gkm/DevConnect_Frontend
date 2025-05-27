@@ -1,4 +1,4 @@
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useNotifications, Notification } from '../hooks/notification/useNotifications';
 
 interface NotificationContextType {
@@ -15,6 +15,14 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const notificationData = useNotifications();
+  
+  useEffect(() => {
+    console.log('NotificationContext state changed:', {
+      notificationsCount: notificationData.notifications.length,
+      unreadCount: notificationData.unreadCount,
+      isLoading: notificationData.isLoading
+    });
+  }, [notificationData]);
   
   return (
     <NotificationContext.Provider value={notificationData}>

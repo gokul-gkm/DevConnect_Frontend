@@ -18,6 +18,8 @@ import { toast } from 'react-hot-toast';
 import { webRTCService } from '@/service/webrtc/webRTCService';
 import { useSessionDetails } from '@/hooks/session/useSessionDetails';
 import SessionApi from '@/service/Api/SessionApi';
+import { useVideoCallState } from '@/hooks/videoCall/useVideoCallState';
+import VideoSessionApi from '@/service/Api/VideoSessionApi';
 
 interface MobileAudioSettingsProps {
   isMuted: boolean;
@@ -58,6 +60,16 @@ export default function VideoCallLobby() {
   const [isHost, setIsHost] = useState(false);
   
   const { data: session } = useSessionDetails(sessionId);
+  const { isConnected, error: videoCallError, isInitializing, endCall } = useVideoCallState({
+    sessionId,
+    isHost
+  });
+  
+  useEffect(() => {
+    if (videoCallError) {
+      toast.error(videoCallError);
+    }
+  }, [videoCallError]);
   
   useEffect(() => {
 
@@ -79,15 +91,12 @@ export default function VideoCallLobby() {
         
         setLocalStream(stream);
         
-        // Set up audio visualization
         setupAudioVisualization(stream);
         
-        // Get available devices
         await getAvailableDevices();
         
         setIsLoading(false);
         
-        // Set ready status after a brief delay to show animation
         setTimeout(() => {
           setIsReadyToJoin(true);
         }, 800);
@@ -160,7 +169,6 @@ export default function VideoCallLobby() {
       setAudioInputDevices(audioDevices);
       setVideoInputDevices(videoDevices);
       
-      // Set defaults
       if (audioDevices.length > 0) {
         setSelectedAudioDevice(audioDevices[0].deviceId);
       }
@@ -231,7 +239,6 @@ export default function VideoCallLobby() {
         setLocalStream(newStream);
         setSelectedAudioDevice(deviceId);
         
-        // Update audio visualization
         setupAudioVisualization(newStream);
       }
     } catch (err) {
@@ -264,7 +271,6 @@ export default function VideoCallLobby() {
         setLocalStream(newStream);
         setSelectedVideoDevice(deviceId);
         
-        // After successfully changing the device, save to localStorage
         localStorage.setItem('preferred-video-device', deviceId);
       }
     } catch (err) {
@@ -276,11 +282,15 @@ export default function VideoCallLobby() {
   };
   
   const handleStartCall = () => {
+    if (isInitializing) return;
+    
     if (isHost) {
-      // Developer starting the session
       startVideoSession();
     } else {
-      // User joining the session
+      if (!isConnected) {
+        toast.error('Not connected to video call');
+        return;
+      }
       localStorage.setItem('call-role', 'user');
       localStorage.setItem('active-session-id', sessionId);
       navigate(`/video-call/${sessionId}?role=user`);
@@ -289,14 +299,15 @@ export default function VideoCallLobby() {
   
   const startVideoSession = async () => {
     try {
-      // Use SessionApi to activate the session
+ 
       await SessionApi.startSession(sessionId);
+
+      await VideoSessionApi.initSession(sessionId)
       
-      // Store role in localStorage for connection identification
+     
       localStorage.setItem('call-role', 'developer');
       localStorage.setItem('active-session-id', sessionId);
       
-      // Navigate with more context
       navigate(`/video-call/${sessionId}?host=true&role=developer`);
       
       toast.success('Session started successfully. Waiting for user to join.', {

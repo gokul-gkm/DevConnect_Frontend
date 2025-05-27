@@ -249,7 +249,7 @@ export default function ScheduledSessions() {
                               <div className="text-zinc-500 text-xs">
                                 Session ID: <span className="font-mono">{session._id.substring(0, 8)}</span>
                               </div>
-                            </div>
+                          </div>
                           </div>
                           
                           <div className="grid grid-cols-2 gap-3 mt-4">
@@ -259,17 +259,17 @@ export default function ScheduledSessions() {
                                 Date
                               </h4>
                               <p className="text-white text-sm">{format(new Date(session.sessionDate), 'MMM dd, yyyy')}</p>
-                            </div>
-                            
+                        </div>
+                        
                             <div className="bg-zinc-800/30 rounded-xl p-3 border border-zinc-800/50">
                               <h4 className="text-zinc-300 text-xs flex items-center gap-1.5 mb-1">
                                 <Clock className="w-3.5 h-3.5 text-zinc-400" />
                                 Time
                               </h4>
                               <p className="text-white text-sm">{format(new Date(session.startTime), 'hh:mm a')}</p>
-                            </div>
                           </div>
-                          
+                        </div>
+                        
                           <div className="mt-4">
                             <h4 className="text-zinc-300 text-xs flex items-center gap-1.5 mb-2">
                               <Layers className="w-3.5 h-3.5 text-zinc-400" />
@@ -282,9 +282,9 @@ export default function ScheduledSessions() {
                                   className="px-2.5 py-1 bg-zinc-800/50 text-zinc-300 rounded-xl text-xs border border-zinc-700/30"
                                 >
                                   {topic}
-                                </span>
+                            </span>
                               ))}
-                            </div>
+                          </div>
                           </div>
                           
                           <div className="flex items-center gap-3 mt-4 pt-3 border-t border-zinc-800/30">
@@ -295,8 +295,8 @@ export default function ScheduledSessions() {
                                 className="w-8 h-8 rounded-xl object-cover border border-zinc-700/50" 
                               />
                               <span className="text-sm text-white">{session.userId.username}</span>
-                            </div>
-                            
+                        </div>
+                        
                             <motion.button
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
@@ -305,8 +305,8 @@ export default function ScheduledSessions() {
                             >
                               <MessageCircle className="w-4 h-4" /> Chat
                             </motion.button>
-                          </div>
-                          
+                        </div>
+                        
                           <motion.div
                             animate={{
                               opacity: hoveredIndex === index ? 1 : 0,

@@ -1,11 +1,11 @@
 import axiosClient from "@/service/axiosinstance/axios";
 import { BookingFormData, Session } from '@/types/session';
 import { HistorySession, UpcomingSession } from "@/types/types";
-
+import { sessionRoutes } from "@/utils/constants";
 
 const SessionApi = {
   async createBooking(developerId: string, data: BookingFormData) {
-    const response = await axiosClient.post('/sessions', {
+    const response = await axiosClient.post(sessionRoutes.create, {
       ...data,
       developerId
     });
@@ -13,7 +13,7 @@ const SessionApi = {
   },
 
   async getBookedSlots(developerId: string, date: Date) {
-    const response = await axiosClient.get('/sessions/booked-slots', {
+    const response = await axiosClient.get(sessionRoutes.bookedSlots, {
       params: {
         developerId,
         date: date.toISOString()
@@ -23,25 +23,25 @@ const SessionApi = {
   },
    
   async getUserSessions() {
-    const response = await axiosClient.get<{ data: Session[] }>('/sessions/user');
+    const response = await axiosClient.get<{ data: Session[] }>(sessionRoutes.userSessions);
     return response.data.data;
   },
       
     
   async cancelSession(sessionId: string) {
-    const response = await axiosClient.delete<{ data: Session }>(`/sessions/${sessionId}`);
+    const response = await axiosClient.delete<{ data: Session }>(`${sessionRoutes.cancel}/${sessionId}`);
     return response.data.data;
   },
     
   async initiatePayment(sessionId: string) {
     const response = await axiosClient.post<{ data: { paymentUrl: string } }>(
-      `/sessions/${sessionId}/payment`
+      `${sessionRoutes.payment}/${sessionId}/payment`
     );
     return response.data.data;
   },
 
   async getUpcomingSessions(page = 1, limit = 10): Promise<{ data: UpcomingSession[], pagination: any }> {
-    const response = await axiosClient.get('/sessions/upcoming', {
+    const response = await axiosClient.get(sessionRoutes.upcoming, {
       params: { page, limit }
     });
     
@@ -68,8 +68,7 @@ const SessionApi = {
 
 
    async getSessionDetails(sessionId: string) {
-     const response = await axiosClient.get(`/sessions/${sessionId}`);
-     console.log(response.data)
+     const response = await axiosClient.get(`${sessionRoutes.details}/${sessionId}`);
     return response.data;
   },
    
@@ -77,7 +76,7 @@ const SessionApi = {
   //Developer side
 
   async getDeveloperSessionRequests(page = 1, limit = 5) {
-    const response = await axiosClient.get('/sessions/developer/requests', {
+    const response = await axiosClient.get(sessionRoutes.developerRequests, {
       params: { page, limit }
     });
     return response.data;
@@ -85,7 +84,7 @@ const SessionApi = {
 
   async getSessionRequestDetails(sessionId: string) {
     try {
-      const response = await axiosClient.get(`/sessions/developer/requests/${sessionId}`);
+      const response = await axiosClient.get(`${sessionRoutes.developerRequests}/${sessionId}`);
       
       return response;
     } catch (error) {
@@ -95,19 +94,19 @@ const SessionApi = {
   },
 
   async acceptSession(sessionId: string) {
-    const response = await axiosClient.patch(`/sessions/${sessionId}/accept`);
+    const response = await axiosClient.patch(`${sessionRoutes.details}/${sessionId}/accept`);
     return response.data;
   },
 
   async rejectSession(sessionId: string, reason: string) {
-    const response = await axiosClient.patch(`/sessions/${sessionId}/reject`, {
+    const response = await axiosClient.patch(`${sessionRoutes.details}/${sessionId}/reject`, {
       rejectionReason: reason
     });
     return response.data;
   },
 
   async getDeveloperScheduledSessions(page = 1, limit = 5) {
-    const response = await axiosClient.get('/sessions/developer/scheduled', {
+    const response = await axiosClient.get(sessionRoutes.developerScheduled, {
       params: { page, limit }
     });
     return response.data;
@@ -115,7 +114,7 @@ const SessionApi = {
 
   async getScheduledSessionDetails(sessionId: string) {
     try {
-      const response = await axiosClient.get(`/sessions/developer/scheduled/${sessionId}`);
+      const response = await axiosClient.get(`${sessionRoutes.developerScheduled}/${sessionId}`);
       return response;
     } catch (error) {
       console.error("Error fetching scheduled session details:", error);
@@ -124,7 +123,7 @@ const SessionApi = {
   },
 
   async getUnavailableSlots(developerId: string, date: Date) {
-    const response = await axiosClient.get(`/sessions/unavailable-slots`, {
+    const response = await axiosClient.get(sessionRoutes.unavailableSlots, {
       params: {
         developerId,
         date: date.toISOString()
@@ -135,7 +134,7 @@ const SessionApi = {
       
   
   async getSessionHistory(page = 1, limit = 10): Promise<{ data: HistorySession[], pagination: any }> {
-    const response = await axiosClient.get('/sessions/history', {
+    const response = await axiosClient.get(sessionRoutes.history, {
       params: { page, limit }
     });
     
@@ -161,29 +160,29 @@ const SessionApi = {
   },
 
   async startSession(sessionId: string) {
-    const response = await axiosClient.post(`/sessions/${sessionId}/start`);
+    const response = await axiosClient.post(`${sessionRoutes.start}/${sessionId}/start`);
     return response.data;
   },
 
   async rateSession(sessionId: string, data: { rating: number; feedback?: string }) {
-    const response = await axiosClient.post(`/sessions/${sessionId}/rate`, data);
+    const response = await axiosClient.post(`${sessionRoutes.rate}/${sessionId}/rate`, data);
     return response.data;
   },
 
   async updateRating(sessionId: string, data: { rating: number; feedback?: string }) {
-    const response = await axiosClient.put(`/sessions/${sessionId}/rate`, data);
+    const response = await axiosClient.put(`${sessionRoutes.rate}/${sessionId}/rate`, data);
     return response.data;
   },
 
   async getDeveloperSessionHistory(page = 1, limit = 5, search = '') {
-    const response = await axiosClient.get('/sessions/developer/history', {
+    const response = await axiosClient.get(sessionRoutes.developerHistory, {
       params: { page, limit, search }
     });
     return response.data;
   },
 
   async getDeveloperSessionHistoryDetails(sessionId: string) {
-    const response = await axiosClient.get(`/sessions/developer/history/${sessionId}`);
+    const response = await axiosClient.get(`${sessionRoutes.developerHistory}/${sessionId}`);
     return response.data.data;
   },
 };

@@ -24,7 +24,7 @@ export const useGoogleLogin = () => {
           role: response.user.role,
           _id: response.user._id
         }));
-        socketService.connect(response.token!);
+        socketService.connect(response.token!, 'user');
         toast.success("Login successful!");
         navigate("/");
       }

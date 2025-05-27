@@ -16,6 +16,14 @@ import { cn } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
 import { useVideoCall } from '@/hooks/videoCall/useVideoCall';
 
+const DEBUG = true;
+
+function debugLog(component: string, message: string, data?: any) {
+  if (DEBUG) {
+    console.log(`[VideoCall:${component}] ${message}`, data || '');
+  }
+}
+
 const formatDuration = (seconds: number) => {
   const hrs = Math.floor(seconds / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
@@ -72,17 +80,29 @@ export default function VideoCall() {
 
   useEffect(() => {
     if (localStream && localVideoRef.current) {
+      debugLog('LocalStream', 'Setting local stream to video element');
       localVideoRef.current.srcObject = localStream;
     }
   }, [localStream]);
 
   useEffect(() => {
-    if (remoteStreams.size > 0 && remoteVideoRef.current) {
+    const handleRemoteStream = (event: CustomEvent) => {
+      debugLog('RemoteStream', 'Received remote stream event', event.detail);
+      const remoteStream = event.detail.stream;
+      if (remoteVideoRef.current) {
+        debugLog('RemoteStream', 'Setting remote stream to video element');
+        remoteVideoRef.current.srcObject = remoteStream;
+      }
+    };
 
-      const stream = Array.from(remoteStreams.values())[0];
-      remoteVideoRef.current.srcObject = stream;
-    }
-  }, [remoteStreams]);
+    window.addEventListener('webrtc:remote-stream', handleRemoteStream as EventListener);
+    debugLog('RemoteStream', 'Added remote stream event listener');
+
+    return () => {
+      window.removeEventListener('webrtc:remote-stream', handleRemoteStream as EventListener);
+      debugLog('RemoteStream', 'Removed remote stream event listener');
+    };
+  }, []);
   
   useEffect(() => {
     if (screenShareStream && screenShareRef.current) {

@@ -72,7 +72,7 @@ export const useDevLogin = () => {
           })
         );
         
-        socketService.connect(data.token!);
+        socketService.connect(data.token!, 'developer');
         toast.success("Login successful!");
         navigate("/developer/dashboard");
       }

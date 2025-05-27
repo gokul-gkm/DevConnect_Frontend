@@ -1,4 +1,5 @@
 import axiosClient from "@/service/axiosinstance/axios";
+import { chatRoutes } from "@/utils/constants";
 
 interface CacheItem {
   data: any;
@@ -10,7 +11,7 @@ export class ChatApi {
   private static CACHE_DURATION = 5000; 
 
   static async createChat(developerId: string) {
-    const response = await axiosClient.post('/chats', { developerId });
+    const response = await axiosClient.post(chatRoutes.create, { developerId });
     return response.data;
   }
 
@@ -25,7 +26,7 @@ export class ChatApi {
     }
 
     try {
-        const response = await axiosClient.get('/chats/user');
+        const response = await axiosClient.get(chatRoutes.userChats);
         
         this.cache.set(cacheKey, {
             data: response.data,
@@ -53,7 +54,7 @@ export class ChatApi {
     }
 
     try {
-        const response = await axiosClient.get('/chats/developer');
+        const response = await axiosClient.get(chatRoutes.developerChats);
         
         this.cache.set(cacheKey, {
             data: response.data,
@@ -73,7 +74,7 @@ export class ChatApi {
 
   static async getChatMessages(chatId: string, page: number) {
     try {
-        const response = await axiosClient.get(`/chats/${chatId}/messages?page=${page}`);
+        const response = await axiosClient.get(`${chatRoutes.messages}/${chatId}/messages?page=${page}`);
         return response.data;
     } catch (error) {
         console.error("ChatApi getChatMessages error:", error);
@@ -83,16 +84,11 @@ export class ChatApi {
 
   static async sendMessage(formData: FormData) {
     try {
-      const response = await axiosClient.post('/chats/message', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      
-      return response.data;
+        const response = await axiosClient.post(chatRoutes.sendMessage, formData);
+        return response.data;
     } catch (error) {
-      console.error("Error sending message with media:", error);
-      throw error;
+        console.error("Error sending message with media:", error);
+        throw error;
     }
   }
 
@@ -105,7 +101,7 @@ export class ChatApi {
   }
 
   static async markMessagesAsRead(chatId: string) {
-    const response = await axiosClient.patch(`/chats/${chatId}/read`);
+    const response = await axiosClient.patch(`${chatRoutes.markRead}/${chatId}/read`);
     return response.data;
   }
 }

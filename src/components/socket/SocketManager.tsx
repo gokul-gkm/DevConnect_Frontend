@@ -4,7 +4,6 @@ import { socketService } from '@/service/socket/socketService';
 
 export const SocketManager = () => {
     const { token, user } = useAuth();
-
     const storedRole = localStorage.getItem('user-role');
     const userRole = user?.role || storedRole || 'user';
     const connectionAttempted = useRef(false);
@@ -29,21 +28,6 @@ export const SocketManager = () => {
         };
         
         ensureSocketConnection();
-
-        const intervalId = setInterval(() => {
-            if (!socketService.isConnected() && token) {
-                console.log(`SocketManager: Detected disconnected socket, reconnecting as ${userRole}`);
-                socketService.connect(token, userRole);
-            } else if (socketService.isConnected() && socketService.getCurrentRole() !== userRole) {
-                console.log(`SocketManager: Role mismatch (current: ${socketService.getCurrentRole()}, expected: ${userRole}), reconnecting`);
-                socketService.disconnect();
-                socketService.connect(token, userRole);
-            }
-        }, 10000);
-        
-        return () => {
-            clearInterval(intervalId);
-        };
     }, [token, userRole]);
     
     useEffect(() => {
