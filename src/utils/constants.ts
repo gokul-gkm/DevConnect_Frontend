@@ -35,7 +35,8 @@ export const devAuthRoutes = {
     googleLogin: '/developer/google',
     verifyOtp: '/developer/auth/verify-otp',
     resendOtp: '/developer/auth/resend-otp',
-    devRequest: '/developer/auth/dev-request'
+    devRequest: '/developer/auth/dev-request',
+    logout: '/developer/auth/logout'
 }
 
 export const userRoutes = {
@@ -91,7 +92,8 @@ export const videoSessionRoutes = {
     status: '/video-sessions',
     join: '/video-sessions',
     end: '/video-sessions',
-    details: '/video-sessions'
+    details: '/video-sessions',
+    leave: '/video-sessions'
 }
 
 export const notificationRoutes = {

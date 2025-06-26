@@ -62,46 +62,64 @@ class WebRTCService {
   }
 
   public async initialize(sessionId: string, role: 'user' | 'developer', isHost: boolean = false): Promise<boolean> {
+    console.log('[Video Call Step 1] Initializing WebRTC service', { sessionId, role, isHost });
     try {
+
+      const currentRole = localStorage.getItem('user-role');
+      if (currentRole !== role) {
+        console.log(`[Video Call Step 2] Role mismatch, updating role from ${currentRole} to ${role}`);
+        localStorage.setItem('user-role', role);
+      }
+
       this.setupSocketListeners();
+      console.log('[Video Call Step 2] Socket listeners setup complete');
 
       if (!socketService.isConnected()) {
-        console.log('Waiting for socket connection to stabilize...');
+        console.log('[Video Call Step 3] Waiting for socket connection...');
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      const currentSocketRole = socketService.getCurrentRole();
+    const currentSocketRole = socketService.getCurrentRole();
       if (currentSocketRole && currentSocketRole !== role) {
-        console.log(`Role mismatch in WebRTC (socket: ${currentSocketRole}, requested: ${role})`);
-        
-        const token = localStorage.getItem('access-token');
-        const reconnected = await socketService.connect(token, role);
-        
-        if (!reconnected) {
+        console.log(`[Video Call Step 4] Role mismatch detected`, { 
+          current: currentSocketRole, 
+          requested: role 
+        });
+    
+      const token = localStorage.getItem('access-token');
+      const reconnected = await socketService.connect(token, role);
+      
+      if (!reconnected) {
+          console.log('[Video Call Step 4.1] Failed to reconnect with correct role');
           throw new Error('Failed to reconnect socket with correct role');
         }
         
         await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-
+    }
+    
       if (this.isInitialized) {
         if (this.roomId === sessionId && this.participantRole === role) {
-          return true;
-        }
-        
-        this.cleanup();
+          console.log('[Video Call Step 5] Already initialized with same session and role');
+      return true;
+    }
+    
+        console.log('[Video Call Step 6] Cleaning up previous initialization');
+      this.cleanup();
         await new Promise(resolve => setTimeout(resolve, 500));
-      }
+    }
 
-      this.roomId = sessionId;
-      this.participantRole = role;
-      
+    this.roomId = sessionId;
+    this.participantRole = role;
+    
       const userId = localStorage.getItem('user-id');
       if (!userId) {
+        console.log('[Video Call Step 7] No user ID found');
         throw new Error('No user ID found');
       }
       this.userId = userId;
+      console.log('[Video Call Step 8] User ID set', { userId });
 
+      console.log('[Video Call Step 9] Joining room');
       socketService.emit('webrtc:join-room', { 
         roomId: sessionId, 
         userId: this.userId,
@@ -110,9 +128,10 @@ class WebRTCService {
       });
 
       this.isInitialized = true;
+      console.log('[Video Call Step 10] Initialization complete');
       return true;
     } catch (error) {
-      console.error('Error initializing WebRTC:', error);
+      console.error('[Video Call Step 11] Error initializing WebRTC:', error);
       toast.error('Failed to initialize video call');
       return false;
     }
@@ -122,9 +141,10 @@ class WebRTCService {
     audio: boolean | MediaTrackConstraints; 
     video: boolean | MediaTrackConstraints 
   } = { audio: true, video: true }): Promise<MediaStream | null> {
+    console.log('[Local Stream Step 1] Starting local stream', { options });
     try {
-      
       if (this.localStream) {
+        console.log('[Local Stream Step 2] Cleaning up existing local stream');
         this.localStream.getTracks().forEach(track => {
           track.stop();
           this.localStream?.removeTrack(track);
@@ -137,10 +157,10 @@ class WebRTCService {
         video: options.video
       };
 
-      console.log('Requesting media with constraints:', constraints);
+      console.log('[Local Stream Step 3] Requesting media with constraints:', constraints);
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
-      console.log('Media stream obtained:', {
+      console.log('[Local Stream Step 4] Media stream obtained:', {
         audioTracks: stream.getAudioTracks().length,
         videoTracks: stream.getVideoTracks().length,
         trackInfo: stream.getTracks().map(t => ({
@@ -151,18 +171,21 @@ class WebRTCService {
       });
       
       this.localStream = stream;
+      console.log('[Local Stream Step 5] Local stream stored');
       
       this.onLocalStreamCallbacks.forEach(callback => callback(stream));
+      console.log('[Local Stream Step 6] Local stream callbacks executed');
 
       if (this.peerConnections.size > 0) {
+        console.log('[Local Stream Step 7] Updating tracks on existing peers');
         this.updateTracksOnAllPeers();
       }
       
       return stream;
     } catch (error) {
-      console.error('Error getting local stream:', error);
+      console.error('[Local Stream Step 8] Error getting local stream:', error);
       if (error instanceof DOMException) {
-        console.error(`DOMException type: ${error.name}, Message: ${error.message}`);
+        console.error(`[Local Stream Step 8.1] DOMException type: ${error.name}, Message: ${error.message}`);
       }
       return null;
     }
@@ -278,17 +301,22 @@ class WebRTCService {
   }
 
   public cleanup(): void {
+    console.log('[Cleanup Step 1] Starting cleanup');
     if (this.localStream) {
+      console.log('[Cleanup Step 2] Stopping local stream tracks');
       this.localStream.getTracks().forEach(track => track.stop());
       this.localStream = null;
     }
     
     if (this.localScreenStream) {
+      console.log('[Cleanup Step 3] Stopping screen share stream tracks');
       this.localScreenStream.getTracks().forEach(track => track.stop());
       this.localScreenStream = null;
     }
     
+    console.log('[Cleanup Step 4] Closing peer connections');
     this.peerConnections.forEach((peerData, peerId) => {
+      console.log(`[Cleanup Step 5] Closing connection with ${peerId}`);
       peerData.connection.close();
     });
     
@@ -296,95 +324,140 @@ class WebRTCService {
     this.isInitialized = false;
     this.isScreenSharing = false;
     this.roomId = null;
+    console.log('[Cleanup Step 6] Cleanup complete');
   }
 
   private async handleSessionInfo(data: any): Promise<void> {
     const { participants, roomId } = data;
-    console.log(`Session info received for room ${roomId}:`, participants);
+    console.log(`[Session Info Step 1] Received session info for room ${roomId}:`, participants);
     
-    if (roomId !== this.roomId) return;
+    if (roomId !== this.roomId) {
+      console.log('[Session Info Step 1.1] Room ID mismatch, skipping');
+      return;
+    }
     
+    console.log('[Session Info Step 2] Cleaning up existing peer connections');
     this.peerConnections.forEach((peerData, peerId) => {
-        peerData.connection.close();
+      peerData.connection.close();
     });
     this.peerConnections.clear();
 
     for (const participant of participants) {
-        if (participant.userId === this.userId) {
-            console.log('Skipping self-connection');
-            continue;
-        }
-        
-        const peerConnection = await this.createPeerConnection(participant.userId, true);
-        if (!peerConnection) continue;
+      if (participant.userId === this.userId) {
+        console.log('[Session Info Step 3] Skipping self-connection');
+        continue;
+      }
+      
+      console.log(`[Session Info Step 4] Creating peer connection for ${participant.userId}`);
+      const peerConnection = await this.createPeerConnection(participant.userId, true);
+      if (!peerConnection) {
+        console.log(`[Session Info Step 4.1] Failed to create peer connection for ${participant.userId}`);
+        continue;
+      }
+      console.log(`[Session Info Step 4.2] Peer connection created for ${participant.userId}`);
     }
   }
 
   private async handleRemoteOffer(data: SDPOffer): Promise<void> {
     const { from, sdp, sessionId } = data;
+    console.log(`[Remote Offer Step 1] Received offer from ${from}`, {
+        sessionId,
+        currentRoomId: this.roomId,
+        signalingState: this.peerConnections.get(from)?.connection.signalingState
+    });
     
-    if (sessionId !== this.roomId || from === this.userId) return;
-    
-    console.log(`Received offer from ${from}`);
+    if (sessionId !== this.roomId || from === this.userId) {
+        console.log('[Remote Offer Step 1.1] Invalid offer, skipping');
+        return;
+    }
     
     try {
-        const peerConnection = await this.createPeerConnection(from, false);
-        if (!peerConnection) return;
-
-        if (peerConnection.connection.signalingState === 'stable' || 
-            peerConnection.connection.signalingState === 'have-local-offer') {
-            console.log(`Connection with ${from} already stable or processing offer, skipping`);
+        console.log('[Remote Offer Step 2] Creating peer connection');
+      const peerConnection = await this.createPeerConnection(from, false);
+        if (!peerConnection) {
+            console.log('[Remote Offer Step 2.1] Failed to create peer connection');
             return;
         }
 
-        await peerConnection.connection.setRemoteDescription(new RTCSessionDescription(sdp));
-        console.log(`Set remote description from ${from}`);
+        const state = peerConnection.connection.signalingState as string;
+        // if (state === 'stable' || state === 'have-local-offer') {
+        //     console.log(`[Remote Offer Step 3] Connection with ${from} already stable or processing offer, skipping`);
+        //     return;
+        // }
+
+        if (state === 'have-local-offer' || state === 'have-remote-offer') {
+            console.log(`[Remote Offer Step 3] In ${state}, rolling back and setting new remote offer`);
+            await peerConnection.connection.setLocalDescription({ type: 'rollback' });
+            await peerConnection.connection.setRemoteDescription(new RTCSessionDescription(sdp));
+        } else if (state === 'stable') {
+            console.log(`[Remote Offer Step 3] In stable, setting remote description directly`);
+            await peerConnection.connection.setRemoteDescription(new RTCSessionDescription(sdp));
+        } else {
+            console.log(`[Remote Offer Step 3] In ${state}, setting remote description directly`);
+            await peerConnection.connection.setRemoteDescription(new RTCSessionDescription(sdp));
+        }
 
         if (peerConnection.pendingCandidates) {
+            console.log('[Remote Offer Step 6] Processing pending ICE candidates', {
+                count: peerConnection.pendingCandidates.length
+            });
             for (const candidate of peerConnection.pendingCandidates) {
                 await peerConnection.connection.addIceCandidate(new RTCIceCandidate(candidate));
             }
             peerConnection.pendingCandidates = [];
         }
 
-        const answer = await peerConnection.connection.createAnswer();
-        await peerConnection.connection.setLocalDescription(answer);
-        console.log(`Created and set local answer for ${from}`);
+        console.log('[Remote Offer Step 7] Creating answer');
+      const answer = await peerConnection.connection.createAnswer();
+        console.log('[Remote Offer Step 8] Setting local description');
+      await peerConnection.connection.setLocalDescription(answer);
+        console.log(`[Remote Offer Step 9] Created and set local answer for ${from}`);
 
-        socketService.emit('webrtc:answer', {
-            sdp: answer,
-            to: from,
-            from: this.userId,
-            sessionId: this.roomId
-        });
+      socketService.emit('webrtc:answer', {
+        sdp: answer,
+        to: from,
+        from: this.userId,
+        sessionId: this.roomId
+      });
     } catch (error) {
-        console.error('Error handling remote offer:', error);
+        console.error('[Remote Offer Step 10] Error handling remote offer:', error);
         toast.error('Failed to establish connection');
     }
   }
 
   private async handleRemoteAnswer(data: SDPOffer): Promise<void> {
     const { from, sdp, sessionId } = data;
+    console.log(`[Remote Answer Step 1] Received answer from ${from}`, {
+        sessionId,
+        currentRoomId: this.roomId
+    });
     
-    if (sessionId !== this.roomId || from === this.userId) return;
-    
-    console.log(`Received answer from ${from}`);
+    if (sessionId !== this.roomId || from === this.userId) {
+        console.log('[Remote Answer Step 1.1] Invalid answer, skipping');
+        return;
+    }
     
     try {
-        const peerData = this.peerConnections.get(from);
-        if (!peerData) {
+      const peerData = this.peerConnections.get(from);
+      if (!peerData) {
+            console.log('[Remote Answer Step 2] No peer connection found');
             throw new Error(`No peer connection found for ${from}`);
         }
 
+        console.log('[Remote Answer Step 3] Checking signaling state', {
+            state: peerData.connection.signalingState
+        });
+
         if (peerData.connection.signalingState === 'stable') {
-            console.log('Connection already stable, skipping answer');
-            return;
-        }
-        
-        await peerData.connection.setRemoteDescription(new RTCSessionDescription(sdp));
-        console.log(`Set remote description from ${from}`);
+            console.log('[Remote Answer Step 3.1] Connection already stable, skipping answer');
+        return;
+      }
+      
+        console.log('[Remote Answer Step 4] Setting remote description');
+      await peerData.connection.setRemoteDescription(new RTCSessionDescription(sdp));
+        console.log(`[Remote Answer Step 5] Set remote description from ${from}`);
     } catch (error) {
-        console.error('Error handling remote answer:', error);
+        console.error('[Remote Answer Step 6] Error handling remote answer:', error);
         toast.error('Failed to complete connection');
     }
   }
@@ -395,11 +468,11 @@ class WebRTCService {
     if (from === this.userId) return;
     
     try {
-        const peerData = this.peerConnections.get(from);
-        if (!peerData) {
-            console.warn(`No peer connection found for ${from}`);
-            return;
-        }
+      const peerData = this.peerConnections.get(from);
+      if (!peerData) {
+        console.warn(`No peer connection found for ${from}`);
+        return;
+      }
 
         if (!peerData.connection.remoteDescription) {
             console.log('Remote description not set, queuing ICE candidate');
@@ -411,13 +484,13 @@ class WebRTCService {
             }
             return;
         }
-        
-        if (candidate) {
-            await peerData.connection.addIceCandidate(new RTCIceCandidate(candidate));
+      
+      if (candidate) {
+        await peerData.connection.addIceCandidate(new RTCIceCandidate(candidate));
             console.log(`Added ICE candidate from ${from}`);
-        }
+      }
     } catch (error) {
-        console.error('Error handling remote ICE candidate:', error);
+      console.error('Error handling remote ICE candidate:', error);
         toast.error('Failed to establish connection');
     }
   }
@@ -439,19 +512,23 @@ class WebRTCService {
   }
 
   private async createPeerConnection(peerId: string, isInitiator: boolean): Promise<PeerConnection | null> {
+    console.log(`[Step 1] Creating peer connection for ${peerId}, isInitiator: ${isInitiator}`);
+    
     if (peerId === this.userId) {
-        console.warn('Attempted to create peer connection with self');
+        console.warn('[Step 1.1] Attempted to create peer connection with self');
         return null;
     }
 
     let peerData = this.peerConnections.get(peerId);
     if (peerData) {
-        return peerData;
+        console.log(`[Step 1.2] Existing peer connection found for ${peerId}`);
+      return peerData;
     }
 
+    console.log('[Step 2] Creating new RTCPeerConnection');
     const peerConnection = new RTCPeerConnection({
-      iceServers: this.iceServers,
-      iceCandidatePoolSize: 10
+        iceServers: this.iceServers,
+        iceCandidatePoolSize: 10
     });
     
     peerData = {
@@ -460,28 +537,35 @@ class WebRTCService {
     };
     
     this.peerConnections.set(peerId, peerData);
+    console.log(`[Step 3] Peer connection created and stored for ${peerId}`);
 
     peerConnection.onconnectionstatechange = async () => {
-      console.log(`Connection state with ${peerId}: ${peerConnection.connectionState}`);
-      
-      switch (peerConnection.connectionState) {
-        case 'disconnected':
-          console.log(`Connection with ${peerId} disconnected, attempting recovery...`);
-          await this.handleConnectionRecovery(peerId);
-          break;
-        case 'failed':
-          console.log(`Connection with ${peerId} failed, attempting reconnection...`);
-          await this.handleConnectionRecovery(peerId);
-          break;
-        case 'closed':
-          this.peerConnections.delete(peerId);
-          break;
-      }
+        console.log(`[Connection State] ${peerId}: ${peerConnection.connectionState}`);
+        console.log(`[Signaling State] ${peerId}: ${peerConnection.signalingState}`);
+        
+        switch (peerConnection.connectionState) {
+            case 'disconnected':
+            case 'failed':
+                console.log(`[Step 4.1] Connection with ${peerId} ${peerConnection.connectionState}, attempting recovery...`);
+                await this.handleConnectionRecovery(peerId);
+                break;
+            case 'closed':
+                console.log(`[Step 4.2] Connection with ${peerId} closed, removing from connections`);
+                this.peerConnections.delete(peerId);
+                break;
+            case 'connected':
+                console.log(`[Step 4.3] Connection with ${peerId} established successfully`);
+                break;
+        }
     };
 
     peerConnection.onicecandidate = (event) => {
       if (this.roomId && this.userId) {
-        console.log(`New ICE candidate for ${peerId}:`, event.candidate);
+            console.log(`[Step 5] New ICE candidate for ${peerId}:`, {
+                candidate: event.candidate,
+                state: peerConnection.connectionState,
+                signalingState: peerConnection.signalingState
+            });
         socketService.emit('webrtc:ice-candidate', {
           candidate: event.candidate,
           to: peerId,
@@ -491,38 +575,53 @@ class WebRTCService {
     };
     
     peerConnection.ontrack = (event) => {
-      console.log(`Received track from ${peerId}`, event.streams);
+        console.log(`[Step 6] Received track from ${peerId}`, {
+            streams: event.streams,
+            track: event.track,
+            state: peerConnection.connectionState,
+            signalingState: peerConnection.signalingState
+        });
       
       const [remoteStream] = event.streams;
       
       if (remoteStream) {
+            console.log(`[Step 6.1] Adding remote stream for ${peerId}`, {
+                audioTracks: remoteStream.getAudioTracks().length,
+                videoTracks: remoteStream.getVideoTracks().length
+            });
         peerData!.streams.push(remoteStream);
         this.onTrackCallbacks.forEach(callback => callback(remoteStream, peerId));
       }
     };
 
+    console.log('[Step 7] Adding local tracks to peer connection');
     this.addLocalTracks(peerConnection);
 
     if (isInitiator && this.roomId && this.userId) {
-      try {
-        const offer = await peerConnection.createOffer({
-          offerToReceiveAudio: true,
-          offerToReceiveVideo: true
-        });
-        
-        await peerConnection.setLocalDescription(offer);
-        console.log(`Created and set local description for ${peerId}`);
-        
-        socketService.emit('webrtc:offer', {
-          sdp: offer,
-          to: peerId,
-          from: this.userId,
-          sessionId: this.roomId
-        });
-      } catch (error) {
-        console.error('Error creating offer:', error);
-        toast.error('Failed to create connection offer');
-      }
+        try {
+            console.log('[Step 8] Creating offer as initiator');
+      const offer = await peerConnection.createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true
+      });
+      
+            console.log('[Step 9] Setting local description');
+      await peerConnection.setLocalDescription(offer);
+            console.log(`[Step 10] Created and set local description for ${peerId}`, {
+                type: offer.type,
+                sdp: offer.sdp
+            });
+      
+      socketService.emit('webrtc:offer', {
+        sdp: offer,
+        to: peerId,
+        from: this.userId,
+        sessionId: this.roomId
+      });
+        } catch (error) {
+            console.error('[Step 8.1] Error creating offer:', error);
+            toast.error('Failed to create connection offer');
+        }
     }
     
     return peerData;
@@ -546,17 +645,32 @@ class WebRTCService {
   }
 
   private addLocalTracks(peerConnection: RTCPeerConnection): void {
+    console.log('[Add Local Tracks Step 1] Adding local tracks to peer connection');
     if (this.localStream) {
+      console.log('[Add Local Tracks Step 2] Local stream available, adding tracks');
       this.localStream.getTracks().forEach(track => {
+        console.log(`[Add Local Tracks Step 3] Adding track:`, {
+          kind: track.kind,
+          label: track.label,
+          enabled: track.enabled
+        });
         peerConnection.addTrack(track, this.localStream!);
       });
+    } else {
+      console.log('[Add Local Tracks Step 2.1] No local stream available');
     }
   }
 
   private updateTracksOnAllPeers(): void {
+    console.log('[Update Tracks Step 1] Updating tracks on all peers');
     this.peerConnections.forEach((peerData, peerId) => {
+      console.log(`[Update Tracks Step 2] Updating tracks for peer ${peerId}`);
       const senders = peerData.connection.getSenders();
       senders.forEach(sender => {
+        console.log(`[Update Tracks Step 3] Removing track:`, {
+          kind: sender.track?.kind,
+          label: sender.track?.label
+        });
         peerData.connection.removeTrack(sender);
       });
  

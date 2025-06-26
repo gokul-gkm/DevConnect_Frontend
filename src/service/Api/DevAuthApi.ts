@@ -64,7 +64,11 @@ const DevAuthApi = {
             console.error('API Error:', error);
             throw error;
         }
-    }
+    },
+
+    logOut: async (): Promise<void> => {
+        await axiosClient.post(devAuthRoutes.logout);
+    },
 }
 
 export default DevAuthApi

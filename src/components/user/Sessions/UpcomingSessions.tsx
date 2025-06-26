@@ -23,7 +23,8 @@ import {
   DollarSign,
   Check,
   AlertCircle,
-  BadgeCheck
+  BadgeCheck,
+  Activity
 } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import { UpcomingSession } from '@/types/types'
@@ -186,6 +187,11 @@ export function UpcomingSessions() {
             label: 'Approved',
             classes: 'bg-green-500/10 text-green-400 border-green-500/20',
             icon: BadgeCheck 
+          },
+          active: {
+            label: 'Active',
+            classes: 'bg-green-500/10 text-green-400 border-green-500/20',
+            icon: Activity 
           }
         } as const
         

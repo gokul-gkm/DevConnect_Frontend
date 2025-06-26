@@ -33,7 +33,7 @@ class SocketService {
     private hasUnreadCountListener = false;
     private hasWebRTCListeners = false;
     private lastRoomJoinTime: number = 0;
-    private roomJoinCooldown: number = 2000; // Increase cooldown to 2 seconds
+    private roomJoinCooldown: number = 2000;
     private pendingRoomJoins: Map<string, NodeJS.Timeout> = new Map();
     
     connect(token?: string | null, role?: string): Promise<boolean> {
@@ -729,7 +729,6 @@ class SocketService {
     joinVideoRoom(sessionId: string): boolean {
         const now = Date.now();
         
-        // Clear any pending join for this room
         if (this.pendingRoomJoins.has(sessionId)) {
             clearTimeout(this.pendingRoomJoins.get(sessionId));
             this.pendingRoomJoins.delete(sessionId);
@@ -738,7 +737,6 @@ class SocketService {
         if (now - this.lastRoomJoinTime < this.roomJoinCooldown) {
             console.log('Skipping room join - cooldown active');
             
-            // Schedule join after cooldown
             const timeout = setTimeout(() => {
                 this.executeRoomJoin(sessionId);
             }, this.roomJoinCooldown - (now - this.lastRoomJoinTime));
@@ -768,7 +766,7 @@ class SocketService {
     }
 
     leaveVideoRoom(sessionId: string): boolean {
-        // Clear any pending join
+   
         if (this.pendingRoomJoins.has(sessionId)) {
             clearTimeout(this.pendingRoomJoins.get(sessionId));
             this.pendingRoomJoins.delete(sessionId);

@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { useNotificationContext } from '@/contexts/NotificationContext';
 import { socketService } from '@/service/socket/socketService';
 import { cn } from '@/lib/utils';
+import DevAuthApi from '@/service/Api/DevAuthApi';
 
 const navItems = [
   { name: 'Home', delay: 0, url: '/developer/dashboard' },
@@ -33,6 +34,7 @@ const DevNavbar: React.FC = () => {
     try {
         socketService.logout()
         dispatch(logout());
+        DevAuthApi.logOut()
         setIsProfileOpen(false);
         setIsMobileMenuOpen(false);
         toast.success('Logout Successfully');
@@ -305,6 +307,7 @@ const DevNavbar: React.FC = () => {
               </motion.button>
             </motion.div>
 
+            {isAuthenticated && (
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -321,6 +324,7 @@ const DevNavbar: React.FC = () => {
                 </span>
               )}
             </motion.button>
+            )}
 
             {!(isMobile && isSearchOpen) && renderAuthSection()}
           </div>

@@ -7,6 +7,7 @@ import { logout } from '@/redux/slices/authSlice';
 import { socketService } from '@/service/socket/socketService';
 import { cn } from '@/lib/utils';
 import { useNotificationContext } from '@/contexts/NotificationContext';
+import AuthApi from '@/service/Api/AuthApi';
 
 const navItems = [
   { name: 'Home', delay: 0, url: '/' },
@@ -41,6 +42,7 @@ const Navbar: React.FC = () => {
   const handleLogout = () => {
     socketService.logout();
     dispatch(logout());
+    AuthApi.logOut()
     navigate('/auth/login');
   }
 
@@ -244,6 +246,7 @@ const Navbar: React.FC = () => {
               <Search className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </motion.button>
 
+            {isAuthenticated && (
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -260,6 +263,7 @@ const Navbar: React.FC = () => {
                 </span>
               )}
             </motion.button>
+            )}
 
             {renderAuthSection()}
           </div>
