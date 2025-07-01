@@ -14,6 +14,8 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { socketService } from '@/service/socket/socketService'
 import VideoSessionApi from '@/service/Api/VideoSessionApi';
+import { CancelSessionModal } from './CancelSessionModal';
+import SessionApi from '@/service/Api/SessionApi';
 
 type SessionStatus = 'pending' | 'approved' | 'rejected' | 'completed' | 'awaiting_payment';
 
@@ -40,6 +42,8 @@ export default function SessionDetails() {
   const { data: session, isLoading } = useSessionDetails(sessionId as string);
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -93,6 +97,30 @@ export default function SessionDetails() {
     } catch (error) {
       console.error('Error joining session:', error);
       toast.error('Failed to join session. Please try again.');
+    }
+  };
+
+  const canCancelSession = (() => {
+    if (!session) return false;
+    const allowedStatuses = ['pending', 'approved', 'awaiting_payment', 'scheduled'];
+    if (!allowedStatuses.includes(session.status)) return false;
+    const start = new Date(session.startTime).getTime();
+    const now = Date.now();
+    return start - now > 12 * 60 * 60 * 1000;
+  })();
+
+  const handleCancelSession = async (reason: string) => {
+    setCancelLoading(true);
+    try {
+      
+      await SessionApi.cancelSession(sessionId as string, reason);
+      toast.success("Session cancelled successfully.");
+      setShowCancelModal(false);
+      navigate("/sessions/upcoming");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to cancel session.");
+    } finally {
+      setCancelLoading(false);
     }
   };
 
@@ -249,7 +277,24 @@ export default function SessionDetails() {
 
               <div className="flex gap-3 sm:gap-4">
                 {renderActionButtons()}
+                {canCancelSession && (
+                  <Button
+                    variant="destructive"
+                    className="flex-1 h-12 gap-2 rounded-xl bg-rose-950/50 hover:bg-rose-900/50 text-rose-400 border border-rose-500/30 shadow-lg shadow-rose-900/5 hover:shadow-rose-900/10 transition-all duration-300"
+                    onClick={() => setShowCancelModal(true)}
+                  >
+                    Cancel Session
+                  </Button>
+                )}
+                <CancelSessionModal
+                  open={showCancelModal}
+                  onClose={() => setShowCancelModal(false)}
+                  onSubmit={handleCancelSession}
+                  loading={cancelLoading}
+                />
               </div>
+
+              
             </div>
 
             <motion.div
@@ -318,6 +363,8 @@ export default function SessionDetails() {
           </div>
         </motion.div>
       </div>
+
+      
     </div>
   );
 }

@@ -25,6 +25,10 @@ const VideoSessionApi = {
         const response = await axiosClient.post(`${videoSessionRoutes.end}/${sessionId}/end`);
         return response.data;
     },
+    async leaveSession(sessionId: string) {
+        const response = await axiosClient.post(`${videoSessionRoutes.leave}/${sessionId}/leave`);
+        return response.data;
+    },
 
     async getSessionDetails(sessionId: string) {
         const response = await axiosClient.get(`${videoSessionRoutes.details}/${sessionId}`);

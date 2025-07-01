@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import { Calendar, Clock, CheckCircle, XCircle, Eye, ChevronDown, ChevronUp, Search, ArrowUpRight, DollarSign } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, XCircle, Eye, ChevronDown, ChevronUp, Search, ArrowUpRight, DollarSign, CircleCheck, TicketX } from 'lucide-react';
 import { Button } from "@/components/ui/shadcn-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from '@/lib/utils';
@@ -27,11 +27,23 @@ const statusConfig = {
     borderColor: 'border-rose-800/20',
     icon: <XCircle className="w-3.5 h-3.5 text-rose-400" />
   },
+  cancelled: {
+    color: 'text-red-400',
+    bgColor: 'bg-black/40',
+    borderColor: 'border-red-800/20',
+    icon: <TicketX  className="w-3.5 h-3.5 text-red-400" />
+  },
   scheduled: {
     color: 'text-blue-400',
     bgColor: 'bg-black/40',
     borderColor: 'border-blue-800/20',
     icon: <Calendar className="w-3.5 h-3.5 text-blue-400" />
+  },
+  completed: {
+    color: 'text-green-400',
+    bgColor: 'bg-black/40',
+    borderColor: 'border-green-800/20',
+    icon: <CircleCheck className="w-3.5 h-3.5 text-green-400" />
   }
 };
 
@@ -248,7 +260,7 @@ interface StatusBadgeProps {
 }
 
 const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
-  const isValidStatus = status && ['pending', 'approved', 'rejected', 'scheduled'].includes(status);
+  const isValidStatus = status && ['pending', 'approved', 'rejected', 'scheduled', 'completed','cancelled'].includes(status);
   
   const config = isValidStatus ? statusConfig[status as keyof typeof statusConfig] : {
     color: 'text-gray-400',

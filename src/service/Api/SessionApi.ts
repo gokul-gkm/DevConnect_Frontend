@@ -28,8 +28,8 @@ const SessionApi = {
   },
       
     
-  async cancelSession(sessionId: string) {
-    const response = await axiosClient.delete<{ data: Session }>(`${sessionRoutes.cancel}/${sessionId}`);
+  async cancelSession(sessionId: string, reason: string) {
+    const response = await axiosClient.patch(`${sessionRoutes.cancel}/${sessionId}/cancel`, {reason});
     return response.data.data;
   },
     

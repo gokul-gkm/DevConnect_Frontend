@@ -26,6 +26,7 @@ export default function DeveloperSessionHistory() {
     userId: session.user
   }));
 
+
   const navigate = useNavigate();
 
   if (isLoading) {
