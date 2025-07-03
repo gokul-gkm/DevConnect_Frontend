@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search } from 'lucide-react';
+import { Search, Calendar } from 'lucide-react';
 import { Input } from "@/components/ui/Input";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SessionRejectionDialog } from './SessionRejectionDialog';
@@ -120,27 +120,47 @@ export default function SessionRequests() {
             setCurrentTab={setCurrentTab} 
           />
 
-          <motion.div 
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="relative rounded-xl overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-b from-purple-900/10 via-indigo-900/5 to-transparent rounded-xl blur-md -z-10" />
-            <div className="bg-zinc-900/40 backdrop-blur-md border border-purple-800/10 rounded-xl overflow-hidden shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)]">
-              <SessionsTable 
-                sessions={filteredSessions}
-                expandedSession={expandedSession}
-                setExpandedSession={setExpandedSession}
-                handleOpenDialog={handleOpenDialog}
-                acceptSession={acceptSession}
-                isAccepting={isAccepting}
-                isRejecting={isRejecting}
-                navigateToDetails={(id: any) => navigate(`/developer/session-requests/${id}`)}
-                searchQuery={searchQuery}
-              />
-            </div>
-          </motion.div>
+          {filteredSessions && filteredSessions.length > 0 ? (
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="relative rounded-xl overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-purple-900/10 via-indigo-900/5 to-transparent rounded-xl blur-md -z-10" />
+              <div className="bg-zinc-900/40 backdrop-blur-md border border-purple-800/10 rounded-xl overflow-hidden shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)]">
+                <SessionsTable 
+                  sessions={filteredSessions}
+                  expandedSession={expandedSession}
+                  setExpandedSession={setExpandedSession}
+                  handleOpenDialog={handleOpenDialog}
+                  acceptSession={acceptSession}
+                  isAccepting={isAccepting}
+                  isRejecting={isRejecting}
+                  navigateToDetails={(id: any) => navigate(`/developer/session-requests/${id}`)}
+                  searchQuery={searchQuery}
+                />
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              className="col-span-3 relative overflow-hidden rounded-2xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/20 via-purple-950/10 to-transparent rounded-2xl blur-xl opacity-70" />
+              <div className="relative bg-zinc-900/20 backdrop-blur-xl border border-zinc-800/50 p-10 rounded-2xl flex flex-col items-center justify-center shadow-[0_10px_40px_-15px_rgba(0,0,0,0.7)]">
+                <div className="w-20 h-20 rounded-full bg-indigo-950/30 flex items-center justify-center border border-indigo-500/20 mb-5 shadow-[0_0_30px_-5px_rgba(99,102,241,0.3)]">
+                  <Calendar className="w-10 h-10 text-indigo-400/70" />
+                </div>
+                <h3 className="text-2xl font-medium text-white mb-3">No Session Requests</h3>
+                <p className="text-sm text-zinc-400 mb-8 max-w-md text-center">
+                  You don't have any session requests yet. When users book sessions with you, they'll appear here.
+                </p>
+              </div>
+            </motion.div>
+          )}
           
           {pagination && pagination.totalPages > 1 && (
             <motion.div 

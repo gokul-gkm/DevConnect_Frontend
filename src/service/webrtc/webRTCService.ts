@@ -4,6 +4,8 @@ import { toast } from 'react-hot-toast';
 interface PeerConnection {
   connection: RTCPeerConnection;
   streams: MediaStream[];
+  cameraSender?: RTCRtpSender;
+  screenSender?: RTCRtpSender;
   pendingCandidates?: RTCIceCandidateInit[];
 }
 
@@ -220,50 +222,61 @@ class WebRTCService {
   }
 
   public async startScreenSharing(): Promise<MediaStream | null> {
+    console.log('[WebRTC] startScreenSharing called');
     if (!this.roomId || !this.userId) {
-      console.error('WebRTC not initialized');
+      console.error('[WebRTC] Not initialized');
       return null;
     }
-    
+
     try {
       if (this.localScreenStream) {
         this.localScreenStream.getTracks().forEach(track => track.stop());
       }
-      
+
       const stream = await navigator.mediaDevices.getDisplayMedia({ 
         video: true,
         audio: false
       });
-      
+
       this.localScreenStream = stream;
       this.isScreenSharing = true;
-      
-      stream.getVideoTracks()[0].addEventListener('ended', () => {
-        this.stopScreenSharing();
-      });
-      
-      this.peerConnections.forEach((peerData, peerId) => {
-        this.shareScreenWithPeer(peerId, stream);
-      });
-      
+
+      const screenTrack = stream.getVideoTracks()[0];
+      if (screenTrack) {
+        console.log('[WebRTC] Got screen track:', screenTrack.label, screenTrack.id);
+        this.addScreenTrackToAllPeers(screenTrack, stream);
+        await this.renegotiateAllPeers();
+
+        screenTrack.onended = () => {
+          console.log('[WebRTC] Screen share track ended');
+          this.stopScreenSharing();
+        };
+      } else {
+        console.warn('[WebRTC] No video track found in screen share stream');
+      }
+
       socketService.emit('webrtc:screen-sharing-started', {
         roomId: this.roomId,
         userId: this.userId
       });
-      
+
       return stream;
     } catch (error) {
-      console.error('Error starting screen sharing:', error);
+      console.error('[WebRTC] Error starting screen sharing:', error);
       return null;
     }
   }
 
-  public stopScreenSharing(): void {
+  public async stopScreenSharing(): Promise<void> {
+    console.log('[WebRTC] stopScreenSharing called');
     if (!this.localScreenStream || !this.isScreenSharing) return;
 
     this.localScreenStream.getTracks().forEach(track => track.stop());
     this.localScreenStream = null;
     this.isScreenSharing = false;
+
+    this.removeScreenTrackFromAllPeers();
+    await this.renegotiateAllPeers();
 
     if (this.roomId && this.userId) {
       socketService.emit('webrtc:screen-sharing-stopped', {
@@ -337,7 +350,7 @@ class WebRTCService {
     }
     
     console.log('[Session Info Step 2] Cleaning up existing peer connections');
-    this.peerConnections.forEach((peerData, peerId) => {
+    this.peerConnections.forEach((peerData, _peerId) => {
       peerData.connection.close();
     });
     this.peerConnections.clear();
@@ -575,27 +588,30 @@ class WebRTCService {
     };
     
     peerConnection.ontrack = (event) => {
-        console.log(`[Step 6] Received track from ${peerId}`, {
-            streams: event.streams,
-            track: event.track,
-            state: peerConnection.connectionState,
-            signalingState: peerConnection.signalingState
-        });
-      
+      console.log(`[WebRTC] ontrack: Received track from ${peerId}`, {
+        streams: event.streams,
+        track: event.track,
+        kind: event.track.kind,
+        label: event.track.label,
+        state: peerConnection.connectionState,
+        signalingState: peerConnection.signalingState
+      });
+
       const [remoteStream] = event.streams;
-      
+
       if (remoteStream) {
-            console.log(`[Step 6.1] Adding remote stream for ${peerId}`, {
-                audioTracks: remoteStream.getAudioTracks().length,
-                videoTracks: remoteStream.getVideoTracks().length
-            });
+        console.log(`[WebRTC] ontrack: Adding remote stream for ${peerId}`, {
+          audioTracks: remoteStream.getAudioTracks().length,
+          videoTracks: remoteStream.getVideoTracks().length,
+          streamId: remoteStream.id
+        });
         peerData!.streams.push(remoteStream);
         this.onTrackCallbacks.forEach(callback => callback(remoteStream, peerId));
       }
     };
 
     console.log('[Step 7] Adding local tracks to peer connection');
-    this.addLocalTracks(peerConnection);
+    this.addLocalTracks(peerConnection, peerData);
 
     if (isInitiator && this.roomId && this.userId) {
         try {
@@ -644,20 +660,15 @@ class WebRTCService {
     }
   }
 
-  private addLocalTracks(peerConnection: RTCPeerConnection): void {
-    console.log('[Add Local Tracks Step 1] Adding local tracks to peer connection');
+  private addLocalTracks(peerConnection: RTCPeerConnection, peerData: PeerConnection): void {
     if (this.localStream) {
-      console.log('[Add Local Tracks Step 2] Local stream available, adding tracks');
       this.localStream.getTracks().forEach(track => {
-        console.log(`[Add Local Tracks Step 3] Adding track:`, {
-          kind: track.kind,
-          label: track.label,
-          enabled: track.enabled
-        });
-        peerConnection.addTrack(track, this.localStream!);
+        if (track.kind === 'video' && !peerData.cameraSender) {
+          peerData.cameraSender = peerConnection.addTrack(track, this.localStream!);
+        } else if (track.kind === 'audio') {
+          peerConnection.addTrack(track, this.localStream!);
+        }
       });
-    } else {
-      console.log('[Add Local Tracks Step 2.1] No local stream available');
     }
   }
 
@@ -674,18 +685,18 @@ class WebRTCService {
         peerData.connection.removeTrack(sender);
       });
  
-      this.addLocalTracks(peerData.connection);
+      this.addLocalTracks(peerData.connection, peerData);
     });
   }
 
-  private shareScreenWithPeer(peerId: string, stream: MediaStream): void {
-    const peerData = this.peerConnections.get(peerId);
-    if (!peerData || !stream) return;
+  // private shareScreenWithPeer(peerId: string, stream: MediaStream): void {
+  //   const peerData = this.peerConnections.get(peerId);
+  //   if (!peerData || !stream) return;
     
-    stream.getTracks().forEach(track => {
-      peerData.connection.addTrack(track, stream);
-    });
-  }
+  //   stream.getTracks().forEach(track => {
+  //     peerData.connection.addTrack(track, stream);
+  //   });
+  // }
 
   public isConnected(): boolean {
     return this.isInitialized && this.peerConnections.size > 0;
@@ -693,6 +704,47 @@ class WebRTCService {
 
   public getParticipantCount(): number {
     return this.peerConnections.size;
+  }
+
+  private addScreenTrackToAllPeers(screenTrack: MediaStreamTrack, screenStream: MediaStream) {
+    console.log('[WebRTC] addScreenTrackToAllPeers called');
+    this.peerConnections.forEach((peerData, peerId) => {
+      if (!peerData.screenSender) {
+        console.log(`[WebRTC] Adding screen track to peer ${peerId}`);
+        peerData.screenSender = peerData.connection.addTrack(screenTrack, screenStream);
+      } else {
+        console.log(`[WebRTC] Screen sender already exists for peer ${peerId}`);
+      }
+    });
+  }
+
+  private removeScreenTrackFromAllPeers() {
+    console.log('[WebRTC] removeScreenTrackFromAllPeers called');
+    this.peerConnections.forEach((peerData, peerId) => {
+      if (peerData.screenSender) {
+        console.log(`[WebRTC] Removing screen track from peer ${peerId}`);
+        peerData.connection.removeTrack(peerData.screenSender);
+        peerData.screenSender = undefined;
+      }
+    });
+  }
+
+  private async renegotiateAllPeers() {
+    for (const [peerId, peerData] of this.peerConnections.entries()) {
+      try {
+        const offer = await peerData.connection.createOffer();
+        await peerData.connection.setLocalDescription(offer);
+        socketService.emit('webrtc:offer', {
+          sdp: offer,
+          to: peerId,
+          from: this.userId,
+          sessionId: this.roomId
+        });
+        console.log(`[WebRTC] Renegotiation offer sent to ${peerId}`);
+      } catch (err) {
+        console.error(`[WebRTC] Error renegotiating with ${peerId}:`, err);
+      }
+    }
   }
 }
 export const webRTCService = new WebRTCService();

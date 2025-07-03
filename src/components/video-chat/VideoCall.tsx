@@ -75,6 +75,7 @@ export default function VideoCall() {
   const {
     localStream,
     remoteStreams,
+    remoteScreenStreams,
     participants,
     screenShareStream,
     isMuted,
@@ -106,6 +107,7 @@ export default function VideoCall() {
 
 
   const remoteStream = Array.from(remoteStreams.values())[0];
+  const remoteScreenStream = Array.from(remoteScreenStreams.values())[0] || null;
 
   const [isIntentionallyEnded, setIsIntentionallyEnded] = useState(false);
 
@@ -118,24 +120,29 @@ export default function VideoCall() {
     switch (mainVideo) {
       case 'remote':
         if (remoteStream) {
+          console.log('[VideoCall] Setting mainVideoRef to remoteStream', remoteStream.id);
           mainVideoRef.current.srcObject = remoteStream;
         }
         if (localStream && isVideoEnabled) {
+          console.log('[VideoCall] Setting sideVideoRef to localStream', localStream.id);
           sideVideoRef.current.srcObject = localStream;
         }
         break;
         
       case 'local':
         if (localStream) {
+          console.log('[VideoCall] Setting mainVideoRef to localStream', localStream.id);
           mainVideoRef.current.srcObject = localStream;
         }
         if (remoteStream) {
+          console.log('[VideoCall] Setting sideVideoRef to remoteStream', remoteStream.id);
           sideVideoRef.current.srcObject = remoteStream;
         }
         break;
         
       case 'screen':
         if (screenShareStream) {
+          console.log('[VideoCall] Setting mainVideoRef to screenShareStream', screenShareStream.id);
           mainVideoRef.current.srcObject = screenShareStream;
         }
         if (remoteStream) {
@@ -155,6 +162,12 @@ export default function VideoCall() {
     }
   }, [isScreenSharing, screenShareStream]);
 
+  useEffect(() => {
+    if (screenShareRef.current && remoteScreenStream) {
+      console.log('[VideoCall] Setting screenShareRef to remoteScreenStream', remoteScreenStream.id);
+      screenShareRef.current.srcObject = remoteScreenStream;
+    }
+  }, [remoteScreenStream]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement && containerRef.current) {
@@ -456,6 +469,21 @@ export default function VideoCall() {
                   </div>
                 )}
                 {mainStreamInfo.label}
+              </div>
+            )}
+
+            {remoteScreenStream && (
+              <div className="absolute bottom-4 right-4 w-1/3 aspect-video rounded-lg overflow-hidden border-2 border-indigo-500/30 shadow-lg bg-black/80 z-20">
+                <video
+                  ref={screenShareRef}
+                  className="w-full h-full object-contain"
+                  autoPlay
+                  playsInline
+                  style={{ opacity: 1 }}
+                />
+                <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                  Remote Screen Share
+                </div>
               </div>
             )}
           </div>

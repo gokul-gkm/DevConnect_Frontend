@@ -197,16 +197,9 @@ export const UpcomingSessionsPreview = ({ sessions = [], loading = false }) => {
           </div>
           <h4 className="text-zinc-300 text-lg font-medium">No upcoming sessions</h4>
           <p className="text-zinc-400 text-sm max-w-md">
-            You don't have any sessions scheduled. Book a new session with a mentor to get started.
+            You don't have any sessions scheduled.
           </p>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="mt-2 bg-black hover:bg-zinc-900 text-indigo-300 border border-indigo-800/30 shadow-lg shadow-indigo-900/5 rounded-xl px-6 py-2 text-sm font-medium transition-all duration-300"
-            onClick={() => navigate('/developer/book-session')}
-          >
-            Book a Session
-          </motion.button>
+         
         </motion.div>
       )}
     </motion.div>

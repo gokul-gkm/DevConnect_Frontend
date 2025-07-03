@@ -1,6 +1,7 @@
 import axiosClient from "@/service/axiosinstance/axios";
 import { userRoutes } from "@/utils/constants";
 import { ChangePasswordFormData } from "@/utils/validation/userValidation";
+import publicAxios from "../axiosinstance/publicAxios";
 
 const UserApi = {
   getProfile: async () => {
@@ -65,7 +66,7 @@ const UserApi = {
             }
         }
 
-        const response = await axiosClient.get(`${userRoutes.searchDevelopers}?${queryString.toString()}`);
+        const response = await publicAxios.get(`${userRoutes.searchDevelopers}?${queryString.toString()}`);
         return response.data.data;
     } catch (error) {
         throw error;
@@ -74,7 +75,7 @@ const UserApi = {
 
   getPublicProfile: async (developerId: string) => {
     try {
-        const response = await axiosClient.get(`${userRoutes.getPublicProfile}/${developerId}`);
+        const response = await publicAxios.get(`${userRoutes.getPublicProfile}/${developerId}`);
         return response.data.data;
     } catch (error) {
         throw error;

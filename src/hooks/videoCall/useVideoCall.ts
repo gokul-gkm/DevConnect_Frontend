@@ -26,6 +26,7 @@ interface ParticipantData {
 interface UseVideoCallReturn {
   localStream: MediaStream | null;
   remoteStreams: Map<string, MediaStream>;
+  remoteScreenStreams: Map<string, MediaStream>;
   participants: VideoCallParticipant[];
   screenShareStream: MediaStream | null;
   isMuted: boolean;
@@ -54,6 +55,7 @@ export function useVideoCall({ sessionId, isHost = false, onError }: UseVideoCal
   
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStreams, setRemoteStreams] = useState<Map<string, MediaStream>>(new Map());
+  const [remoteScreenStreams, setRemoteScreenStreams] = useState<Map<string, MediaStream>>(new Map());
   const [screenShareStream, setScreenShareStream] = useState<MediaStream | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
@@ -157,24 +159,43 @@ export function useVideoCall({ sessionId, isHost = false, onError }: UseVideoCal
   useEffect(() => {
     if (isMountedRef.current) {
       webRTCService.onTrack((stream, peerId) => {
-        console.log('🎦[useVideoCall] onTrack callback fired for peerId:', peerId, stream);
-        setRemoteStreams(prev => {
-          const newStreams = new Map(prev);
-          newStreams.set(peerId, stream);
-          console.log('[useVideoCall] remoteStreams updated:', Array.from(newStreams.keys()));
-          return newStreams;
-        });
+        const videoLabels = stream.getVideoTracks().map(track => track.label).join(', ');
+        console.log(`[useVideoCall] onTrack: peerId=${peerId}, streamId=${stream.id}, videoLabels=${videoLabels}`);
+
+        const isScreen = stream.getVideoTracks().some(track =>
+          track.label.toLowerCase().includes('screen') ||
+          track.label.toLowerCase().includes('share')
+        );
+        if (isScreen) {
+          console.log(`[useVideoCall] Detected screen share stream from ${peerId}`);
+          setRemoteScreenStreams(prev => {
+            const newStreams = new Map(prev);
+            newStreams.set(peerId, stream);
+            return newStreams;
+          });
+        } else {
+          console.log(`[useVideoCall] Detected camera stream from ${peerId}`);
+          setRemoteStreams(prev => {
+            const newStreams = new Map(prev);
+            newStreams.set(peerId, stream);
+            return newStreams;
+          });
+        }
         updateParticipants();
       });
       
       webRTCService.onParticipantDisconnected((peerId) => {
+        console.log(`[useVideoCall] onParticipantDisconnected: peerId=${peerId}`);
         setRemoteStreams(prev => {
           const newStreams = new Map(prev);
           newStreams.delete(peerId);
-          console.log('[useVideoCall] remoteStreams after disconnect:', Array.from(newStreams.keys()));
           return newStreams;
         });
-        
+        setRemoteScreenStreams(prev => {
+          const newStreams = new Map(prev);
+          newStreams.delete(peerId);
+          return newStreams;
+        });
         updateParticipants();
       });
     }
@@ -352,6 +373,7 @@ export function useVideoCall({ sessionId, isHost = false, onError }: UseVideoCal
   return {
     localStream,
     remoteStreams,
+    remoteScreenStreams,
     participants,
     screenShareStream,
     isMuted,

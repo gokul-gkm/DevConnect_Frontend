@@ -113,7 +113,7 @@ const PortfolioPage = () => {
                                 onClick={() => navigate('/developer/portfolio/add-project')}
                                 className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 
                                          hover:from-indigo-500/30 hover:to-purple-500/30
-                                         text-white border border-white/10"
+                                         text-white border border-white/10 rounded-xl"
                             >
                                 <Plus className="w-5 h-5 mr-2" />
                                 Add Your First Project
