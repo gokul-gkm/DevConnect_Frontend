@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import DeveloperSessionHistory from '@/components/developer/sessions/DeveloperSessionHistory';
 
 const DeveloperSessionHistoryPage = () => {
-  const [activeItem, setActiveItem] = useState('Sessions History');
+  const [_activeItem, setActiveItem] = useState('Sessions History');
 
   return (
     <motion.div 
@@ -14,7 +14,7 @@ const DeveloperSessionHistoryPage = () => {
       exit={{ opacity: 0 }}
     >
       <div className="flex">
-        <DeveloperProfileSidebar activeItem={activeItem} setActiveItem={setActiveItem} />
+        <DeveloperProfileSidebar setActiveItem={setActiveItem} />
         <main className="flex-1 ">
           <div className="min-h-screen p-4 lg:p-8 pt-32 lg:pt-8">
             <div className="max-w-[1600px] mx-auto">

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import AddProject from '@/components/developer/portfolio/AddProject';
 
 const AddProjectPage = () => {
-  const [activeItem, setActiveItem] = useState('Profile');
+  const [_activeItem, setActiveItem] = useState('Profile');
 
   return (
     <motion.div 
@@ -15,7 +15,7 @@ const AddProjectPage = () => {
     >
       <div className="max-w-[1600px] mx-auto">
         <div className="flex">
-          <DeveloperProfileSidebar activeItem={activeItem} setActiveItem={setActiveItem} />
+          <DeveloperProfileSidebar setActiveItem={setActiveItem} />
           <div className="flex-1 p-6">
             <div className="max-w-[800px] mx-auto w-full"> 
               <AddProject />
