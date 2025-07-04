@@ -4,7 +4,7 @@ import { DeveloperProfileSidebar } from '@/components/layout/DevProfileSidebar';
 import { motion } from 'framer-motion';
 
 const DeveloperProfilePage = () => {
-  const [activeItem, setActiveItem] = useState('Profile');
+  const [_activeItem, setActiveItem] = useState('Profile');
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
@@ -18,7 +18,7 @@ const DeveloperProfilePage = () => {
     >
       <div className="max-w-[1600px] mx-auto">
         <div className="flex flex-col lg:flex-row">
-          <DeveloperProfileSidebar activeItem={activeItem} setActiveItem={setActiveItem} />
+          <DeveloperProfileSidebar  setActiveItem={setActiveItem} />
           <div className="flex-1 flex justify-center">
             <DeveloperProfile />
           </div>

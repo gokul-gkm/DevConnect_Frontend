@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import SessionRequestDetails from '@/components/developer/sessions/SessionRequestDetails';
 
 const SessionRequestDetailsPage = () => {
-  const [activeItem, setActiveItem] = useState('Sessions Requests');
+  const [_activeItem, setActiveItem] = useState('Sessions Requests');
 
   return (
     <motion.div 
@@ -14,7 +14,7 @@ const SessionRequestDetailsPage = () => {
       exit={{ opacity: 0 }}
     >
       <div className="flex">
-        <DeveloperProfileSidebar activeItem={activeItem} setActiveItem={setActiveItem} />
+        <DeveloperProfileSidebar setActiveItem={setActiveItem} />
         <main className="flex-1 ">
           <div className="min-h-screen p-4 lg:p-8 pt-32 lg:pt-8">
             <div className="max-w-[1600px] mx-auto">

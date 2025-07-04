@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import AvailabilitySettings from '@/components/developer/profile/AvailabilitySettings';
 
 const DeveloperAvailabilityPage = () => {
-  const [activeItem, setActiveItem] = useState('Availability');
+  const [_activeItem, setActiveItem] = useState('Availability');
 
   return (
     <motion.div 
@@ -15,7 +15,7 @@ const DeveloperAvailabilityPage = () => {
     >
       <div className="max-w-[1600px] mx-auto">
         <div className="flex flex-col lg:flex-row">
-          <DeveloperProfileSidebar activeItem={activeItem} setActiveItem={setActiveItem} />
+          <DeveloperProfileSidebar  setActiveItem={setActiveItem} />
           <div className="flex-1 flex justify-center">
             <AvailabilitySettings />
           </div>
