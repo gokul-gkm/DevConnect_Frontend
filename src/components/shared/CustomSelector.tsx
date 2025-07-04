@@ -34,7 +34,7 @@ const CustomSelector: React.FC<CustomSelectProps> = ({
         className="react-select-container"
         classNamePrefix="react-select"
         styles={{
-          control: (base, state) => ({
+          control: (base, _state) => ({
             ...base,
             backgroundColor: 'rgba(38, 38, 38, 0.5)',
             borderColor: error ? '#ef4444' : 'rgba(255, 255, 255, 0.1)',

@@ -64,10 +64,10 @@ export function useVideoCall({ sessionId, isHost = false, onError }: UseVideoCal
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [sessionData, setSessionData] = useState<any>(null);
+  const [sessionData, _setSessionData] = useState<any>(null);
   const [participants, setParticipants] = useState<VideoCallParticipant[]>([]);
-  const [isInitializing, setIsInitializing] = useState(false);
-  const [connectionState, setConnectionState] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
+  const [_isInitializing, setIsInitializing] = useState(false);
+  const [_connectionState, setConnectionState] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
   
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(Date.now());
@@ -306,46 +306,46 @@ export function useVideoCall({ sessionId, isHost = false, onError }: UseVideoCal
     }
   }, [localStream, memoizedSessionId]);
   
-  async function fetchSessionData(sessionId: string) {
-    return {
-      title: "Development Session",
-      participants: []
-    };
-  }
+  // async function fetchSessionData(sessionId: string) {
+  //   return {
+  //     title: "Development Session",
+  //     participants: []
+  //   };
+  // }
   
-  async function fetchParticipantsData(sessionId: string): Promise<ParticipantData[]> {
+  async function fetchParticipantsData(_sessionId: string): Promise<ParticipantData[]> {
     return [];
   }
   
-  const startCamera = async () => {
-    try {
-      const stream = await webRTCService.startLocalStream();
+  // const startCamera = async () => {
+  //   try {
+  //     const stream = await webRTCService.startLocalStream();
       
-      if (!stream) {
-        throw new Error('Failed to get media stream');
-      }
+  //     if (!stream) {
+  //       throw new Error('Failed to get media stream');
+  //     }
       
-      setLocalStream(stream);
-    } catch (err) {
-      console.error('Camera access error details:', err);
+  //     setLocalStream(stream);
+  //   } catch (err) {
+  //     console.error('Camera access error details:', err);
       
-      if (err instanceof DOMException) {
-        if (err.name === 'NotAllowedError') {
-          setError('Camera access denied. Please check your browser permissions.');
-        } else if (err.name === 'NotFoundError') {
-          setError('No camera or microphone found. Please check your device connections.');
-        } else if (err.name === 'NotReadableError') {
-          setError('Camera is already in use by another application. Please close other video apps.');
-        } else {
-          setError(`Camera error: ${err.name}`);
-        }
-      } else {
-        setError('Failed to access camera/microphone');
-      }
+  //     if (err instanceof DOMException) {
+  //       if (err.name === 'NotAllowedError') {
+  //         setError('Camera access denied. Please check your browser permissions.');
+  //       } else if (err.name === 'NotFoundError') {
+  //         setError('No camera or microphone found. Please check your device connections.');
+  //       } else if (err.name === 'NotReadableError') {
+  //         setError('Camera is already in use by another application. Please close other video apps.');
+  //       } else {
+  //         setError(`Camera error: ${err.name}`);
+  //       }
+  //     } else {
+  //       setError('Failed to access camera/microphone');
+  //     }
       
-      onError?.('Failed to access camera/microphone');
-    }
-  };
+  //     onError?.('Failed to access camera/microphone');
+  //   }
+  // };
   
   useEffect(() => {
     if (!socketService.isConnected()) {

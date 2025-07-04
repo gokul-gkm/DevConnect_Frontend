@@ -21,7 +21,7 @@ export default function UserRegisterPage() {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
+    // reset,
   } = useForm<IRegisterData>({
     resolver: zodResolver(registrationSchema),
     mode: "onChange",

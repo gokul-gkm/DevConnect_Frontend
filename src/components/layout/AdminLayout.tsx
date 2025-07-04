@@ -6,10 +6,7 @@ import {
   Code2, 
   TrendingUp, 
   Award, 
-  Briefcase, 
-  FileText, 
-  Settings, 
-  Crown,
+  Briefcase,
   LogOut,
   ChevronRight,
   Menu,
@@ -51,14 +48,9 @@ const AdminLayout = () => {
     { icon: <TrendingUp className="w-5 h-5" />, label: 'Revenue', path: '/admin/revenue' },
     { icon: <Award className="w-5 h-5" />, label: 'Leaderboard', path: '/admin/leaderboard' },
     { icon: <Briefcase className="w-5 h-5" />, label: 'Sessions', path: '/admin/sessions' },
-    // { icon: <FileText className="w-5 h-5" />, label: 'Blogs', path: '/admin/blogs' },
     { icon: <Wallet className="w-5 h-5" />, label: 'Wallet', path: '/admin/wallet' },
   ];
 
-  const bottomNavItems = [
-    { icon: <Settings className="w-5 h-5" />, label: 'Platform Settings', path: '/settings' },
-    { icon: <Crown className="w-5 h-5" />, label: 'Admin', path: '/admin' },
-  ];
 
   const handleLogout = async () => {
     try {
@@ -128,21 +120,6 @@ const AdminLayout = () => {
             ))}
           </div>
 
-          {/* <div className="mt-6 pt-6 border-t border-[#1B2559]/10">
-            {bottomNavItems.map((item) => (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors
-                  ${location.pathname === item.path 
-                    ? 'bg-[#7C3AED] text-white' 
-                    : 'text-gray-400 hover:bg-[#1B2559]/20'}`}
-              >
-                {item.icon}
-                {!isCollapsed && <span>{item.label}</span>}
-              </button>
-            ))}
-          </div> */}
         </nav>
 
         <button 

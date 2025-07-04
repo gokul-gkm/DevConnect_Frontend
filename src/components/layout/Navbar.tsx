@@ -19,7 +19,6 @@ const navItems = [
 const Navbar: React.FC = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const location = useLocation();
   const navigate = useNavigate();
   const { scrollY } = useScroll();
@@ -45,15 +44,6 @@ const Navbar: React.FC = () => {
     AuthApi.logOut()
     navigate('/auth/login');
   }
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const navBackground = useTransform(scrollY, [0, 100], ["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0.95)"]);
   const navHeight = useTransform(scrollY, [0, 100], ["5rem", "4rem"]);

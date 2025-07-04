@@ -206,7 +206,7 @@ const chatSlice = createSlice({
                 state.loading = false;
                 state.chats = action.payload;
             })
-            .addCase(fetchChats.rejected, (state,action) => {
+            .addCase(fetchChats.rejected, (state,_action) => {
                 state.loading = false;
                 toast.error('Failed to load chats from slice');
             })
@@ -238,7 +238,7 @@ const chatSlice = createSlice({
                 state.messageLoading = false;
                 toast.error('Failed to fetch messages');
             })
-            .addCase(sendMessage.pending, (state) => {
+            .addCase(sendMessage.pending, (_state) => {
                 console.log('Redux: Message sending in progress');
             })
             .addCase(sendMessage.fulfilled, (state, action) => {
@@ -251,7 +251,7 @@ const chatSlice = createSlice({
                     console.warn("Message sent but payload was undefined");
                 }
             })
-            .addCase(sendMessage.rejected, (state, action) => {
+            .addCase(sendMessage.rejected, (_state, _action) => {
                 toast.error('Failed to send message');
             })
             .addCase(fetchDeveloperChats.pending, (state) => {
@@ -261,7 +261,7 @@ const chatSlice = createSlice({
                 state.loading = false;
                 state.chats = action.payload;
             })
-            .addCase(fetchDeveloperChats.rejected, (state, action) => {
+            .addCase(fetchDeveloperChats.rejected, (state, _action) => {
                 state.loading = false;
                 toast.error('Failed to load developer chats');
             });

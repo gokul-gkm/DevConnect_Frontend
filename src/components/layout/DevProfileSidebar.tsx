@@ -16,7 +16,6 @@ import {
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
-  activeItem: string;
   setActiveItem: (item: string) => void;
 }
 
@@ -97,7 +96,7 @@ const buttonVariants = {
   }
 }
 
-export const DeveloperProfileSidebar: React.FC<SidebarProps> = ({ activeItem, setActiveItem }) => {
+export const DeveloperProfileSidebar: React.FC<SidebarProps> = ({ setActiveItem }) => {
   const location = useLocation();
 
   return (

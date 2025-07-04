@@ -87,7 +87,7 @@ function Calendar({
           minDate={disabled?.before}
           required={required}
           calendarClassName="bg-black text-white border border-white/10 rounded-xl shadow-lg"
-          dayClassName={(date) => 
+          dayClassName={(_date) => 
             "text-center hover:bg-white/10 rounded-full w-8 h-8 mx-auto flex items-center justify-center"
           }
           renderCustomHeader={CustomHeader}
@@ -108,7 +108,7 @@ function Calendar({
         required={required}
         customInput={<CustomInput />}
         calendarClassName="bg-black text-white border border-white/10 rounded-xl shadow-lg"
-        dayClassName={(date) => 
+        dayClassName={(_date) => 
           "text-center hover:bg-white/10 rounded-full w-8 h-8 mx-auto flex items-center justify-center"
         }
         renderCustomHeader={CustomHeader}
