@@ -1,52 +1,25 @@
-import { useNavigate, useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import AdminApi from '@/service/Api/AdminApi';
-import { Loader2, Mail, Phone, Github, Linkedin, Globe } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { Loader2, Mail, Phone, Github, Linkedin, Globe, Twitter, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/shadcn-button';
 import { Badge } from '@/components/ui/badge';
-import toast from 'react-hot-toast';
-import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+    import { useDevRequestDetails } from '@/hooks/admin/useDevRequestDetails';
 
 export default function DevRequestDetails() {
     const { id } = useParams();
-    const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
-  const [rejectionReason, setRejectionReason] = useState('');
-  const navigate = useNavigate()
-    
-    const { data: developerData, isLoading, error, refetch } = useQuery({
-        queryKey: ['developer-request', id],
-        queryFn: () => AdminApi.getDeveloperRequestDetails(id as string)
-    });
-
-    const handleApprove = async () => {
-        try {
-            await AdminApi.approveDeveloperRequest(id as string);
-            toast.success('Developer request approved successfully');
-          refetch();
-          navigate('/admin/developers/requests')
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to approve request');
-        }
-    };
-
-    const handleReject = async () => {
-        if (!rejectionReason.trim()) {
-            toast.error('Please provide a reason for rejection');
-            return;
-        }
-        try {
-            await AdminApi.rejectDeveloperRequest(id as string, rejectionReason);
-            toast.success('Developer request rejected');
-            setIsRejectDialogOpen(false);
-          refetch();
-          navigate('/admin/developers/requests')
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to reject request');
-        }
-    };
+    const {
+        developerData,
+        isLoading,
+        error,
+        isRejectDialogOpen,
+        setIsRejectDialogOpen,
+        rejectionReason,
+        setRejectionReason,
+        handleApprove,
+        handleReject
+    } = useDevRequestDetails(id);
 
     if (isLoading) {
         return (
@@ -74,19 +47,15 @@ export default function DevRequestDetails() {
                 transition={{ duration: 0.5 }}
                 className="max-w-7xl mx-auto space-y-6"
             >
-               
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
                     className="bg-slate-900/50 rounded-2xl border border-slate-800/50 backdrop-blur-sm shadow-xl overflow-hidden"
                 >
-          
                     <div className="h-48 bg-gradient-to-r from-blue-600/20 to-purple-600/20" />
-              
                     <div className="p-6 -mt-20">
                         <div className="flex flex-col md:flex-row gap-6 items-start">
-                     
                             <div className="relative">
                                 <img
                                     src={developer.userId.profilePicture || "https://i.imghippo.com/files/GFY5894omo.jpg"}
@@ -100,7 +69,6 @@ export default function DevRequestDetails() {
                                 </Badge>
                             </div>
 
-                           
                             <div className="flex-1">
                                 <div className="flex justify-between items-start">
                                     <div>
@@ -112,20 +80,19 @@ export default function DevRequestDetails() {
                                     <div className="flex gap-3">
                                         <Button 
                                             onClick={handleApprove}
-                                            className="bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500/20"
+                                            className="bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500/20 rounded-xl"
                                         >
                                             Approve
                                         </Button>
                                         <Button 
                                             onClick={() => setIsRejectDialogOpen(true)}
-                                            className="bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20"
+                                            className="bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 rounded-xl"
                                         >
                                             Reject
                                         </Button>
                                     </div>
                                 </div>
 
-                               
                                 <div className="flex gap-4 mt-4">
                                     <div className="flex items-center gap-2 text-slate-400">
                                         <Mail className="w-4 h-4" />
@@ -137,10 +104,8 @@ export default function DevRequestDetails() {
                                             <span>{developer.userId.contact}</span>
                                         </div>
                                     )}
-                                   
                                 </div>
 
-                                
                                 {developer.userId.socialLinks && (
                                     <div className="flex gap-3 mt-4">
                                         {developer.userId.socialLinks.github && (
@@ -153,14 +118,24 @@ export default function DevRequestDetails() {
                                                 <Github className="w-5 h-5" />
                                             </a>
                                         )}
-                                        {developer.userId.socialLinks.linkedin && (
+                                        {developer.userId.socialLinks.linkedIn && (
                                             <a 
-                                                href={developer.userId.socialLinks.linkedin}
+                                                href={developer.userId.socialLinks.linkedIn}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="text-slate-400 hover:text-slate-200 transition-colors"
                                             >
                                                 <Linkedin className="w-5 h-5" />
+                                            </a>
+                                        )}
+                                        {developer.userId.socialLinks.twitter && (
+                                            <a 
+                                                href={developer.userId.socialLinks.twitter}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-slate-400 hover:text-slate-200 transition-colors"
+                                            >
+                                                <Twitter className="w-5 h-5" />
                                             </a>
                                         )}
                                         {developer.userId.socialLinks.portfolio && (
@@ -174,17 +149,14 @@ export default function DevRequestDetails() {
                                             </a>
                                         )}
                                     </div>
-                                  )}
+                                )}
                             </div>
                         </div>
                     </div>
                 </motion.div>
 
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               
                     <div className="space-y-6">
-                    
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -196,7 +168,6 @@ export default function DevRequestDetails() {
                                 {developer.userId.bio || 'No bio provided'}
                             </p>
                         </motion.div>
-
 
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -241,9 +212,7 @@ export default function DevRequestDetails() {
                         </motion.div>
                     </div>
 
-                   
                     <div className="space-y-6">
-       
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -259,14 +228,13 @@ export default function DevRequestDetails() {
                             >
                                 <Button 
                                     variant="outline"
-                                    className="bg-slate-800/50 text-slate-300 border-slate-700 hover:bg-slate-800"
+                                    className="bg-slate-800/50 text-slate-300 border-slate-700 hover:bg-slate-800 rounded-xl"
                                 >
-                                    View Resume
+                                    View Resume <ExternalLink className='ml-2 w-4 h-4' />
                                 </Button>
                             </a>
                         </motion.div>
 
-                   
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -286,7 +254,6 @@ export default function DevRequestDetails() {
                             </div>
                         </motion.div>
 
-                       
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -294,13 +261,12 @@ export default function DevRequestDetails() {
                             className="bg-slate-900/50 rounded-xl border border-slate-800/50 p-6"
                         >
                             <h3 className="text-lg font-semibold text-slate-100 mb-4">Proposed Hourly Rate</h3>
-                            <p className="text-2xl font-semibold text-slate-100">₹{developer.hourlyRate}/hr</p>
+                            <p className="text-2xl font-semibold text-slate-100">${developer.hourlyRate}/hr</p>
                         </motion.div>
                     </div>
                 </div>
             </motion.div>
 
-     
             <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
                 <DialogContent>
                     <DialogHeader>

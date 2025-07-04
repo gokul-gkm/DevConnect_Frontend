@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { DeveloperFormData } from '@/utils/validation/devValidation'
 import { developerSchema } from '@/utils/validation/devValidation'
@@ -9,12 +9,10 @@ import { Button } from "@/components/ui/shadcn-button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 import { Slider } from "@/components/ui/Slider"
-import { Upload, X, Plus, Trash2 } from 'lucide-react'
+import { Upload, X, Plus, Trash2, Loader2 } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import { motion } from 'framer-motion'
-import { toast } from 'react-hot-toast'
-import DevAuthApi from '@/service/Api/DevAuthApi'
-import { useNavigate } from 'react-router-dom'
+import { useDevRequest } from '@/hooks/devAuth/useDevRequest'
 
 const tags = [
   'React', 'Node.js', 'Angular', 'Django', 'PostgreSQL',
@@ -24,17 +22,15 @@ const tags = [
 
 export default function DeveloperRequestPage() {
   const [profilePicture, setProfilePicture] = useState<File | null>(null)
-  const [resume, setResume] = useState<File | null>(null);
-  const navigate = useNavigate();
+  const [resume, setResume] = useState<File | null>(null)
+  const { submitRequest, isSubmitting } = useDevRequest()
 
   const {
     register,
     handleSubmit,
-    control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     setValue,
     watch,
-    reset
   } = useForm<DeveloperFormData>({
     resolver: zodResolver(developerSchema),
     defaultValues: {
@@ -55,7 +51,7 @@ export default function DeveloperRequestPage() {
       twitter: '',
       portfolio: '',
     }
-  });
+  })
 
   const onProfileDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
@@ -94,7 +90,7 @@ export default function DeveloperRequestPage() {
   })
 
   const handleTagClick = (tag: string) => {
-    const currentExpertise = watch('expertise') || [];
+    const currentExpertise = watch('expertise') || []
     if (currentExpertise.includes(tag)) {
       setValue(
         'expertise',
@@ -111,84 +107,60 @@ export default function DeveloperRequestPage() {
   }
 
   const addLanguage = () => {
-    const currentLanguages = watch('languages') || [''];
-    setValue('languages', [...currentLanguages, ''], { shouldValidate: true });
+    const currentLanguages = watch('languages') || ['']
+    setValue('languages', [...currentLanguages, ''], { shouldValidate: true })
   }
 
   const removeLanguage = (index: number) => {
-    const currentLanguages = watch('languages') || [''];
+    const currentLanguages = watch('languages') || ['']
     if (currentLanguages.length > 1) {
       setValue(
         'languages',
         currentLanguages.filter((_, i) => i !== index),
         { shouldValidate: true }
-      );
+      )
     }
   }
 
   const onSubmit = async (data: DeveloperFormData) => {
-    try {
+    const formData = new FormData()
+    
+    formData.append('username', data.username)
+    formData.append('email', data.email)
+    formData.append('bio', data.bio)
+    formData.append('degree', data.degree)
+    formData.append('institution', data.institution)
+    formData.append('year', data.year)
+    formData.append('jobTitle', data.jobTitle)
+    formData.append('company', data.company)
+    formData.append('experience', data.experience)
+    formData.append('sessionCost', data.sessionCost.toString())
 
-      const formData = new FormData()
-         
-        formData.append('username', data.username);
-        formData.append('email', data.email);
-        formData.append('bio', data.bio);
-        formData.append('degree', data.degree);
-        formData.append('institution', data.institution);
-        formData.append('year', data.year);
-        formData.append('jobTitle', data.jobTitle);
-        formData.append('company', data.company);
-        formData.append('experience', data.experience);
-        formData.append('sessionCost', data.sessionCost.toString());
-
-        if (data.expertise && data.expertise.length > 0) {
-            data.expertise.forEach((item) => {
-                formData.append('expertise[]', item);
-            });
-        }
-
-        if (data.languages && data.languages.length > 0) {
-            data.languages.forEach((item) => {
-                if (item) formData.append('languages[]', item);
-            });
-        }
-
-       
-        if (data.github) formData.append('github', data.github);
-        if (data.linkedin) formData.append('linkedin', data.linkedin);
-        if (data.twitter) formData.append('twitter', data.twitter);
-        if (data.portfolio) formData.append('portfolio', data.portfolio);
-
-        if (profilePicture) {
-            formData.append('profilePicture', profilePicture);
-        }
-        if (resume) {
-            formData.append('resume', resume);
-        }
-
-
-        console.log('Form Data Before Submit:');
-        for (let [key, value] of formData.entries()) {
-            console.log(`${key}:`, value);
-        }
-
-      const response = await DevAuthApi.devRequest(formData)
-      
-      if (response.success) {
-        toast.success('Profile submitted successfully!')
-        reset()
-        setProfilePicture(null)
-        setResume(null)
-        navigate('/developer/auth/login')
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message)
-      } else {
-        toast.error('Failed to submit profile')
-      }
+    if (data.expertise && data.expertise.length > 0) {
+      data.expertise.forEach((item) => {
+        formData.append('expertise[]', item)
+      })
     }
+
+    if (data.languages && data.languages.length > 0) {
+      data.languages.forEach((item) => {
+        if (item) formData.append('languages[]', item)
+      })
+    }
+
+    if (data.github) formData.append('github', data.github)
+    if (data.linkedin) formData.append('linkedin', data.linkedin)
+    if (data.twitter) formData.append('twitter', data.twitter)
+    if (data.portfolio) formData.append('portfolio', data.portfolio)
+
+    if (profilePicture) {
+      formData.append('profilePicture', profilePicture)
+    }
+    if (resume) {
+      formData.append('resume', resume)
+    }
+
+    submitRequest(formData)
   }
 
   return (
@@ -318,9 +290,9 @@ export default function DeveloperRequestPage() {
                     <button 
                       type="button"
                       onClick={(e) => {
-                        e.stopPropagation();
-                        setProfilePicture(null);
-                        setValue('profilePicture', undefined, { shouldValidate: true });
+                        e.stopPropagation()
+                        setProfilePicture(null)
+                        setValue('profilePicture', undefined, { shouldValidate: true })
                       }} 
                       className="text-gray-500 hover:text-gray-400"
                     >
@@ -332,86 +304,18 @@ export default function DeveloperRequestPage() {
                     <div className="mx-auto w-12 h-12 rounded-full bg-neutral-600/20 flex items-center justify-center mb-4">
                       <Upload className="w-6 h-6 text-neutral-300" />
                     </div>
-                    <p className="text-base text-gray-400">Drag & Drop</p>
-                    <p className="text-sm text-gray-500 mt-2">or click to browse</p>
+                    <p className="text-sm text-gray-400">
+                      Drop your profile picture here, or{" "}
+                      <span className="text-neutral-300">browse</span>
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      PNG, JPG or WEBP (max. 5MB)
+                    </p>
                   </>
                 )}
               </div>
               {errors.profilePicture && (
                 <p className="mt-1 text-sm text-red-500">{errors.profilePicture.message}</p>
-              )}
-            </motion.div>
-
-            <motion.div 
-              className="bg-neutral-900 p-6 rounded-2xl shadow-lg"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-            >
-              <h2 className="text-xl font-semibold mb-4">Session Cost</h2>
-              <div className="space-y-4">
-                <Controller
-                  name="sessionCost"
-                  control={control}
-                  render={({ field: { value, onChange } }) => (
-                    <Slider
-                      value={[value]}
-                      onValueChange={([newValue]) => onChange(newValue)}
-                      max={1000}
-                      min={100}
-                      step={50}
-                      className="mt-4"
-                    />
-                  )}
-                />
-                <div className="text-center text-2xl font-semibold text-gray-300">
-                  ${watch('sessionCost')}
-                </div>
-                {errors.sessionCost && (
-                  <p className="mt-1 text-sm text-red-500">{errors.sessionCost.message}</p>
-                )}
-              </div>
-            </motion.div>
-
-            <motion.div 
-              className="bg-neutral-900 p-6 rounded-2xl shadow-lg"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <h2 className="text-xl font-semibold mb-4">Languages Known</h2>
-              <div className="space-y-4">
-              {watch('languages')?.map((_, index) => (
-                  <div key={index} className="flex gap-4">
-                    <Input
-                      {...register(`languages.${index}`)}
-                      placeholder="Language"
-                      className="bg-neutral-800 border-neutral-700 flex-1 h-10 text-base"
-                    />
-                    {watch('languages')?.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeLanguage(index)}
-                        className="text-gray-400 hover:text-gray-300"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addLanguage}
-                  className="w-full mt-2 h-10 text-base"
-                >
-                  <Plus className="w-5 h-5 mr-2" /> Add Language
-                </Button>
-              </div>
-              {errors.languages && (
-                <p className="mt-1 text-sm text-red-500">{errors.languages.message}</p>
               )}
             </motion.div>
           </div>
@@ -440,7 +344,7 @@ export default function DeveloperRequestPage() {
                   <Label htmlFor="institution" className="text-base">Institution</Label>
                   <Input 
                     {...register('institution')}
-                    placeholder="Your Institution" 
+                    placeholder="Your institution" 
                     className="bg-neutral-800 border-neutral-700 mt-2 h-10 text-base"
                   />
                   {errors.institution && (
@@ -448,10 +352,10 @@ export default function DeveloperRequestPage() {
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="year" className="text-base">Year</Label>
+                  <Label htmlFor="year" className="text-base">Year of Completion</Label>
                   <Input 
                     {...register('year')}
-                    placeholder="Year of passing" 
+                    placeholder="YYYY" 
                     className="bg-neutral-800 border-neutral-700 mt-2 h-10 text-base"
                   />
                   {errors.year && (
@@ -465,15 +369,15 @@ export default function DeveloperRequestPage() {
               className="bg-neutral-900 p-6 rounded-2xl shadow-lg"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
             >
               <h2 className="text-xl font-semibold mb-4">Professional Experience</h2>
               <div className="space-y-6">
                 <div>
-                  <Label htmlFor="jobTitle" className="text-base">Job title</Label>
+                  <Label htmlFor="jobTitle" className="text-base">Current Job Title</Label>
                   <Input 
                     {...register('jobTitle')}
-                    placeholder="Your Job title" 
+                    placeholder="Your job title" 
                     className="bg-neutral-800 border-neutral-700 mt-2 h-10 text-base"
                   />
                   {errors.jobTitle && (
@@ -481,10 +385,10 @@ export default function DeveloperRequestPage() {
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="company" className="text-base">Company name</Label>
+                  <Label htmlFor="company" className="text-base">Company</Label>
                   <Input 
                     {...register('company')}
-                    placeholder="Company Name" 
+                    placeholder="Your company" 
                     className="bg-neutral-800 border-neutral-700 mt-2 h-10 text-base"
                   />
                   {errors.company && (
@@ -492,10 +396,10 @@ export default function DeveloperRequestPage() {
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="experience" className="text-base">Experience</Label>
+                  <Label htmlFor="experience" className="text-base">Years of Experience</Label>
                   <Input 
                     {...register('experience')}
-                    placeholder="Your experience" 
+                    placeholder="Years of experience" 
                     className="bg-neutral-800 border-neutral-700 mt-2 h-10 text-base"
                   />
                   {errors.experience && (
@@ -509,15 +413,78 @@ export default function DeveloperRequestPage() {
               className="bg-neutral-900 p-6 rounded-2xl shadow-lg"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <h2 className="text-xl font-semibold mb-4">Languages</h2>
+              <div className="space-y-4">
+                {watch('languages')?.map((_, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      {...register(`languages.${index}`)}
+                      placeholder="Programming language"
+                      className="bg-neutral-800 border-neutral-700 h-10 text-base"
+                    />
+                    {index > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => removeLanguage(index)}
+                        className="p-2 text-gray-400 hover:text-gray-300"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addLanguage}
+                  className="flex items-center gap-2 text-sm text-neutral-400 hover:text-neutral-300"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Language
+                </button>
+              </div>
+              {errors.languages && (
+                <p className="mt-1 text-sm text-red-500">{errors.languages.message}</p>
+              )}
+            </motion.div>
+
+            <motion.div 
+              className="bg-neutral-900 p-6 rounded-2xl shadow-lg"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
             >
-              <h2 className="text-xl font-semibold mb-4">Social Profile</h2>
+              <h2 className="text-xl font-semibold mb-4">Session Cost</h2>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-400">Cost per hour</span>
+                  <span className="text-sm font-medium">${watch('sessionCost')}</span>
+                </div>
+                <Slider
+                  {...register('sessionCost')}
+                  defaultValue={[500]}
+                  max={2000}
+                  min={100}
+                  step={50}
+                  onValueChange={(value) => setValue('sessionCost', value[0])}
+                />
+              </div>
+            </motion.div>
+
+            <motion.div 
+              className="bg-neutral-900 p-6 rounded-2xl shadow-lg"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              <h2 className="text-xl font-semibold mb-4">Social Links</h2>
               <div className="space-y-6">
                 <div>
                   <Label htmlFor="github" className="text-base">GitHub</Label>
                   <Input 
                     {...register('github')}
-                    placeholder="https://github.com/username" 
+                    placeholder="Your GitHub profile" 
                     className="bg-neutral-800 border-neutral-700 mt-2 h-10 text-base"
                   />
                   {errors.github && (
@@ -528,7 +495,7 @@ export default function DeveloperRequestPage() {
                   <Label htmlFor="linkedin" className="text-base">LinkedIn</Label>
                   <Input 
                     {...register('linkedin')}
-                    placeholder="https://linkedin.com/in/username" 
+                    placeholder="Your LinkedIn profile" 
                     className="bg-neutral-800 border-neutral-700 mt-2 h-10 text-base"
                   />
                   {errors.linkedin && (
@@ -536,10 +503,10 @@ export default function DeveloperRequestPage() {
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="twitter" className="text-base">Twitter X</Label>
+                  <Label htmlFor="twitter" className="text-base">Twitter</Label>
                   <Input 
                     {...register('twitter')}
-                    placeholder="https://twitter.com/username" 
+                    placeholder="Your Twitter profile" 
                     className="bg-neutral-800 border-neutral-700 mt-2 h-10 text-base"
                   />
                   {errors.twitter && (
@@ -547,10 +514,10 @@ export default function DeveloperRequestPage() {
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="portfolio" className="text-base">Portfolio</Label>
+                  <Label htmlFor="portfolio" className="text-base">Portfolio Website</Label>
                   <Input 
                     {...register('portfolio')}
-                    placeholder="https://portfolio.com" 
+                    placeholder="Your portfolio website" 
                     className="bg-neutral-800 border-neutral-700 mt-2 h-10 text-base"
                   />
                   {errors.portfolio && (
@@ -564,7 +531,7 @@ export default function DeveloperRequestPage() {
               className="bg-neutral-900 p-6 rounded-2xl shadow-lg"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
             >
               <Label className="text-xl font-semibold mb-4">Resume</Label>
               <div 
@@ -578,9 +545,9 @@ export default function DeveloperRequestPage() {
                     <button 
                       type="button"
                       onClick={(e) => {
-                        e.stopPropagation();
-                        setResume(null);
-                        setValue('resume', undefined, { shouldValidate: true });
+                        e.stopPropagation()
+                        setResume(null)
+                        setValue('resume', undefined, { shouldValidate: true })
                       }} 
                       className="text-gray-500 hover:text-gray-400"
                     >
@@ -592,8 +559,13 @@ export default function DeveloperRequestPage() {
                     <div className="mx-auto w-12 h-12 rounded-full bg-neutral-600/20 flex items-center justify-center mb-4">
                       <Upload className="w-6 h-6 text-neutral-300" />
                     </div>
-                    <p className="text-base text-gray-400">Drag & Drop</p>
-                    <p className="text-sm text-gray-500 mt-2">or click to browse</p>
+                    <p className="text-sm text-gray-400">
+                      Drop your resume here, or{" "}
+                      <span className="text-neutral-300">browse</span>
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      PDF, DOC or DOCX (max. 5MB)
+                    </p>
                   </>
                 )}
               </div>
@@ -601,24 +573,31 @@ export default function DeveloperRequestPage() {
                 <p className="mt-1 text-sm text-red-500">{errors.resume.message}</p>
               )}
             </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+            >
+              <Button
+                type="submit"
+                className="w-full h-12 text-base border px-2 py-3 flex justify-center items-center"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+    <>
+      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+      Submitting...
+    </>
+  ) : (
+    "Submit Profile"
+  )}
+                
+              </Button>
+            </motion.div>
           </div>
         </form>
-
-        <motion.div 
-          className="mt-12 flex justify-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
-        >
-          <Button 
-            onClick={handleSubmit(onSubmit)}
-            disabled={isSubmitting}
-            className="bg-neutral-700 hover:bg-neutral-600 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105"
-          >
-            {isSubmitting ? 'Submitting...' : 'Submit Profile'}
-          </Button>
-        </motion.div>
       </div>
     </div>
-  );
+  )
 }

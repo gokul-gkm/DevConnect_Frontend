@@ -1,29 +1,13 @@
 import { useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import AdminApi from '@/service/Api/AdminApi';
-import { Loader2, Mail, Phone, MapPin, Github, Linkedin, Globe } from 'lucide-react';
+import { Loader2, Mail, Phone, Github, Linkedin, Globe, Twitter } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/shadcn-button';
 import { Badge } from '@/components/ui/badge';
-import toast from 'react-hot-toast';
+import { useDevDetails } from '@/hooks/admin/useDevDetails';
 
 export default function DevDetails() {
     const { id } = useParams();
-    
-    const { data: developerData, isLoading, error, refetch } = useQuery({
-        queryKey: ['developer', id],
-        queryFn: () => AdminApi.getDeveloperDetails(id as string)
-    });
-
-    const handleBlockUser = async () => {
-        try {
-            await AdminApi.updateUserStatus(developerData?.developer.userId._id);
-            toast.success('User status updated successfully');
-            refetch();
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to update user status');
-        }
-    };
+    const { developerData, isLoading, error, toggleStatus, isUpdating } = useDevDetails(id);
 
     if (isLoading) {
         return (
@@ -51,19 +35,15 @@ export default function DevDetails() {
                 transition={{ duration: 0.5 }}
                 className="max-w-7xl mx-auto space-y-6"
             >
-                
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
                     className="bg-slate-900/50 rounded-2xl border border-slate-800/50 backdrop-blur-sm shadow-xl overflow-hidden"
                 >
-                   
                     <div className="h-48 bg-gradient-to-r from-blue-600/20 to-purple-600/20" />
-                  
                     <div className="p-6 -mt-20">
                         <div className="flex flex-col md:flex-row gap-6 items-start">
-                   
                             <div className="relative">
                                 <img
                                     src={developer.userId.profilePicture || "https://i.imghippo.com/files/GFY5894omo.jpg"}
@@ -83,7 +63,6 @@ export default function DevDetails() {
                                 </Badge>
                             </div>
 
-                           
                             <div className="flex-1">
                                 <div className="flex justify-between items-start">
                                     <div>
@@ -95,14 +74,14 @@ export default function DevDetails() {
                                     <Button 
                                         variant="destructive" 
                                         size="sm"
-                                        onClick={handleBlockUser}
+                                        onClick={() => toggleStatus(developer.userId._id)}
+                                        disabled={isUpdating}
                                         className="bg-transparent border border-red-500/50 text-red-500 hover:bg-red-500/10 rounded-full px-6"
                                     >
                                         {developer.userId.status === 'blocked' ? 'Unblock' : 'Block'}
                                     </Button>
                                 </div>
 
-                               
                                 <div className="flex gap-4 mt-4">
                                     <div className="flex items-center gap-2 text-slate-400">
                                         <Mail className="w-4 h-4" />
@@ -114,13 +93,11 @@ export default function DevDetails() {
                                             <span>{developer.userId.contact}</span>
                                         </div>
                                     )}
-                                   
                                 </div>
 
-                               
                                 {developer.userId.socialLinks && (
                                     <div className="flex gap-3 mt-4">
-                                        {developer.userId.  socialLinks.github && (
+                                        {developer.userId.socialLinks.github && (
                                             <a 
                                                 href={developer.userId.socialLinks.github}
                                                 target="_blank"
@@ -130,14 +107,24 @@ export default function DevDetails() {
                                                 <Github className="w-5 h-5" />
                                             </a>
                                         )}
-                                        {developer.userId.socialLinks.linkedin && (
+                                        {developer.userId.socialLinks.linkedIn && (
                                             <a 
-                                                href={developer.userId.socialLinks.linkedin}
+                                                href={developer.userId.socialLinks.linkedIn}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="text-slate-400 hover:text-slate-200 transition-colors"
                                             >
                                                 <Linkedin className="w-5 h-5" />
+                                            </a>
+                                        )}
+                                        {developer.userId.socialLinks.twitter && (
+                                            <a 
+                                                href={developer.userId.socialLinks.twitter}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-slate-400 hover:text-slate-200 transition-colors"
+                                            >
+                                                <Twitter className="w-5 h-5" />
                                             </a>
                                         )}
                                         {developer.userId.socialLinks.portfolio && (
@@ -157,7 +144,6 @@ export default function DevDetails() {
                     </div>
                 </motion.div>
 
-                
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -178,7 +164,7 @@ export default function DevDetails() {
                     >
                         <p className="text-sm text-slate-400">Hourly Rate</p>
                         <p className="text-2xl font-semibold text-slate-100 mt-2">
-                            ₹{developer.hourlyRate}/hr
+                            ${developer.hourlyRate}/hr
                         </p>
                     </motion.div>
                     <motion.div
@@ -194,11 +180,8 @@ export default function DevDetails() {
                     </motion.div>
                 </div>
 
-               
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 
                     <div className="space-y-6">
-                  
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -211,7 +194,6 @@ export default function DevDetails() {
                             </p>
                         </motion.div>
 
-                        
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -236,9 +218,7 @@ export default function DevDetails() {
                         </motion.div>
                     </div>
 
-                   
                     <div className="space-y-6">
-                        
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -258,7 +238,6 @@ export default function DevDetails() {
                             </div>
                         </motion.div>
 
-                       
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -278,7 +257,6 @@ export default function DevDetails() {
                             </div>
                         </motion.div>
 
-                        
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -302,7 +280,6 @@ export default function DevDetails() {
                             </div>
                         </motion.div>
 
-                        
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}

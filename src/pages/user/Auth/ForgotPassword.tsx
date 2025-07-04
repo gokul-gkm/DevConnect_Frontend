@@ -6,14 +6,15 @@ import { cn } from "@/lib/utils";
 import { BottomGradient } from "@/components/ui/BottomGradient";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "react-hot-toast";
 import * as z from "zod";
-import AuthApi from "@/service/Api/AuthApi";
 import { forgotPasswordSchema } from "@/utils/validation/userValidation";
+import { useForgotPassword } from '@/hooks/userAuth/useForgotPassword'
 
 type ForgotPasswordData = z.infer<typeof forgotPasswordSchema>;
 
-export function UserForgotPassword() {
+export default function UserForgotPassword() {
+  const { forgotPassword, isLoading } = useForgotPassword();
+
   const {
     register,
     handleSubmit,
@@ -23,14 +24,8 @@ export function UserForgotPassword() {
     mode: "onChange",
   });
 
-  const onSubmit = async (data: ForgotPasswordData) => {
-    try {
-      const response = await AuthApi.forgotPassword(data.email)
-      toast.success("Password reset link has been sent to your email");
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.response?.data?.message ||"Failed to send password reset link. Please try again.");
-    }
+  const onSubmit = (data: ForgotPasswordData) => {
+    forgotPassword(data.email);
   };
 
   return (
@@ -40,7 +35,8 @@ export function UserForgotPassword() {
           Reset password
         </h2>
         <p className="text-neutral-600 text-xs max-w-xs mt-2 dark:text-neutral-300">
-          Enter your email address to receive a one-time password (OTP) and reset your password.
+          Enter your email address to receive a one-time password (OTP) and reset
+          your password.
         </p>
       </div>
 
@@ -61,8 +57,9 @@ export function UserForgotPassword() {
         <button
           className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-9 font-medium text-sm shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
           type="submit"
+          disabled={isLoading}
         >
-          Send OTP &rarr;
+          {isLoading ? "Sending..." : "Send OTP →"}
           <BottomGradient />
         </button>
       </form>
