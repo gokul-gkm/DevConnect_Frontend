@@ -40,7 +40,7 @@ export const useAdminDevelopers = (initialParams = {}) => {
 
   const toggleStatusMutation = useMutation({
     mutationFn: (developerId: string) => AdminApi.updateUserStatus(developerId),
-    onSuccess: (updatedDeveloper, developerId) => {
+    onSuccess: (_updatedDeveloper, developerId) => {
       queryClient.setQueryData(['developers', queryParams], (oldData: any) => {
         if (!oldData) return oldData;
         

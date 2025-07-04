@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import AdminApi from '@/service/Api/AdminApi';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +8,6 @@ export const useDevRequestDetails = (id: string | undefined) => {
   const navigate = useNavigate();
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
-  const queryClient = useQueryClient();
 
   const { data: developerData, isLoading, error, refetch } = useQuery({
     queryKey: ['developer-request', id],

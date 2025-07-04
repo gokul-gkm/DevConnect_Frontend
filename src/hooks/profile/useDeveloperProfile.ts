@@ -24,7 +24,7 @@ export const useDeveloperProfile = () => {
     isPending: isUpdating,
   } = useMutation({
     mutationFn: (formData: FormData) => DeveloperApi.updateProfile(formData),
-    onSuccess: async (updatedProfile) => {
+    onSuccess: async (_updatedProfile) => {
       await queryClient.invalidateQueries({ queryKey: ['developerProfile'] });
       
       toast.success('Profile updated successfully');

@@ -46,10 +46,6 @@ export default function DevRequests() {
         updateParams({ sortBy, sortOrder });
     };
 
-    const handlePageChange = (page: number) => {
-        updateParams({ page });
-    };
-
     const handleViewDetails = (developerId: string) => {
         navigate(`/admin/developer-requests/${developerId}`);
     };

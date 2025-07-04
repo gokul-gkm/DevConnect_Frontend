@@ -3,22 +3,6 @@ import { toast } from 'react-hot-toast';
 import SessionApi from '@/service/Api/SessionApi';
 import { useState, useEffect } from 'react';
 
-interface SessionInterface {
-  _id: string;
-  title: string;
-  description: string;
-  status: 'pending' | 'approved' | 'rejected';
-  userId: {
-    username: string;
-    email: string;
-  };
-  sessionDate: string;
-  startTime: string;
-  duration: number;
-  price: number;
-  topics: string[];
-}
-
 interface Pagination {
   currentPage: number;
   totalPages: number;

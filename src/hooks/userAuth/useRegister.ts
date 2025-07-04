@@ -26,7 +26,7 @@ export const useRegister = () => {
         throw error;
       }
     },
-    onSuccess: (response, variables) => {
+    onSuccess: (_response, variables) => {
       toast.success("Registration successful! Please verify your email.");
       navigate(`/auth/verify-otp`, { state: { email: variables.email } });
     },

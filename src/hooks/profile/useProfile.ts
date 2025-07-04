@@ -47,7 +47,7 @@ export const useProfile = () => {
         throw error;
       }
     },
-    onSuccess: async (data) => {
+    onSuccess: async (_data) => {
       await queryClient.invalidateQueries({ queryKey: ['userProfile'] });
       await refetch();
       toast.success('Profile updated successfully');

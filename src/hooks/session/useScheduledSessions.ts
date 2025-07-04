@@ -2,23 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import SessionApi from '@/service/Api/SessionApi';
 import { useState, useEffect } from 'react';
 
-interface SessionInterface {
-  _id: string;
-  title: string;
-  description: string;
-  status: 'scheduled';
-  userId: {
-    username: string;
-    email: string;
-    profilePicture?: string;
-  };
-  sessionDate: string;
-  startTime: string;
-  duration: number;
-  price: number;
-  topics: string[];
-}
-
 interface Pagination {
   currentPage: number;
   totalPages: number;
