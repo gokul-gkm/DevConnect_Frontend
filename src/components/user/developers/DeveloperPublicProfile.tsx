@@ -1,18 +1,20 @@
 import { useParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   Github, Linkedin, Twitter, Globe, MapPin, 
   Calendar, Code, Languages, DollarSign, Clock,
   GraduationCap, Briefcase, Building2, Star,
-  User, Zap, CheckCircle
+  User, Zap, CheckCircle,
+  MessageSquare
 } from 'lucide-react';
-import { Button } from '@/components/ui/shadcn-button';
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from '@/components/ui/spinner';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import ProjectCard from './ProjectCard';
 import { useDeveloperPublicProfile } from '@/hooks/profile/useDeveloperPublicProfile';
+import { ChatApi } from '@/service/Api/ChatApi';
+import toast from 'react-hot-toast';
+import ProjectCarousel from './ProjectCarousel';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -39,8 +41,16 @@ const DeveloperPublicProfile = () => {
   const { developerId } = useParams();
   const navigate = useNavigate();
 
-
   const { profile, isLoading, error } = useDeveloperPublicProfile(developerId);
+
+  const handleStartChat = async () => {
+    try {
+      const response = await ChatApi.createChat(developerId!);
+      navigate(`/chats/${response.chat._id}`);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to start chat');
+    }
+  }
 
   if (isLoading) {
     return (
@@ -89,13 +99,7 @@ const DeveloperPublicProfile = () => {
       prefix: '$',
       suffix: '/hr'
     },
-    {
-      label: 'Experience',
-      value: profile?.developerProfile?.experience || 0,
-      icon: Clock,
-      gradient: 'from-purple-950 to-black',
-      suffix: ' Years'
-    }
+    
   ];
 
   return (
@@ -108,48 +112,64 @@ const DeveloperPublicProfile = () => {
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mt-20 z-50 backdrop-blur-xl bg-black/80 border-b border-white/5 px-4 py-4"
+        className="bg-black/80 border-b border-white/5 backdrop-blur-xl mt-20"
       >
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="max-w-5xl mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row items-center gap-8">
             <motion.div 
-              className="relative"
-              whileHover={{ scale: 1.05 }}
+              className="relative group"
+              whileHover={{ scale: 1.02 }}
             >
               <img
                 src={profile?.profilePicture || "/default-avatar.jpg"}
                 alt="Profile"
-                className="w-14 h-14 rounded-2xl object-cover border-2 border-purple-500/50"
+                className="w-32 h-32 rounded-2xl object-cover border-2 border-purple-500/30"
               />
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/20 to-transparent" />
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/20 to-transparent group-hover:from-purple-500/30 transition-all duration-300" />
+              <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-purple-500/20 to-transparent opacity-0 group-hover:opacity-100 blur-xl transition-all duration-300" />
             </motion.div>
-            <div>
+            
+            <div className="flex-1">
               <motion.h1 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent"
+                className="text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent text-center md:text-left"
               >
                 {profile?.username}
               </motion.h1>
-              <div className="flex items-center gap-2 text-gray-400">
+              <div className="flex items-center gap-2 text-gray-400 mt-2 justify-center md:justify-start">
                 <MapPin className="w-4 h-4" />
                 <span>{profile?.location || 'Location not specified'}</span>
               </div>
+              
+              <div className="flex gap-4 mt-6 justify-center md:justify-start">
+                <motion.button
+                  onClick={handleStartChat}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-xl shadow-lg shadow-indigo-950/20 border border-white/10 transition-all duration-300"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span className="font-medium">Chat with Developer</span>
+                </motion.button>
+
+                <motion.button
+                  onClick={() => navigate(`/sessions/booking/${developerId}`)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white rounded-xl shadow-lg shadow-purple-950/20 border border-white/10 transition-all duration-300"
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span className="font-medium">Book Session</span>
+                </motion.button>
+              </div>
             </div>
           </div>
-
-          <Button
-            onClick={() => navigate(`/sessions/booking/${developerId}`)}
-            className="bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 hover:from-violet-700 hover:via-purple-700 hover:to-indigo-800 text-white font-medium px-6 py-4 h-11 rounded-2xl flex items-center gap-2 shadow-lg shadow-purple-950/50 border border-white/10"
-          >
-            <Calendar className="w-4 h-4" />
-            Book a Session
-          </Button>
         </div>
       </motion.div>
 
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {stats.map((stat, index) => (
             <motion.div
               key={stat.label}
@@ -165,7 +185,7 @@ const DeveloperPublicProfile = () => {
               )}
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-2xl bg-white/5 border border-white/10">
+                <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
                   <stat.icon className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -183,64 +203,142 @@ const DeveloperPublicProfile = () => {
           variants={itemVariants}
           className="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-neutral-900 to-black border border-white/5 shadow-lg"
         >
-          <div className="flex items-center gap-2 mb-3">
-            <div className="p-2 bg-purple-500/10 rounded-2xl">
-              <User className="w-4 h-4 text-purple-500" />
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-2 bg-purple-500/10 rounded-xl">
+              <User className="w-4 h-4 text-purple-400" />
             </div>
             <h2 className="text-lg font-bold text-white">About</h2>
           </div>
-          <p className="text-gray-400">{profile?.bio}</p>
+          <p className="text-gray-400 leading-relaxed">{profile?.bio}</p>
         </motion.div>
 
         <motion.div 
           variants={itemVariants}
           className="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-neutral-900 to-black border border-white/5 shadow-lg"
         >
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-2 bg-purple-500/10 rounded-2xl">
-              <Briefcase className="w-4 h-4 text-purple-500" />
+          <div className="flex items-center gap-2 mb-6">
+            <div className="p-2 bg-purple-500/10 rounded-xl">
+              <Briefcase className="w-4 h-4 text-purple-400" />
             </div>
-            <h2 className="text-lg font-bold text-white">Professional Information</h2>
+            <h2 className="text-lg font-bold text-white">Work Experience</h2>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              {
-                icon: Building2,
-                label: 'Company',
-                value: profile?.developerProfile?.workingExperience?.companyName
-              },
-              {
-                icon: Code,
-                label: 'Job Title',
-                value: profile?.developerProfile?.workingExperience?.jobTitle
-              },
-              {
-                icon: GraduationCap,
-                label: 'Education',
-                value: profile?.developerProfile?.education?.degree,
-                subValue: profile?.developerProfile?.education?.institution
-              }
-            ].map((item, index) => (
-              <motion.div 
-                key={index}
-                className="group p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
-                whileHover={{ scale: 1.02 }}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-purple-500/10 rounded-2xl group-hover:bg-purple-500/20 transition-colors">
-                    <item.icon className="w-4 h-4 text-purple-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-semibold">{item.label}</h3>
-                    <p className="text-gray-400">{item.value}</p>
-                    {item.subValue && (
-                      <p className="text-gray-500 text-sm mt-1">{item.subValue}</p>
-                    )}
+            <motion.div 
+              className="group p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+              whileHover={{ scale: 1.01 }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-purple-500/10 rounded-xl group-hover:bg-purple-500/20 transition-colors">
+                  <Building2 className="w-4 h-4 text-purple-400" />
+                </div>
+                <div>
+                  <div className="text-sm text-gray-400">Company</div>
+                  <div className="text-white font-medium mt-1">
+                    {profile?.developerProfile?.workingExperience?.companyName || 'Not Specified'}
                   </div>
                 </div>
-              </motion.div>
-            ))}
+              </div>
+            </motion.div>
+
+            <motion.div 
+              className="group p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+              whileHover={{ scale: 1.01 }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-purple-500/10 rounded-xl group-hover:bg-purple-500/20 transition-colors">
+                  <Code className="w-4 h-4 text-purple-400" />
+                </div>
+                <div>
+                  <div className="text-sm text-gray-400">Job Title</div>
+                  <div className="text-white font-medium mt-1">
+                    {profile?.developerProfile?.workingExperience?.jobTitle || 'Not Specified'}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              className="group p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+              whileHover={{ scale: 1.01 }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-purple-500/10 rounded-xl group-hover:bg-purple-500/20 transition-colors">
+                  <Clock className="w-4 h-4 text-purple-400" />
+                </div>
+                <div>
+                  <div className="text-sm text-gray-400">Experience</div>
+                  <div className="text-white font-medium mt-1">
+                    {profile?.developerProfile?.experience || '0'} Years
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        <motion.div 
+          variants={itemVariants}
+          className="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-neutral-900 to-black border border-white/5 shadow-lg"
+        >
+          <div className="flex items-center gap-2 mb-6">
+            <div className="p-2 bg-purple-500/10 rounded-xl">
+              <GraduationCap className="w-4 h-4 text-purple-400" />
+            </div>
+            <h2 className="text-lg font-bold text-white">Education</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <motion.div 
+              className="group p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+              whileHover={{ scale: 1.01 }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-purple-500/10 rounded-xl group-hover:bg-purple-500/20 transition-colors">
+                  <GraduationCap className="w-4 h-4 text-purple-400" />
+                </div>
+                <div>
+                  <div className="text-sm text-gray-400">Degree</div>
+                  <div className="text-white font-medium mt-1">
+                    {profile?.developerProfile?.education?.degree || 'Not Specified'}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              className="group p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+              whileHover={{ scale: 1.01 }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-purple-500/10 rounded-xl group-hover:bg-purple-500/20 transition-colors">
+                  <Building2 className="w-4 h-4 text-purple-400" />
+                </div>
+                <div>
+                  <div className="text-sm text-gray-400">Institution</div>
+                  <div className="text-white font-medium mt-1">
+                    {profile?.developerProfile?.education?.institution || 'Not Specified'}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              className="group p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+              whileHover={{ scale: 1.01 }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-purple-500/10 rounded-xl group-hover:bg-purple-500/20 transition-colors">
+                  <Calendar className="w-4 h-4 text-purple-400" />
+                </div>
+                <div>
+                  <div className="text-sm text-gray-400">Graduation Year</div>
+                  <div className="text-white font-medium mt-1">
+                    {profile?.developerProfile?.education?.year || 'Not Specified'}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </motion.div>
 
@@ -250,8 +348,8 @@ const DeveloperPublicProfile = () => {
             className="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-neutral-900 to-black border border-white/5 shadow-lg"
           >
             <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-purple-500/10 rounded-2xl">
-                <Code className="w-4 h-4 text-purple-500" />
+              <div className="p-2 bg-purple-500/10 rounded-xl">
+                <Code className="w-4 h-4 text-purple-400" />
               </div>
               <h2 className="text-lg font-bold text-white">Skills</h2>
             </div>
@@ -262,7 +360,7 @@ const DeveloperPublicProfile = () => {
                   whileHover={{ scale: 1.05 }}
                 >
                   <Badge
-                    className="px-3 py-1.5 rounded-2xl bg-purple-950/50 text-purple-400 border-purple-500/20 hover:bg-purple-900/50"
+                    className="px-3 py-1.5 rounded-xl bg-purple-950/50 text-purple-400 border-purple-500/20 hover:bg-purple-900/50"
                   >
                     {skill}
                   </Badge>
@@ -276,8 +374,8 @@ const DeveloperPublicProfile = () => {
             className="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-neutral-900 to-black border border-white/5 shadow-lg"
           >
             <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-purple-500/10 rounded-2xl">
-                <Languages className="w-4 h-4 text-purple-500" />
+              <div className="p-2 bg-purple-500/10 rounded-xl">
+                <Languages className="w-4 h-4 text-purple-400" />
               </div>
               <h2 className="text-lg font-bold text-white">Languages</h2>
             </div>
@@ -288,7 +386,7 @@ const DeveloperPublicProfile = () => {
                   whileHover={{ scale: 1.05 }}
                 >
                   <Badge
-                    className="px-3 py-1.5 rounded-2xl bg-blue-950/50 text-blue-400 border-blue-500/20 hover:bg-blue-900/50"
+                    className="px-3 py-1.5 rounded-xl bg-indigo-950/50 text-indigo-400 border-indigo-500/20 hover:bg-indigo-900/50"
                   >
                     {language}
                   </Badge>
@@ -303,8 +401,8 @@ const DeveloperPublicProfile = () => {
           className="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-neutral-900 to-black border border-white/5 shadow-lg"
         >
           <div className="flex items-center gap-2 mb-4">
-            <div className="p-2 bg-purple-500/10 rounded-2xl">
-              <Globe className="w-4 h-4 text-purple-500" />
+            <div className="p-2 bg-purple-500/10 rounded-xl">
+              <Globe className="w-4 h-4 text-purple-400" />
             </div>
             <h2 className="text-lg font-bold text-white">Connect</h2>
           </div>
@@ -321,7 +419,7 @@ const DeveloperPublicProfile = () => {
                   href={social.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                  className="p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
                   whileHover={{ scale: 1.1 }}
                 >
                   <social.icon className="w-4 h-4 text-purple-400" />
@@ -336,30 +434,14 @@ const DeveloperPublicProfile = () => {
             variants={itemVariants}
             className="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-neutral-900 to-black border border-white/5 shadow-lg"
           >
-            <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-purple-500/10 rounded-2xl">
-              <Code className="w-4 h-4 text-purple-500" />
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-2 bg-purple-500/10 rounded-xl">
+                <Code className="w-4 h-4 text-purple-400" />
               </div>
               <h2 className="text-lg font-bold text-white">Portfolio Projects</h2>
             </div>
             
-            <AnimatePresence mode="popLayout">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {profile.portfolio.map((project: any) => (
-                  <motion.div
-                    key={project._id}
-                    variants={itemVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    className="group relative overflow-hidden"
-                  >
-                    <ProjectCard project={project} />
-                    <div className="absolute inset-0 -z-10 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl" />
-                  </motion.div>
-                ))}
-              </div>
-            </AnimatePresence>
+            <ProjectCarousel projects={profile.portfolio} />
           </motion.div>
         )}
 

@@ -103,7 +103,7 @@ const NotFound = () => {
         <div className="flex justify-center items-center gap-8">
           <a
             href="/"
-            className="group relative px-8 py-4 bg-transparent overflow-hidden rounded-lg transition-all duration-500"
+            className="group relative px-8 py-4 bg-transparent overflow-hidden rounded-xl transition-all duration-500"
             style={{
               transform: isHovered ? 'translateZ(50px)' : 'translateZ(0)'
             }}
@@ -116,7 +116,7 @@ const NotFound = () => {
           <a
             href="#"
             onClick={(e) => { e.preventDefault(); window.history.back(); }}
-            className="group relative px-8 py-4 bg-transparent overflow-hidden rounded-lg transition-all duration-500"
+            className="group relative px-8 py-4 bg-transparent overflow-hidden rounded-xl transition-all duration-500"
             style={{
               transform: isHovered ? 'translateZ(50px)' : 'translateZ(0)'
             }}

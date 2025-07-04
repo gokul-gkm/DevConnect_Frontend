@@ -5,10 +5,11 @@ import {
   Settings,
   History,
   Calendar,
-  Bell,
   Lock,
   User,
-  Sparkles
+  Sparkles,
+  Wallet2,
+  MessageSquare
 } from 'lucide-react'
 import { SidebarProps } from '@/types/types'
 import { useNavigate } from 'react-router-dom'
@@ -19,8 +20,9 @@ const sidebarItems = [
   { icon: Settings, label: 'Edit Profile', path: '/edit-profile' },
   { icon: History, label: 'Session History', path: '/sessions/history' },
   { icon: Calendar, label: 'Upcoming Sessions', path: '/sessions/upcoming' },
-  { icon: Bell, label: 'Notifications', path: '/profile/notifications' },
+  { icon: MessageSquare, label: 'Chats', path: '/chats' },
   { icon: Lock, label: 'Password & Security', path: '/change-password' },
+  { icon: Wallet2, label: 'Wallet', path: '/wallet' },
 ]
 
 const buttonVariants = {
@@ -107,7 +109,7 @@ export function Sidebar({ activeItem, setActiveItem }: SidebarProps) {
         </div>
       </aside>
 
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50">
+      <div className="lg:hidden fixed top-16 left-0 right-0 z-10">
         <div className={cn(
           "bg-gradient-to-b from-black/95 to-black/90",
           "border-b border-white/5 backdrop-blur-xl",

@@ -5,8 +5,7 @@ import { UpcomingSession } from "@/types/types";
 
 const SessionApi = {
   async createBooking(developerId: string, data: BookingFormData) {
-    console.log("data :", data)
-    const response = await axiosClient.post('/sessions/create-session', {
+    const response = await axiosClient.post('/sessions', {
       ...data,
       developerId
     });
@@ -42,8 +41,7 @@ const SessionApi = {
   },
 
   async getUpcomingSessions(): Promise<UpcomingSession[]> {
-    const response = await axiosClient.get('/sessions/upcoming-sessions');
-    console.log("response : ",response.data)
+    const response = await axiosClient.get('/sessions/upcoming');
     
     return response.data.data.map((session: any) => ({
       id: session._id,
@@ -72,9 +70,22 @@ const SessionApi = {
 
   //Developer side
 
-  async getDeveloperSessionRequests() {
-    const response = await axiosClient.get('/sessions/developer/requests');
-    return response.data.data;
+  async getDeveloperSessionRequests(page = 1, limit = 5) {
+    const response = await axiosClient.get('/sessions/developer/requests', {
+      params: { page, limit }
+    });
+    return response.data;
+  },
+
+  async getSessionRequestDetails(sessionId: string) {
+    try {
+      const response = await axiosClient.get(`/sessions/developer/requests/${sessionId}`);
+      
+      return response;
+    } catch (error) {
+      console.error("Error fetching session details:", error);
+      throw error;
+    }
   },
 
   async acceptSession(sessionId: string) {
@@ -87,6 +98,23 @@ const SessionApi = {
       rejectionReason: reason
     });
     return response.data;
+  },
+
+  async getDeveloperScheduledSessions(page = 1, limit = 5) {
+    const response = await axiosClient.get('/sessions/developer/scheduled', {
+      params: { page, limit }
+    });
+    return response.data;
+  },
+
+  async getScheduledSessionDetails(sessionId: string) {
+    try {
+      const response = await axiosClient.get(`/sessions/developer/scheduled/${sessionId}`);
+      return response;
+    } catch (error) {
+      console.error("Error fetching scheduled session details:", error);
+      throw error;
+    }
   }
       
 };

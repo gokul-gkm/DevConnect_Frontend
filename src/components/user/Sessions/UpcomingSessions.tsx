@@ -45,12 +45,10 @@ export function UpcomingSessions() {
   
   const debouncedSearch = useDebounce(searchValue, 300)
 
-  const { sessions, isLoading, filteredSessions, stats } = useUpcomingSessions(
+  const { filteredSessions, isLoading, stats } = useUpcomingSessions(
     debouncedSearch,
     statusFilter
   )
-  console.log("sessions", sessions)
-  console.log("filteredSessions", filteredSessions)
 
   const columns = useMemo<ColumnDef<UpcomingSession>[]>(() => [
     {
@@ -247,10 +245,10 @@ export function UpcomingSessions() {
   }
 
   return (
-    <main className="flex-1 lg:ml-72">
-      <div className="min-h-screen p-4 lg:p-8 pt-32 lg:pt-8">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <main className="w-full">
+      <div className="min-h-screen p-4 lg:p-8 pt-20">
+        <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {[
               { label: 'Total Sessions', value: stats.total, icon: Calendar, color: 'blue' },
               { label: 'Upcoming', value: stats.upcoming, icon: Clock, color: 'purple' },
@@ -262,15 +260,15 @@ export function UpcomingSessions() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-gradient-to-br from-zinc-900/50 to-black/50 rounded-2xl p-6 backdrop-blur-sm border border-white/5
+                className="bg-gradient-to-br from-zinc-900/50 to-black/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 backdrop-blur-sm border border-white/5
                   hover:border-white/10 transition-all group"
               >
-                <div className={`w-12 h-12 rounded-xl bg-${stat.color}-500/10 flex items-center justify-center mb-4
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-xl bg-${stat.color}-500/10 flex items-center justify-center mb-3 sm:mb-4
                   group-hover:bg-${stat.color}-500/20 transition-colors`}>
-                  <stat.icon className={`w-6 h-6 text-${stat.color}-400`} />
+                  <stat.icon className={`w-5 h-5 sm:w-6 sm:h-6 text-${stat.color}-400`} />
                 </div>
-                <p className="text-sm text-gray-400">{stat.label}</p>
-                <p className="text-2xl font-semibold text-white mt-1">{stat.value}</p>
+                <p className="text-xs sm:text-sm text-gray-400">{stat.label}</p>
+                <p className="text-xl sm:text-2xl font-semibold text-white mt-1">{stat.value}</p>
               </motion.div>
             ))}
           </div>
@@ -278,18 +276,18 @@ export function UpcomingSessions() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-zinc-900/50 to-black/50 rounded-2xl backdrop-blur-sm border border-white/5
+            className="bg-gradient-to-br from-zinc-900/50 to-black/50 rounded-xl sm:rounded-2xl backdrop-blur-sm border border-white/5
               hover:border-white/10 transition-all"
           >
-            <div className="p-6 border-b border-white/5">
+            <div className="p-4 sm:p-6 border-b border-white/5">
               <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div>
-                  <h2 className="text-xl font-semibold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                  <h2 className="text-lg sm:text-xl font-semibold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
                     Upcoming Sessions
                   </h2>
-                  <p className="text-sm text-gray-400 mt-1">Manage your scheduled mentoring sessions</p>
+                  <p className="text-xs sm:text-sm text-gray-400 mt-1">Manage your scheduled mentoring sessions</p>
                 </div>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full lg:w-auto">
                   <div className="relative flex-1 lg:w-64">
                     <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${
                       isSearching ? 'text-purple-400' : 'text-gray-400'
@@ -300,7 +298,7 @@ export function UpcomingSessions() {
                         setIsSearching(true)
                         setSearchValue(e.target.value)
                       }}
-                      className="pl-9 bg-zinc-900/50 border-white/5 focus:border-purple-500/50 w-full"
+                      className="pl-9 bg-zinc-900/50 border-white/5 focus:border-purple-500/50 w-full text-sm sm:text-base"
                       placeholder="Search sessions..."
                     />
                   </div>
@@ -308,8 +306,8 @@ export function UpcomingSessions() {
                     <select
                       value={statusFilter}
                       onChange={(e) => setStatusFilter(e.target.value as UpcomingSession['status'] | 'all')}
-                      className="w-full appearance-none bg-zinc-900/50 border border-white/5 rounded-lg px-3 py-2 pr-8
-                        text-white focus:outline-none focus:border-purple-500/50 transition-colors
+                      className="w-full appearance-none bg-zinc-900/50 border border-white/5 rounded-xl px-3 py-2 pr-8
+                        text-white focus:outline-none focus:border-purple-500/50 transition-colors text-sm sm:text-base
                         hover:border-white/10"
                     >
                       <option value="all">All Status</option>

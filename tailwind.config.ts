@@ -11,6 +11,9 @@ export default {
   ],
   theme: {
     extend: {
+      boxShadow: {
+        dark: '0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.24)',
+      },     
       animation: {
         first: "moveVertical 30s ease infinite",
         second: "moveInCircle 20s reverse infinite",

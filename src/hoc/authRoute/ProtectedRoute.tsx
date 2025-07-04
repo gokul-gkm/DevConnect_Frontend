@@ -1,9 +1,10 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAppSelector } from "@/hooks/useAppSelector";
+import { Role } from "@/types/types";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRole: 'user' | 'developer';
+  allowedRole: Role;
 }
 
 export const ProtectedRoute = ({ children, allowedRole }: ProtectedRouteProps) => {
@@ -15,28 +16,13 @@ export const ProtectedRoute = ({ children, allowedRole }: ProtectedRouteProps) =
   }
 
   if (role !== allowedRole) {
-    const redirectPath = role === 'developer' ? '/developer/dashboard' : '/';
+    const redirectPath = role === Role.DEVELOPER ? '/developer/dashboard' : '/';
     return <Navigate to={redirectPath} replace />;
   }
 
   return <>{children}</>;
 };
 
-
-
-// import { Navigate, useLocation } from "react-router-dom";
-// import { useAppSelector } from "@/hooks/useAppSelector";
-
-// export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-//     const { isAuthenticated } = useAppSelector((state) => state.user);
-
-//     const location = useLocation();
-
-//     if (!isAuthenticated) {
-//         return <Navigate to="/auth/login" state={{ from: location }} replace />
-//     }
-//     return <>{children}</>
-// };
 
 
 export const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {

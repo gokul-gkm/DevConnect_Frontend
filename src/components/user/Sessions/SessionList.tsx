@@ -9,8 +9,6 @@ export function SessionsList() {
     queryFn: SessionApi.getUserSessions
   });
 
-  console.log("sessions :",sessions)
-
   if (isLoading) {
     return (
       <div className="flex justify-center p-8">

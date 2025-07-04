@@ -4,6 +4,9 @@ import { toast } from 'react-hot-toast';
 import AuthApi from '@/service/Api/AuthApi';
 import { useAppDispatch } from '@/hooks/useAppSelector';
 import { setCredentials } from '@/redux/slices/authSlice';
+import { socketService } from '@/service/socket/socketService';
+
+
 
 export const useGoogleLogin = () => {
   const navigate = useNavigate();
@@ -18,8 +21,10 @@ export const useGoogleLogin = () => {
         dispatch(setCredentials({
           username: response.user.username,
           email: response.user.email,
-          role: response.user.role
+          role: response.user.role,
+          _id: response.user.id
         }));
+        socketService.connect(response.token!);
         toast.success("Login successful!");
         navigate("/");
       }

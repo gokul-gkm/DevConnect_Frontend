@@ -4,7 +4,8 @@ export interface UserState {
     username: string | null;
     email: string | null;
     role: string | null;
-    isAuthenticated: boolean ;
+    isAuthenticated: boolean;
+    _id: string | null
 }
 
 const initialState: UserState = {
@@ -12,24 +13,28 @@ const initialState: UserState = {
     email: null,
     role: null,
     isAuthenticated: false,
+    _id: null
 };
 
  const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setCredentials: (state, action: PayloadAction<{username: string, email: string, role?: string}>) => {
+    setCredentials: (state, action: PayloadAction<{username: string, email: string, role?: string, _id: string}>) => {
         state.username = action.payload.username;
         state.email = action.payload.email;
         state.role = action.payload?.role || null;
         state.isAuthenticated = true;
+        state._id = action.payload._id
     },
     logout: (state) => {
         state.username = null;
         state.email = null;
         state.role = null;
         state.isAuthenticated = false;
-        localStorage.removeItem("access-token");
+        state._id = null
+      localStorage.removeItem("access-token");
+      localStorage.removeItem("user-role")
     }
   },
 });

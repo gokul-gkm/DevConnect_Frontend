@@ -1,3 +1,8 @@
+export enum Role {
+  USER = 'user',
+  DEVELOPER = 'developer'
+}
+
 export interface IRegisterData {
     username: string,
     email: string,
@@ -35,6 +40,7 @@ export interface User {
     _id: string;
     username: string;
     email: string;
+    location: any;
     role: 'user';
     status: 'active' | 'blocked';
     isVerified: boolean;

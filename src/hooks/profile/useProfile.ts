@@ -68,22 +68,3 @@ export const useProfile = () => {
 };
 
 
-// import { useQuery } from '@tanstack/react-query';
-// import UserApi from '@/service/Api/UserApi';
-
-// export const useProfile = () => {
-//   const { data: profile, isLoading, error, refetch, isError } = useQuery({
-//     queryKey: ['userProfile'],
-//     queryFn: UserApi.getProfile,
-//     retry: 1,
-//     refetchOnWindowFocus: false,
-//   });
-
-//   return {
-//     profile,
-//     isLoading,
-//     error,
-//     refetch,
-//     isError
-//   };
-// };

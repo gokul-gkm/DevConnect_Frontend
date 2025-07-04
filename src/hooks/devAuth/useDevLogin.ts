@@ -4,6 +4,8 @@ import { toast } from 'react-hot-toast';
 import DevAuthApi from '@/service/Api/DevAuthApi';
 import { useAppDispatch } from '@/hooks/useAppSelector';
 import { setCredentials } from '@/redux/slices/authSlice';
+import { socketService } from '@/service/socket/socketService';
+
 
 export const useDevLogin = () => {
   const navigate = useNavigate();
@@ -18,15 +20,26 @@ export const useDevLogin = () => {
       const response = await DevAuthApi.login(email, password);
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data.success && data.user) {
         dispatch(
           setCredentials({
             username: data.user.username,
             email: data.user.email,
             role: data.user.role,
+            _id: data.user.id
           })
         );
+        
+        try {
+          await socketService.connect(data.token!, 'developer');
+        } catch (error) {
+          console.error("Error connecting socket:", error);
+        }
+        
+        localStorage.setItem("access-token", data.token!);
+        localStorage.setItem("user-role", 'developer');
+        
         toast.success("Login successful!");
         navigate("/developer/dashboard");
       }
@@ -54,8 +67,10 @@ export const useDevLogin = () => {
             username: data.user.username,
             email: data.user.email,
             role: data.user.role,
+            _id: data.user.id
           })
         );
+        socketService.connect(data.token!);
         toast.success("Login successful!");
         navigate("/developer/dashboard");
       }

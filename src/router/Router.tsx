@@ -46,6 +46,21 @@ import SessionBookingPage from '@/pages/user/Sessions/SessionBookingPage';
 import SessionsPage from '@/pages/user/session/SessionPage';
 import SessionRequestPage from '@/pages/developer/Sessions/SessionRequestPage';
 import SessionDetailsPage from '@/pages/user/Sessions/SessionDetailsPage';
+import PaymentSuccess from '@/components/user/payments/PaymentSuccess';
+import PaymentCancel from '@/components/user/payments/PaymentCancel';
+import { AdminWallet } from '@/components/admin/wallet/AdminWallet';
+import DeveloperWalletPage from '@/pages/developer/Wallet/DeveloperWalletPage';
+import UserWalletPage from '@/pages/user/Wallet/UserWalletPage';
+import { Role } from '@/types/types';
+import ChatPage from '@/pages/chat/ChatPage';
+import DeveloperChatPage from '@/pages/chat/DeveloperChatPage';
+import UserNotificationPage from '@/pages/user/Notification/NotificationPage';
+import DeveloperNotificationPage from '@/pages/developer/Notification/DeveloperNotificationPage';
+import AboutUs from '@/pages/user/AboutUs/AboutUs';
+import SessionRequestDetailsPage from '@/pages/developer/Sessions/SessionRequestDetailsPage';
+import ScheduledSessionsPage from '@/pages/developer/Sessions/ScheduledSessionsPage';
+import ScheduledSessionsDetailsPage from '@/pages/developer/Sessions/ScheduledSessionsDetailsPage';
+import VideoCall from '@/components/video-chat/VideoCall';
 
 
 export const Router = createBrowserRouter([
@@ -56,23 +71,23 @@ export const Router = createBrowserRouter([
         children: [
             {
                 path: 'register',
-                element: <PublicRoute routeType="user"><UserRegisterPage/></PublicRoute> 
+                element: <PublicRoute routeType={Role.USER}><UserRegisterPage/></PublicRoute> 
             },
             {
                 path: 'login',
-                element:<PublicRoute routeType="user"> <UserLoginPage/></PublicRoute>
+                element:<PublicRoute routeType={Role.USER}> <UserLoginPage/></PublicRoute>
             },
             {
                 path: 'verify-otp',
-                element: <PublicRoute routeType="user"><UserOTPPage/></PublicRoute>
+                element: <PublicRoute routeType={Role.USER}><UserOTPPage/></PublicRoute>
             },
             {
                 path: 'forgot-password',
-                element: <PublicRoute routeType="user"><UserForgotPassword/></PublicRoute>
+                element: <PublicRoute routeType={Role.USER}><UserForgotPassword/></PublicRoute>
             },
             {
                 path: 'reset-password',
-                element: <PublicRoute routeType="user"><UserResetPassword/></PublicRoute>
+                element: <PublicRoute routeType={Role.USER}><UserResetPassword/></PublicRoute>
             },
            
         ]
@@ -102,36 +117,68 @@ export const Router = createBrowserRouter([
                     }
                 ]
             },
+           
             {
                 path: 'dashboard',
-                element: <ProtectedRoute allowedRole="developer"><DevDashboard/></ProtectedRoute>
+                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><DevDashboard/></ProtectedRoute>
             },
             {
                 path: 'profile',
-                element: <ProtectedRoute allowedRole="developer"><DeveloperProfilePage/></ProtectedRoute>
+                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><DeveloperProfilePage/></ProtectedRoute>
             },
             {
                 path: 'edit-profile',
-                element: <ProtectedRoute allowedRole="developer"><EditDeveloperProfilePage/></ProtectedRoute>
+                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><EditDeveloperProfilePage/></ProtectedRoute>
             },
             {
                 path: 'portfolio',
-                element: <ProtectedRoute allowedRole="developer"><DevPortfolioPage /></ProtectedRoute>,
+                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><DevPortfolioPage /></ProtectedRoute>,
             },
             {
                 path: 'portfolio/add-project',
-                element: <ProtectedRoute allowedRole="developer"><AddProjectPage/></ProtectedRoute>
+                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><AddProjectPage/></ProtectedRoute>
             },
             {
                 path: 'portfolio/projects/edit/:projectId',
-                element: <ProtectedRoute allowedRole="developer"><EditProjectPage/></ProtectedRoute> 
+                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><EditProjectPage/></ProtectedRoute> 
             },
             {
                 path: 'session-requests',
-                element: <ProtectedRoute allowedRole="developer"><SessionRequestPage/></ProtectedRoute>
-            }
-        
+                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><SessionRequestPage/></ProtectedRoute>
+            },
+            {
+                path: 'session-requests/:sessionId',
+                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><SessionRequestDetailsPage/></ProtectedRoute>
+            },
+            {
+                path: 'sessions/scheduled',
+                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><ScheduledSessionsPage/></ProtectedRoute>
+            },
+            {
+                path: 'sessions/scheduled/:sessionId',
+                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><ScheduledSessionsDetailsPage/></ProtectedRoute>
+            },
+            {
+                path: 'wallet',
+                element: <ProtectedRoute allowedRole={Role.DEVELOPER}><DeveloperWalletPage/></ProtectedRoute>
+            },      
+            {
+                path: 'notifications',
+                element:
+                    <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                    <DeveloperNotificationPage />
+                </ProtectedRoute>
+            },      
         ]
+    },
+
+    {
+        path: 'developer/chats',
+        element: <ProtectedRoute allowedRole={Role.DEVELOPER}><DeveloperChatPage/></ProtectedRoute>
+    },
+    {
+        path: 'developer/chats/:chatId',
+        element: <ProtectedRoute allowedRole={Role.DEVELOPER}><DeveloperChatPage/></ProtectedRoute>
     },
     {
         path: 'admin',
@@ -178,9 +225,13 @@ export const Router = createBrowserRouter([
                 element: <AdminProtectedRoute><DevRequestDetails/></AdminProtectedRoute>
             },
             {
+                path: 'wallet',
+                element: <AdminProtectedRoute><AdminWallet/></AdminProtectedRoute>
+            },
+            {
                 path: '*',
                 element: <AdminNotFoundPage/>
-            }
+            },           
         ]
 
     },
@@ -190,19 +241,31 @@ export const Router = createBrowserRouter([
     },
     {
         path: 'profile',
-        element: <ProtectedRoute allowedRole="user"><UserProfilePage/></ProtectedRoute>
+        element: <ProtectedRoute allowedRole={Role.USER}><UserProfilePage/></ProtectedRoute>
     },
     {
         path: 'edit-profile',
-        element: <ProtectedRoute allowedRole="user"><EditProfilePage/></ProtectedRoute>
+        element: <ProtectedRoute allowedRole={Role.USER}><EditProfilePage/></ProtectedRoute>
     },
     {
         path: 'change-password',
-        element: <ProtectedRoute allowedRole="user"><ChangePasswordPage/></ProtectedRoute>
+        element: <ProtectedRoute allowedRole={Role.USER}><ChangePasswordPage/></ProtectedRoute>
+    },
+    {
+        path: 'wallet',
+        element: <ProtectedRoute allowedRole={Role.USER}><UserWalletPage/></ProtectedRoute>
+    },
+    {
+        path: 'about',
+        element: <AboutUs/>
     },
     {
         path: '/',
         element: <RootPage/>
+    },
+    {
+        path: 'video-call',
+        element: <VideoCall/>
     },
 
     {
@@ -210,19 +273,19 @@ export const Router = createBrowserRouter([
         children: [
             {
                 path: 'upcoming',
-                element: <ProtectedRoute allowedRole="user"><UpcomingSessionsPage/></ProtectedRoute> 
+                element: <ProtectedRoute allowedRole={Role.USER}><UpcomingSessionsPage/></ProtectedRoute> 
             },
             {
                 path: 'history',
-                element: <ProtectedRoute allowedRole="user"><SessionHistoryPage/></ProtectedRoute>
+                element: <ProtectedRoute allowedRole={Role.USER}><SessionHistoryPage/></ProtectedRoute>
             },
             {
                 path: 'booking/:developerId',
-                element: <ProtectedRoute allowedRole="user"><SessionBookingPage/></ProtectedRoute>
+                element: <ProtectedRoute allowedRole={Role.USER}><SessionBookingPage/></ProtectedRoute>
             },
             {
                 path: 'my-sessions',
-                element: <ProtectedRoute allowedRole="user"><SessionsPage/></ProtectedRoute>
+                element: <ProtectedRoute allowedRole={Role.USER}><SessionsPage/></ProtectedRoute>
             },
             
             
@@ -230,7 +293,7 @@ export const Router = createBrowserRouter([
     },
     {
         path: 'sessions/:sessionId',
-        element: <ProtectedRoute allowedRole="user"><SessionDetailsPage/></ProtectedRoute>
+        element: <ProtectedRoute allowedRole={Role.USER}><SessionDetailsPage/></ProtectedRoute>
     },
 
     {
@@ -240,6 +303,27 @@ export const Router = createBrowserRouter([
     {
         path: 'dev-profile/:developerId',
         element: <DeveloperPublicProfilePage/>
+    },
+
+    {
+        path: '/payment/success',
+        element:<ProtectedRoute allowedRole={Role.USER}> <PaymentSuccess/></ProtectedRoute>
+    },
+    {
+        path: '/payment/cancel',
+        element: <ProtectedRoute allowedRole={Role.USER}><PaymentCancel/></ProtectedRoute>
+    },
+    {
+        path: '/chats',
+        element: <ProtectedRoute allowedRole={Role.USER}> <ChatPage/></ProtectedRoute>
+    },
+    {
+        path: '/chats/:chatId',
+        element: <ProtectedRoute allowedRole={Role.USER}><ChatPage/></ProtectedRoute>
+    },
+    {
+        path: '/notifications',
+        element: <ProtectedRoute allowedRole={Role.USER}><UserNotificationPage/></ProtectedRoute>
     },
     {
         path: '*',

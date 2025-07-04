@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import SessionApi from '@/service/Api/SessionApi';
+import { useState, useEffect } from 'react';
 
-interface Session {
+interface SessionInterface {
   _id: string;
   title: string;
   description: string;
@@ -18,17 +19,59 @@ interface Session {
   topics: string[];
 }
 
+interface Pagination {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+}
+
+interface Stats {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  scheduled: number;
+}
+
 export const useSessionRequests = () => {
   const queryClient = useQueryClient();
+  const [pagination, setPagination] = useState<Pagination>({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 5
+  });
+  
+  const [stats, setStats] = useState<Stats>({
+    total: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    scheduled: 0
+  });
 
   const {
-    data: sessions,
+    data,
     isLoading,
     error
-  } = useQuery<Session[]>({
-    queryKey: ['session-requests'],
-    queryFn: SessionApi.getDeveloperSessionRequests,
+  } = useQuery({
+    queryKey: ['session-requests', pagination.currentPage, pagination.itemsPerPage],
+    queryFn: () => SessionApi.getDeveloperSessionRequests(pagination.currentPage, pagination.itemsPerPage)
   });
+
+  useEffect(() => {
+    if (data) {
+      if (data.pagination) {
+        setPagination(data.pagination);
+      }
+      if (data.stats) {
+        setStats(data.stats);
+      }
+    }
+  }, [data]);
+
+  const sessions = data?.data || [];
 
   const acceptMutation = useMutation({
     mutationFn: (sessionId: string) => SessionApi.acceptSession(sessionId),
@@ -77,13 +120,23 @@ export const useSessionRequests = () => {
     },
   });
 
+  const updatePage = (page: number) => {
+    setPagination(prev => ({
+      ...prev,
+      currentPage: page
+    }));
+  };
+
   return {
     sessions,
+    pagination,
+    stats,
     isLoading,
     error,
     acceptSession: acceptMutation.mutate,
     rejectSession: rejectMutation.mutate,
     isAccepting: acceptMutation.isPending,
     isRejecting: rejectMutation.isPending,
+    updatePage,
   };
 };

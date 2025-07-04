@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import AuthApi from '@/service/Api/AuthApi';
 import { useAppDispatch } from '@/hooks/useAppSelector';
 import { setCredentials } from '@/redux/slices/authSlice';
+import { socketService } from '@/service/socket/socketService';
 
 export interface ILoginData {
     email: string,
@@ -27,23 +28,41 @@ export const useLogin = () => {
         throw error;
       }
     },
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       if (response.success && response.user) {
         localStorage.setItem("access-token", response.token!);
+        localStorage.setItem("user-role", response.user.role || 'user');
+        
         dispatch(
           setCredentials({
             username: response.user.username,
             email: response.user.email,
             role: response.user.role,
+            _id: response.user.id
           })
         );
+        
+        const userRole = response.user.role || 'user';
+        
+        try {
+          await socketService.connect(response.token!, userRole);
+          
+          if (userRole === 'developer') {
+            socketService.emit('developer:set-online', { developerId: response.user.id });
+          } else {
+            socketService.emit('user:set-online', { userId: response.user.id });
+          }
+        } catch (error) {
+          console.error("Error connecting socket:", error);
+        }
+        
         toast.success("Login successful!");
         navigate("/");
       }
     },
     onError: (error: any) => {
       toast.error(
-        error.response?.data?.message || "Login failed. Please check your credentials."
+        error.response?.data?.message || error.message ||"Login failed. Please check your credentials."
       );
     }
   });

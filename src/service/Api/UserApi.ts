@@ -1,5 +1,6 @@
 import axiosClient from "@/service/axiosinstance/axios";
 import { userRoutes } from "@/utils/constants";
+import { ChangePasswordFormData } from "@/utils/validation/userValidation";
 
 const UserApi = {
   getProfile: async () => {
@@ -16,7 +17,7 @@ const UserApi = {
     updateProfile: async (formData: FormData) => {
         try {
     
-          const response = await axiosClient.put('/users/profile/update', formData, {
+          const response = await axiosClient.put('/users/profile', formData, {
             headers: {
               'Content-Type': 'multipart/form-data'
             }
@@ -29,6 +30,16 @@ const UserApi = {
         }
   },
     
+  changePassword: async (data: ChangePasswordFormData) => {
+    try {
+      const response = await axiosClient.put('/users/change-password', data);
+      return response.data;
+    } catch (error: any) {
+      console.error('API Error:', error.response?.data || error)
+      throw error
+    }
+  },
+
   searchDevelopers: async (params: any) => {
     try {
         const queryString = new URLSearchParams();
@@ -37,21 +48,35 @@ const UserApi = {
         if (params.sort) queryString.append('sort', params.sort);
         if (params.page) queryString.append('page', params.page.toString());
         if (params.limit) queryString.append('limit', params.limit.toString());
-        if (params.experience) queryString.append('experience', params.experience);
-        if (params.availability) queryString.append('availability', params.availability);
         if (params.location) queryString.append('location', params.location);
+        
         if (params.skills?.length > 0) {
             params.skills.forEach((skill: string) => {
-                queryString.append('skills', skill);
+                queryString.append('skills[]', skill);
             });
         }
 
-      const response = await axiosClient.get(`/users/developers/search?${queryString.toString()}`);
+        if (params.languages?.length > 0) {
+            params.languages.forEach((language: string) => {
+                queryString.append('languages[]', language);
+            });
+        }
+
+        if (params.priceRange) {
+            if (params.priceRange.min !== undefined) {
+                queryString.append('priceRange[min]', params.priceRange.min.toString());
+            }
+            if (params.priceRange.max !== undefined) {
+                queryString.append('priceRange[max]', params.priceRange.max.toString());
+            }
+        }
+
+        const response = await axiosClient.get(`/users/developers/search?${queryString.toString()}`);
         return response.data.data;
     } catch (error) {
         throw error;
     }
-  },
+},
 
   getPublicProfile: async (developerId: string) => {
     try {

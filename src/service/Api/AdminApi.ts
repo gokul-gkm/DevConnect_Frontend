@@ -22,6 +22,30 @@ interface PaginatedResponse {
     };
 }
 
+interface DashboardStats {
+  totalUsers: number;
+  totalDevelopers: number;
+  totalRevenue: number;
+  totalSessions: number;
+  revenueData: Array<{
+    date: string;
+    revenue: number;
+  }>;
+  userGrowthData: Array<{
+    date: string;
+    users: number;
+    developers: number;
+  }>;
+  topDevelopers: Array<{
+    id: string;
+    name: string;
+    avatar: string;
+    revenue: number;
+    sessions: number;
+    rating: number;
+  }>;
+}
+
 const AdminApi = {
     adminLogin: async (email: string, password: string): Promise<IAdminAuthResponse> => {
         const response = await axiosClient.post(adminRoutes.login, { email, password });
@@ -87,8 +111,12 @@ const AdminApi = {
     async getDeveloperRequestDetails(developerId: string) {
         const response = await axiosClient.get(`/admin/developer-requests/${developerId}`);
         return response.data;
-    }
+    },
 
+    async getDashboardStats(): Promise<DashboardStats> {
+        const response = await axiosClient.get<DashboardStats>('/admin/dashboard/stats');
+        return response.data;
+    }
 }
 
 export default AdminApi

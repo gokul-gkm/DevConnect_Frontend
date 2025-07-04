@@ -59,7 +59,6 @@ const DeveloperApi = {
     
 },
   
-    
 }
 
 export default DeveloperApi

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { LinkedIn } from "react-linkedin-login-oauth2";
+// import { LinkedIn } from "react-linkedin-login-oauth2";
 import { Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/utils";
@@ -12,12 +12,12 @@ import { loginSchema, LoginFormData } from "@/utils/validation/userValidation";
 import { GoogleLogin } from "@react-oauth/google";
 import { useLogin } from "@/hooks/userAuth/useLogin";
 import { useGoogleLogin } from "@/hooks/userAuth/useGoogleLogin";
-import { useLinkedInLogin } from "@/hooks/userAuth/useLinkedInLogin";
+// import { useLinkedInLogin } from "@/hooks/userAuth/useLinkedInLogin";
 
 export default function UserLoginPage() {
   const { login, isLogging } = useLogin();
   const { handleGoogleSuccess, handleGoogleError } = useGoogleLogin();
-  const { handleLinkedInSuccess, handleLinkedInError } = useLinkedInLogin();
+  // const { handleLinkedInSuccess, handleLinkedInError } = useLinkedInLogin();
 
   const {
     register,
@@ -105,7 +105,7 @@ export default function UserLoginPage() {
               theme="filled_black"
             />
           </div>
-          <div className="flex gap-2 justify-center mt-2">
+          {/* <div className="flex gap-2 justify-center mt-2">
             <LinkedIn
               clientId={import.meta.env.VITE_APP_LINKEDIN_CLIENT_ID}
               redirectUri={`${window.location.origin}/linkedin-callback`}
@@ -134,7 +134,7 @@ export default function UserLoginPage() {
                 </button>
               )}
             </LinkedIn>
-          </div>
+          </div> */}
         </form>
 
         <div className="text-center">

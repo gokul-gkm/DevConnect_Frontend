@@ -9,6 +9,7 @@ export interface DeveloperProfile {
 }
 
 export interface Developer {
+  _id: string
   username: string;
   email: string;
   profilePicture: string;
