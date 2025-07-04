@@ -1,11 +1,12 @@
 import axiosClient from "@/service/axiosinstance/axios";
 import { userRoutes } from "@/utils/constants";
 import { ChangePasswordFormData } from "@/utils/validation/userValidation";
+import publicAxios from "../axiosinstance/publicAxios";
 
 const UserApi = {
   getProfile: async () => {
       try {
-        const response = await axiosClient.get(`${userRoutes.getProfile}`)
+        const response = await axiosClient.get(userRoutes.getProfile);
         return response.data;
       } catch (error: any) {
         console.error('API Error:', error.response?.data || error)
@@ -16,23 +17,17 @@ const UserApi = {
 
     updateProfile: async (formData: FormData) => {
         try {
-    
-          const response = await axiosClient.put('/users/profile', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          })
-    
-          return response.data
+            const response = await axiosClient.put(userRoutes.updateProfile, formData);
+            return response.data;
         } catch (error: any) {
-          console.error('API Error:', error.response?.data || error)
-          throw error
+            console.error('API Error:', error.response?.data || error);
+            throw error;
         }
-  },
+    },
     
   changePassword: async (data: ChangePasswordFormData) => {
     try {
-      const response = await axiosClient.put('/users/change-password', data);
+      const response = await axiosClient.put(userRoutes.changePassword, data);
       return response.data;
     } catch (error: any) {
       console.error('API Error:', error.response?.data || error)
@@ -71,7 +66,7 @@ const UserApi = {
             }
         }
 
-        const response = await axiosClient.get(`/users/developers/search?${queryString.toString()}`);
+        const response = await publicAxios.get(`${userRoutes.searchDevelopers}?${queryString.toString()}`);
         return response.data.data;
     } catch (error) {
         throw error;
@@ -80,7 +75,7 @@ const UserApi = {
 
   getPublicProfile: async (developerId: string) => {
     try {
-        const response = await axiosClient.get(`/users/dev-profile/${developerId}`);
+        const response = await publicAxios.get(`${userRoutes.getPublicProfile}/${developerId}`);
         return response.data.data;
     } catch (error) {
         throw error;

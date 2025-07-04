@@ -10,7 +10,8 @@ import {
   Edit,
   CalendarPlus,
   CalendarCheck ,
-  Wallet
+  Wallet,
+  CalendarCheck2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -42,8 +43,13 @@ const menuItems = [
   },
   {
     title: 'Scheduled Sessions',
-    icon: CalendarCheck ,
+    icon: CalendarCheck2 ,
     path: '/developer/sessions/scheduled'
+  },
+  {
+    title: 'Session History',
+    icon: CalendarCheck ,
+    path: '/developer/sessions/history'
   },
   {
     title: 'Chats',
@@ -180,7 +186,6 @@ export const DeveloperProfileSidebar: React.FC<SidebarProps> = ({ activeItem, se
         </div>
       </div>
 
-      {/* Mobile Horizontal Sidebar */}
       <div className="lg:hidden fixed top-16 left-0 right-0 z-10">
         <div className={cn(
           "bg-gradient-to-b from-black/95 to-black/90",
@@ -201,7 +206,7 @@ export const DeveloperProfileSidebar: React.FC<SidebarProps> = ({ activeItem, se
                     whileHover="hover"
                     onClick={() => {
                       setActiveItem(item.title);
-                      window.location.href = item.path; // Using href for navigation
+                      window.location.href = item.path;
                     }}
                     className={cn(
                       "flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap",

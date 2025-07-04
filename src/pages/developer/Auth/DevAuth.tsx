@@ -2,7 +2,7 @@ import { Outlet } from "react-router-dom";
 import DevNavbar from "@/components/layout/DevNavbar";
 import { Footer } from "@/components/layout/Footer";
 
-import { Background } from "@/components/ui/Background";
+// import { Background } from "@/components/ui/Background";
 
 const DevAuth = () => {
   return (
@@ -10,11 +10,11 @@ const DevAuth = () => {
       <div>
         <DevNavbar />
       </div>
-      <Background>
+      {/* <Background> */}
         <div className="mt-20">
           <Outlet />
         </div>
-      </Background>
+      {/* </Background> */}
       <Footer />
     </div>
   );

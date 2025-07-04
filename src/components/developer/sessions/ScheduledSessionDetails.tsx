@@ -9,9 +9,9 @@ import {
   MessageSquare,
   Bookmark,
   Monitor,
-  Link2,
   CheckCircle,
-  Layers 
+  Layers,
+  Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/shadcn-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -212,26 +212,18 @@ export default function ScheduledSessionDetails() {
                       
                       <div className="mt-3">
                         <Button
-                            onClick={()=> navigate('/video-call')}
-                          className="bg-black border border-indigo-500/30 hover:bg-zinc-900 text-indigo-300 rounded-xl py-2 px-4 text-sm flex items-center gap-2"
+                          onClick={() => navigate(`/video-call-lobby/${sessionId}?mode=host`)}
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2 px-4 text-sm flex items-center gap-2"
                         >
-                          <Link2 className="w-4 h-4" />
-                          Join Meeting (Available 15 min before start)
+                          <Zap className="w-4 h-4" />
+                          Start Session
                         </Button>
                       </div>
                     </div>
                   </div>
                   
                   <div className="flex flex-col sm:flex-row gap-3">
-                    
-                    
-                    <Button
-                      className="bg-black hover:bg-zinc-900 border border-indigo-500/30 text-indigo-300 rounded-xl flex items-center gap-2 flex-1 justify-center py-2"
-                      onClick={() => navigate(`/developer/chats/${session.userId._id}`)}
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                      Message User
-                    </Button>
+                           
                   </div>
                 </div>
               </div>

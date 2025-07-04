@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 
@@ -81,6 +81,14 @@ export default function UserNotificationList() {
     markAllAsRead,
     deleteNotification,
   } = useNotificationContext();
+
+  useEffect(() => {
+    console.log('NotificationList rendered with:', {
+      notificationsCount: notifications.length,
+      unreadCount,
+      isLoading
+    });
+  }, [notifications, unreadCount, isLoading]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<NotificationType | "all">("all");

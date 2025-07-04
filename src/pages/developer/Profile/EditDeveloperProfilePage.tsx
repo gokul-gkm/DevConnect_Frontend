@@ -17,9 +17,11 @@ const EditDeveloperProfilePage = () => {
       exit={{ opacity: 0 }}
     >
       <div className="max-w-[1600px] mx-auto">
-        <div className="flex">
+        <div className="flex flex-col lg:flex-row">
           <DeveloperProfileSidebar activeItem={activeItem} setActiveItem={setActiveItem} />
-          <EditDeveloperProfile />
+          <div className="flex-1 flex justify-center">
+            <EditDeveloperProfile />
+          </div>
         </div>
       </div>
     </motion.div>

@@ -100,11 +100,12 @@ export function HeroSection() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <div className="w-48 h-48 md:w-64 md:h-64">
+          <div className="relative w-full max-w-md">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black opacity-100 z-10 h-full pointer-events-none"></div>
             <img
-              src="https://i.imghippo.com/files/NPo1259thc.png"
-              alt="DC Logo"
-              className="w-full h-full object-contain"
+              src="/devAvatar.png"
+              alt="Developer Avatar"
+              className="w-full h-full object-contain relative z-0"
             />
           </div>
         </motion.div>

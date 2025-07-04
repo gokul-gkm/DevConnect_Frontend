@@ -10,7 +10,8 @@ interface RevenueChartProps {
 
 export const RevenueChart = ({ data }: RevenueChartProps) => {
   return (
-    <Card className="bg-slate-900/60 border-slate-700/30 shadow-xl backdrop-blur-lg rounded-xl">
+    <div className="rounded-xl overflow-hidden border border-slate-700/30">
+      <Card className="bg-slate-900/60 border-0 shadow-xl backdrop-blur-lg rounded-xl">
       <div className="flex items-center justify-between mb-4">
         <Title className="text-white text-lg font-semibold">Revenue Overview</Title>
         <div className="text-xs text-slate-400 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700/50">
@@ -64,5 +65,6 @@ export const RevenueChart = ({ data }: RevenueChartProps) => {
         </ResponsiveContainer>
       </div>
     </Card>
+    </div>
   );
 };

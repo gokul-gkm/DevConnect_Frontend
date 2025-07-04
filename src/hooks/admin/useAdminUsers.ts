@@ -38,8 +38,22 @@ export const useAdminUsers = (initialParams = {}) => {
 
   const toggleStatusMutation = useMutation({
     mutationFn: (userId: string) => AdminApi.updateUserStatus(userId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+    onSuccess: (updatedUser, userId) => {
+      queryClient.setQueryData(['users', queryParams], (oldData: any) => {
+        if (!oldData) return oldData;
+        
+        const updatedUsers = oldData.data.map((user: any) => 
+          user._id === userId 
+            ? { ...user, status: user.status === 'active' ? 'blocked' : 'active' }
+            : user
+        );
+        
+        return {
+          ...oldData,
+          data: updatedUsers
+        };
+      });
+      
       toast.success('User status updated successfully', {
         style: {
           background: '#1e293b',

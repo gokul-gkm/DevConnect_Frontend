@@ -40,6 +40,26 @@ export const useSessionBooking = ({
     enabled: !!developerId && !!selectedDate
   });
 
+  const {
+    data: unavailableSlots,
+    isLoading: isLoadingUnavailableSlots
+  } = useQuery({
+    queryKey: ['unavailableSlots', developerId, selectedDate],
+    queryFn: async () => {
+      try {
+        const response = await SessionApi.getUnavailableSlots(
+          developerId as string,
+          selectedDate as Date
+        );
+        return response;
+      } catch (error) {
+        console.error("Error fetching unavailable slots:", error);
+        return { data: [] };
+      }
+    },
+    enabled: !!developerId && !!selectedDate
+  });
+
   const bookingMutation = useMutation({
     mutationFn: (data: BookingFormData) => 
       SessionApi.createBooking(developerId as string, data),
@@ -90,6 +110,12 @@ export const useSessionBooking = ({
     });
   };
 
+  const isSlotUnavailable = (timeSlot: string): boolean => {
+    if (!selectedDate || !unavailableSlots?.data?.length) return false;
+  
+    return unavailableSlots.data.includes(timeSlot);
+  };
+
   const generateTimeSlots = () => {
     const slots = [];
     const startHour = 9;
@@ -112,9 +138,12 @@ export const useSessionBooking = ({
     isLoadingDeveloper,
     bookedSlots,
     isLoadingSlots,
+    unavailableSlots,
+    isLoadingUnavailableSlots,
     handleBookingSubmit,
     isBooking: bookingMutation.isPending,
     isSlotBooked,
+    isSlotUnavailable,
     generateTimeSlots
   };
 };

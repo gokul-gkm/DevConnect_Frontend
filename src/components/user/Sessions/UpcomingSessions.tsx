@@ -8,7 +8,6 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   ColumnDef,
-  flexRender,
   SortingState,
 } from '@tanstack/react-table'
 import { Button } from "@/components/ui/shadcn-button"
@@ -18,36 +17,38 @@ import {
   Search,
   ChevronDown,
   ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
   Eye,
   Calendar,
   Clock,
   DollarSign,
   Check,
   AlertCircle,
-  BadgeCheck
+  BadgeCheck,
+  Activity
 } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import { UpcomingSession } from '@/types/types'
 import { useNavigate } from 'react-router-dom'
 import { useUpcomingSessions } from '@/hooks/session/useUpcomingSessions'
 import { useDebounce } from '@/hooks/useDebounce'
+import { StatsCard } from '@/components/user/Sessions/StatsCard'
+import { SessionTable } from '@/components/user/Sessions/SessionTable'
+import Pagination from '@/components/ui/Pagination'
 
 export function UpcomingSessions() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [searchValue, setSearchValue] = useState('')
   const [statusFilter, setStatusFilter] = useState<UpcomingSession['status'] | 'all'>('all')
   const [isSearching, setIsSearching] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
   const navigate = useNavigate()
   
   const debouncedSearch = useDebounce(searchValue, 300)
 
-  const { filteredSessions, isLoading, stats } = useUpcomingSessions(
+  const { filteredSessions, isLoading, stats, pagination } = useUpcomingSessions(
     debouncedSearch,
-    statusFilter
+    statusFilter,
+    currentPage
   )
 
   const columns = useMemo<ColumnDef<UpcomingSession>[]>(() => [
@@ -186,6 +187,11 @@ export function UpcomingSessions() {
             label: 'Approved',
             classes: 'bg-green-500/10 text-green-400 border-green-500/20',
             icon: BadgeCheck 
+          },
+          active: {
+            label: 'Active',
+            classes: 'bg-green-500/10 text-green-400 border-green-500/20',
+            icon: Activity 
           }
         } as const
         
@@ -236,6 +242,33 @@ export function UpcomingSessions() {
     },
   })
 
+  const statsData = [
+    {
+      label: 'Total Sessions',
+      value: stats.total,
+      icon: <Calendar className="w-6 h-6 text-blue-400" />,
+      colorClass: 'bg-blue-500/10'
+    },
+    {
+      label: 'Upcoming',
+      value: stats.upcoming,
+      icon: <Clock className="w-6 h-6 text-purple-400" />,
+      colorClass: 'bg-purple-500/10'
+    },
+    {
+      label: 'Pending',
+      value: stats.pending,
+      icon: <Check className="w-6 h-6 text-green-400" />,
+      colorClass: 'bg-green-500/10'
+    },
+    {
+      label: 'Total Cost',
+      value: `$${stats.totalCost}`,
+      icon: <DollarSign className="w-6 h-6 text-yellow-400" />,
+      colorClass: 'bg-yellow-500/10'
+    }
+  ];
+
   if (isLoading) {
     return (
       <div className="flex justify-center p-8">
@@ -249,27 +282,14 @@ export function UpcomingSessions() {
       <div className="min-h-screen p-4 lg:p-8 pt-20">
         <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {[
-              { label: 'Total Sessions', value: stats.total, icon: Calendar, color: 'blue' },
-              { label: 'Upcoming', value: stats.upcoming, icon: Clock, color: 'purple' },
-              { label: 'Pending', value: stats.pending, icon: Check, color: 'green' },
-              { label: 'Total Cost', value: `$${stats.totalCost}`, icon: DollarSign, color: 'yellow' },
-            ].map((stat, index) => (
-              <motion.div
+            {statsData.map((stat) => (
+              <StatsCard
                 key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-gradient-to-br from-zinc-900/50 to-black/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 backdrop-blur-sm border border-white/5
-                  hover:border-white/10 transition-all group"
-              >
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-xl bg-${stat.color}-500/10 flex items-center justify-center mb-3 sm:mb-4
-                  group-hover:bg-${stat.color}-500/20 transition-colors`}>
-                  <stat.icon className={`w-5 h-5 sm:w-6 sm:h-6 text-${stat.color}-400`} />
-                </div>
-                <p className="text-xs sm:text-sm text-gray-400">{stat.label}</p>
-                <p className="text-xl sm:text-2xl font-semibold text-white mt-1">{stat.value}</p>
-              </motion.div>
+                icon={stat.icon}
+                label={stat.label}
+                value={stat.value}
+                colorClass={stat.colorClass}
+              />
             ))}
           </div>
 
@@ -321,95 +341,24 @@ export function UpcomingSessions() {
               </div>
             </div>
 
-            <div className="relative overflow-x-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-              <table className="w-full border-collapse min-w-[800px]">
-                <thead>
-                  <tr className="border-b border-white/5 bg-white/5">
-                    {table.getHeaderGroups().map((headerGroup) => (
-                      headerGroup.headers.map((header) => (
-                        <th
-                          key={header.id}
-                          className="text-left py-3 px-2 text-sm font-medium text-gray-400 first:pl-4 last:pr-4"
-                        >
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </th>
-                      ))
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {table.getRowModel().rows.map((row) => (
-                    <tr
-                      key={row.id}
-                      className="border-b border-white/5 hover:bg-white/5 transition-colors"
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <td
-                          key={cell.id}
-                          className="py-3 px-2 first:pl-4 last:pr-4"
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <SessionTable
+              table={table}
+              columns={columns}
+              isLoading={isLoading}
+              emptyMessage="No upcoming sessions found"
+            />
 
-            <div className="p-4 border-t border-white/5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <button
-                    className="p-1 hover:bg-white/5 rounded disabled:opacity-50"
-                    onClick={() => table.setPageIndex(0)}
-                    disabled={!table.getCanPreviousPage()}
-                  >
-                    <ChevronsLeft className="w-5 h-5" />
-                  </button>
-                  <button
-                    className="p-1 hover:bg-white/5 rounded disabled:opacity-50"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <span className="text-sm text-gray-400">
-                    Page{' '}
-                    <strong className="text-white">
-                      {table.getState().pagination.pageIndex + 1}
-                    </strong>{' '}
-                    of{' '}
-                    <strong className="text-white">
-                      {table.getPageCount()}
-                    </strong>
-                  </span>
-                  <button
-                    className="p-1 hover:bg-white/5 rounded disabled:opacity-50"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                  <button
-                    className="p-1 hover:bg-white/5 rounded disabled:opacity-50"
-                    onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                    disabled={!table.getCanNextPage()}
-                  >
-                    <ChevronsRight className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
+            
+
+         
           </motion.div>
+          <Pagination
+              pagination={{
+                currentPage: pagination.currentPage,
+                totalPages: pagination.totalPages,
+              }}
+              updateParams={({ page }) => setCurrentPage(page)}
+            />
         </div>
       </div>
     </main>

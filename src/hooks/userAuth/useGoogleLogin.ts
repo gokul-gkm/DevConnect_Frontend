@@ -22,9 +22,9 @@ export const useGoogleLogin = () => {
           username: response.user.username,
           email: response.user.email,
           role: response.user.role,
-          _id: response.user.id
+          _id: response.user._id
         }));
-        socketService.connect(response.token!);
+        socketService.connect(response.token!, 'user');
         toast.success("Login successful!");
         navigate("/");
       }

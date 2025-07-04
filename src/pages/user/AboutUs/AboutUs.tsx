@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { HoverButton } from "@/components/ui/HoverButton";
 import { HeroSection } from "@/components/user/home/HeroSection";
+import { useAppSelector } from "@/hooks/useAppSelector";
+import { Role } from "@/types/types";
+import DevNavbar from "@/components/layout/DevNavbar";
 
 const AboutUs = () => {
+  const {  role } = useAppSelector((state) => state.user);
   const navigate = useNavigate();
 
   const offerings = [
@@ -35,7 +39,7 @@ const AboutUs = () => {
 
   return (
     <div className="min-h-screen bg-black">
-      <Navbar />
+      {role === Role.DEVELOPER ? <DevNavbar /> : <Navbar />}
     
           <div className="relative min-h-[80vh] flex items-center">
               <div className="container mx-auto px-6 lg:px-8 max-w-6xl  flex flex-col lg:flex-row items-center justify-between gap-12">

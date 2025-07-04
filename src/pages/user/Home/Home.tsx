@@ -1,5 +1,6 @@
 import { Footer } from '@/components/layout/Footer'
 import Navbar from '@/components/layout/Navbar'
+import { FeaturesSection } from '@/components/user/home/FeaturesSection'
 import { HeroSection } from '@/components/user/home/HeroSection'
 
 
@@ -9,6 +10,7 @@ const Home = () => {
       <Navbar />
       <div>
         <HeroSection />
+        <FeaturesSection/>
       </div>
       <Footer/>
       

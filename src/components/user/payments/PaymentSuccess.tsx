@@ -36,13 +36,14 @@ export default function PaymentSuccess() {
         <div className="space-x-4">
           <Button
             onClick={() => navigate('/sessions/upcoming')}
-            className="bg-blue-500/10 text-blue-500 border border-blue-500/20 hover:bg-blue-500/20"
+            className="bg-blue-500/10 text-blue-500 border border-blue-500/20 hover:bg-blue-500/20 rounded-xl"
           >
             View My Sessions
           </Button>
           <Button
             variant="outline"
             onClick={() => navigate('/wallet')}
+            className="bg-blue-500/10 text-blue-500 border border-blue-500/20 hover:bg-blue-500/20 rounded-xl"
           >
             View Wallet
           </Button>

@@ -2,15 +2,18 @@ import { useQuery } from '@tanstack/react-query';
 import SessionApi from '@/service/Api/SessionApi';
 import { useMemo } from 'react';
 
-export const useUpcomingSessions = (searchValue: string, statusFilter: string) => {
+export const useUpcomingSessions = (searchValue: string, statusFilter: string, page: number = 1) => {
   const {
-    data: sessions,
+    data,
     isLoading,
     error
   } = useQuery({
-    queryKey: ['upcoming-sessions'],
-    queryFn: SessionApi.getUpcomingSessions
+    queryKey: ['upcoming-sessions', page],
+    queryFn: () => SessionApi.getUpcomingSessions(page)
   });
+
+  const sessions = data?.data || [];
+  const pagination = data?.pagination || { currentPage: 1, totalPages: 1, totalItems: 0 };
 
   const filteredSessions = useMemo(() => {
     if (!sessions) return [];
@@ -38,18 +41,19 @@ export const useUpcomingSessions = (searchValue: string, statusFilter: string) =
     };
 
     return {
-      total: sessions.length,
+      total: pagination.totalItems,
       upcoming: sessions.filter(s => s.status === 'scheduled').length,
       pending: sessions.filter(s => s.status === 'pending').length,
       totalCost: sessions.reduce((acc, curr) => acc + curr.cost, 0)
     };
-  }, [sessions]);
+  }, [sessions, pagination]);
 
   return {
     sessions,
     isLoading,
     error,
     filteredSessions,
-    stats
+    stats,
+    pagination
   };
 };

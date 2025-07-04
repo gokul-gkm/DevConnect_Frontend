@@ -31,6 +31,10 @@ class SocketService {
     private hasNotificationReadListener = false;
     private hasNotificationAllReadListener = false;
     private hasUnreadCountListener = false;
+    private hasWebRTCListeners = false;
+    private lastRoomJoinTime: number = 0;
+    private roomJoinCooldown: number = 2000;
+    private pendingRoomJoins: Map<string, NodeJS.Timeout> = new Map();
     
     connect(token?: string | null, role?: string): Promise<boolean> {
         
@@ -389,11 +393,26 @@ class SocketService {
                 this.socket.off('notification:unread-count');
                 this.hasUnreadCountListener = false;
             }
+            
+            if (this.hasWebRTCListeners) {
+                this.socket.off('webrtc:offer');
+                this.socket.off('webrtc:answer');
+                this.socket.off('webrtc:ice-candidate');
+                this.socket.off('webrtc:user-disconnected');
+                this.socket.off('webrtc:session-info');
+                this.hasWebRTCListeners = false;
+            }
         }
     }
 
     on(event: string, callback: (data: any) => void) {
-        this.socket?.on(event, callback);
+        if (!this.socket) return;
+        
+        console.log(`Setting up listener for event: ${event}`);
+        this.socket.on(event, (data) => {
+            console.log(`Received event ${event}:`, data);
+            callback(data);
+        });
     }
 
     isConnected(): boolean {
@@ -553,7 +572,7 @@ class SocketService {
 
     onNewNotification(callback: (data: any) => void) {
         if (!this.socket) return;
-        
+        console.log('Setting up new notification listener');
         if (this.hasNewNotificationListener) {
             this.socket.off('notification:new');
         }
@@ -690,6 +709,86 @@ class SocketService {
         } else {
             this.cleanup();
             this.disconnect();
+        }
+    }
+
+    setupWebRTCListeners() {
+        if (!this.socket) return;
+        
+        if (this.hasWebRTCListeners) {
+            this.socket.off('webrtc:offer');
+            this.socket.off('webrtc:answer');
+            this.socket.off('webrtc:ice-candidate');
+            this.socket.off('webrtc:user-disconnected');
+            this.socket.off('webrtc:session-info');
+        }
+        
+        this.hasWebRTCListeners = true;
+    }
+
+    joinVideoRoom(sessionId: string): boolean {
+        const now = Date.now();
+        
+        if (this.pendingRoomJoins.has(sessionId)) {
+            clearTimeout(this.pendingRoomJoins.get(sessionId));
+            this.pendingRoomJoins.delete(sessionId);
+        }
+
+        if (now - this.lastRoomJoinTime < this.roomJoinCooldown) {
+            console.log('Skipping room join - cooldown active');
+            
+            const timeout = setTimeout(() => {
+                this.executeRoomJoin(sessionId);
+            }, this.roomJoinCooldown - (now - this.lastRoomJoinTime));
+            
+            this.pendingRoomJoins.set(sessionId, timeout);
+            return false;
+        }
+
+        return this.executeRoomJoin(sessionId);
+    }
+
+    private executeRoomJoin(sessionId: string): boolean {
+        if (!this.socket?.connected) {
+            console.warn('Cannot join video room: Socket not connected');
+            return false;
+        }
+        
+        this.lastRoomJoinTime = Date.now();
+        
+        if (this.userRole === 'developer') {
+            this.socket.emit('developer:join-video', sessionId);
+        } else {
+            this.socket.emit('user:join-video', sessionId);
+        }
+        
+        return true;
+    }
+
+    leaveVideoRoom(sessionId: string): boolean {
+   
+        if (this.pendingRoomJoins.has(sessionId)) {
+            clearTimeout(this.pendingRoomJoins.get(sessionId));
+            this.pendingRoomJoins.delete(sessionId);
+        }
+
+        if (!this.socket || !sessionId) {
+            console.warn('Cannot leave video room: Socket not connected or invalid session ID');
+            return false;
+        }
+        
+        if (this.userRole === 'developer') {
+            this.socket.emit('developer:leave-video', sessionId);
+        } else {
+            this.socket.emit('user:leave-video', sessionId);
+        }
+        
+        return true;
+    }
+
+    off(event: string, callback: (data: any) => void): void {
+        if (this.socket) {
+            this.socket.off(event, callback);
         }
     }
 }

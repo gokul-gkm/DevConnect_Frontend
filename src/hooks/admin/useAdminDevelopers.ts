@@ -40,8 +40,29 @@ export const useAdminDevelopers = (initialParams = {}) => {
 
   const toggleStatusMutation = useMutation({
     mutationFn: (developerId: string) => AdminApi.updateUserStatus(developerId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['developers'] });
+    onSuccess: (updatedDeveloper, developerId) => {
+      queryClient.setQueryData(['developers', queryParams], (oldData: any) => {
+        if (!oldData) return oldData;
+        
+        const updatedDevelopers = oldData.data.map((developer: any) => {
+          if (developer.userId._id === developerId) {
+            return {
+              ...developer,
+              userId: {
+                ...developer.userId,
+                status: developer.userId.status === 'active' ? 'blocked' : 'active'
+              }
+            };
+          }
+          return developer;
+        });
+        
+        return {
+          ...oldData,
+          data: updatedDevelopers
+        };
+      });
+      
       toast.success('Developer status updated successfully', {
         style: { background: '#1e293b', color: '#e2e8f0', border: '1px solid #334155' }
       });
