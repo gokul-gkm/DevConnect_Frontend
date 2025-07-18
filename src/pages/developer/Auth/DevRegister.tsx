@@ -38,12 +38,12 @@ export default function DevRegisterPage() {
   };
 
   return (
-    <div className="max-w-sm w-full mx-auto rounded-none md:rounded-xl px-4 py-4 md:p-8  bg-white dark:bg-black mb-20 mt-24   shadow-[rgba(6,_24,_44,_0.4)_0px_0px_0px_2px,_rgba(6,_24,_44,_0.65)_0px_4px_6px_-1px,_rgba(255,_255,_255,_0.08)_0px_1px_0px_inset]">
+    <div className="max-w-sm w-full mx-auto rounded-none md:rounded-xl px-4 py-4 md:p-8  bg-black dark:bg-black mb-20 mt-24   shadow-[rgba(6,_24,_44,_0.4)_0px_0px_0px_2px,_rgba(6,_24,_44,_0.65)_0px_4px_6px_-1px,_rgba(255,_255,_255,_0.08)_0px_1px_0px_inset]">
       <div className="text-center">
-        <h2 className="font-semibold text-lg text-neutral-800 dark:text-neutral-200">
+        <h2 className="font-semibold text-lg text-neutral-200 dark:text-neutral-200">
           Create an account
         </h2>
-        <p className="text-neutral-600 text-xs max-w-xs mt-2 dark:text-neutral-300">
+        <p className="text-neutral-300 text-xs max-w-xs mt-2 dark:text-neutral-300">
           Join us! Please fill in your details to get started.
         </p>
       </div>
@@ -101,7 +101,7 @@ export default function DevRegisterPage() {
 
         <button
           type="submit"
-          className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 dark:bg-zinc-800 w-full text-white rounded-md h-9 font-medium text-sm shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset] flex items-center justify-center"
+          className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 dark:bg-zinc-800 w-full text-white rounded-xl h-9 font-medium text-sm shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset] flex items-center justify-center"
           disabled={isLoading}
         >
           {isLoading ? (

@@ -5,7 +5,7 @@ export function Testimonials() {
   return (
     <div>
       <h1 className="text-center font-bold text-3xl">Testimonials</h1>
-      <div className="h-[20rem] rounded-md flex flex-col antialiased bg-white dark:bg-black dark:bg-grid-white/[0.05] items-center justify-center relative overflow-hidden">
+      <div className="h-[20rem] rounded-md flex flex-col antialiased bg-black dark:bg-black dark:bg-grid-white/[0.05] items-center justify-center relative overflow-hidden">
         <TestimonialCards items={testimonials} direction="right" speed="slow" />
       </div>
     </div>

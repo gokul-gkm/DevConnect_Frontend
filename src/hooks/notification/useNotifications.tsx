@@ -17,7 +17,8 @@ export interface Notification {
   };
 }
 
-export const useNotifications = () => {
+export const
+  useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
