@@ -1,5 +1,6 @@
 import { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useNotifications, Notification } from '../hooks/notification/useNotifications';
+import { useAuth } from '@/hooks/useAuth';
 
 interface NotificationContextType {
   notifications: Notification[];
@@ -14,7 +15,8 @@ interface NotificationContextType {
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
-  const notificationData = useNotifications();
+  const { isAuthenticated } = useAuth();
+  const notificationData = useNotifications(isAuthenticated);
   
   useEffect(() => {
     console.log('NotificationContext state changed:', {

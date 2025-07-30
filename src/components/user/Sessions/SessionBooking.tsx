@@ -182,12 +182,28 @@ export default function SessionBooking() {
                                 const isBooked = isSlotBooked(slot.value);
                                 const isUnavailable = isSlotUnavailable(slot.value);
                                 const isSelected = field.value === slot.value;
-                                
+
+                                const isToday =
+                                  selectedDate &&
+                                  new Date(selectedDate).toDateString() === new Date().toDateString();
+
+                                let isPast = false;
+                                if (isToday) {
+                                  const [slotHour, slotMinute] = slot.value.split(':').map(Number);
+                                  const now = new Date();
+                                  if (
+                                    slotHour < now.getHours() ||
+                                    (slotHour === now.getHours() && slotMinute <= now.getMinutes())
+                                  ) {
+                                    isPast = true;
+                                  }
+                                }
+
                                 return (
                                   <button
                                     key={slot.value}
                                     type="button"
-                                    disabled={isBooked || isUnavailable}
+                                    disabled={isBooked || isUnavailable || isPast}
                                     onClick={() => field.onChange(slot.value)}
                                     className={cn(
                                       'p-3 rounded-xl border backdrop-blur-xl transition-all flex items-center justify-center gap-2',
@@ -195,7 +211,8 @@ export default function SessionBooking() {
                                         'bg-indigo-500/20 border-indigo-500/40 text-indigo-300': isSelected,
                                         'bg-green-500/10 border-green-500/30 text-green-400': isBooked && !isSelected,
                                         'bg-rose-500/10 border-rose-500/30 text-rose-400': isUnavailable && !isBooked && !isSelected,
-                                        'bg-white/5 border-white/10 hover:border-white/20 text-zinc-400': !isBooked && !isUnavailable && !isSelected
+                                        'bg-white/5 border-white/10 hover:border-white/20 text-zinc-400': !isBooked && !isUnavailable && !isSelected && !isPast,
+                                        'bg-gray-800 text-gray-500 opacity-50 cursor-not-allowed': isPast
                                       }
                                     )}
                                   >

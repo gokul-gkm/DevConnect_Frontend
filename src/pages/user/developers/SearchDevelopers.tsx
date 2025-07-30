@@ -119,7 +119,7 @@ const SearchDevelopers = () => {
                             <Button
                                 onClick={() => setIsFilterOpen(true)}
                                 variant="outline"
-                                className="flex items-center gap-2 bg-white/5 border-white/10 text-white"
+                                className="flex items-center gap-2 bg-white/5 border-white/10 text-white rounded-xl"
                             >
                                 <SlidersHorizontal className="w-4 h-4" />
                                 Filters
