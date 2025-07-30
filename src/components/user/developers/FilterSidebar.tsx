@@ -136,7 +136,7 @@ const FilterSidebar = ({
                                             location: e.target.value
                                         })}
                                         placeholder="Enter location..."
-                                        className="w-full px-4 py-2 rounded-lg
+                                        className="w-full px-4 py-2 rounded-xl
                                              bg-white/5 border border-white/10
                                              text-white placeholder:text-white/50
                                              focus:outline-none focus:border-indigo-500/50"
@@ -152,7 +152,7 @@ const FilterSidebar = ({
                                     })}
                                     variant="outline"
                                     className="w-full bg-white/5 border-white/10 text-white
-                                         hover:bg-white/10"
+                                         hover:bg-white/10 rounded-xl"
                                 >
                                     Reset Filters
                                 </Button>

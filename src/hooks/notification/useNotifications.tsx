@@ -17,12 +17,13 @@ export interface Notification {
   };
 }
 
-export const
-  useNotifications = () => {
+export const useNotifications = (isAuthenticated: boolean) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const notificationsRef = useRef<Notification[]>([]);
+    
+
 
   useEffect(() => {
     notificationsRef.current = notifications;
@@ -30,6 +31,7 @@ export const
 
   const fetchNotifications = useCallback(async () => {
     try {
+      if (!isAuthenticated) return; 
       setIsLoading(true);
       const response = await NotificationApi.getNotifications();
       
