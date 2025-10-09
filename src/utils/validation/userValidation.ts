@@ -90,7 +90,7 @@ export const profileSchema = z.object({
   bio: z.string().trim().min(10, 'Bio should be at least 10 characters').refine((val) => val.trim().length >= 10, {
     message: 'Bio should be at least 10 characters',
   }),
-  profilePicture: z.string().optional(),
+  profilePicture: z.string().nullable().optional(),
   skills: z.array(z.string()).min(1, 'Please select at least one skill'),
   socialLinks: z.object({
     github: z.string().url().optional().nullable(),

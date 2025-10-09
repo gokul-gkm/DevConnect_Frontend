@@ -1,19 +1,24 @@
 import { motion } from 'framer-motion';
 import { useWallet } from '@/hooks/payments/useWallet';
-import { Loader2, DollarSign, RefreshCw, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { DollarSign, RefreshCw, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/shadcn-button';
 import { formatCurrency } from '@/lib/formatters';
 import { UserTransactionHistory } from './UserTransactionHistory';
 import { cn } from '@/lib/utils';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 export const UserWallet = () => {
   const { wallet, isLoading, refetchWallet } = useWallet();
 
-  if (isLoading) {
+ if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-[50vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
-      </div>
+      <LoadingSpinner
+        size="lg"
+        text="Loading wallet..."
+        color="white"
+        bgColor="dark"
+        fullScreen={true}
+      />
     );
   }
 
@@ -85,7 +90,7 @@ export const UserWallet = () => {
                     {stat.value}
                   </p>
                 </div>
-                <div className={cn("p-3 rounded-lg", stat.bgColor)}>
+                <div className={cn("p-3 rounded-xl", stat.bgColor)}>
                   <stat.icon className={cn("w-5 h-5", stat.color)} />
                 </div>
               </div>

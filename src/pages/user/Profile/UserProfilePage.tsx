@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react'
 import { Sidebar } from '@/components/layout/ProfileSidebar'
 import { UserProfile } from '@/components/user/Profile/UserProfile'
-import { Loader2 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import { useProfile } from '@/hooks/profile/useProfile'
 import { useLocation } from 'react-router-dom'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export default function UserProfilePage() {
   const [activeItem, setActiveItem] = useState('Profile');
@@ -17,12 +17,15 @@ export default function UserProfilePage() {
     refetch();
   }, [location.pathname]);
 
-
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-      </div>
+      <LoadingSpinner
+        size="lg"
+        text="Loading profile..."
+        color="white"
+        bgColor="dark"
+        fullScreen={true}
+      />
     );
   }
 

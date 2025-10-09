@@ -2,7 +2,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { Calendar, Clock, DollarSign, MessageCircle, Briefcase, Video } from 'lucide-react';
-import { Spinner } from '@/components/ui/spinner';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/shadcn-button';
@@ -16,6 +15,7 @@ import { socketService } from '@/service/socket/socketService'
 import VideoSessionApi from '@/service/Api/VideoSessionApi';
 import { CancelSessionModal } from './CancelSessionModal';
 import SessionApi from '@/service/Api/SessionApi';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 type SessionStatus = 'pending' | 'approved' | 'rejected' | 'completed' | 'awaiting_payment';
 
@@ -126,12 +126,13 @@ export default function SessionDetails() {
 
   if (isLoading || !session || isCheckingStatus) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-black/80">
-        <div className="relative">
-          <div className="absolute inset-0 bg-white/5 blur-xl rounded-full" />
-          <Spinner className="w-12 h-12 text-white" />
-        </div>
-      </div>
+      <LoadingSpinner
+        size="lg"
+        text="Loading session details..."
+        color="white"
+        bgColor="dark"
+        fullScreen={true}
+      />
     );
   }
 

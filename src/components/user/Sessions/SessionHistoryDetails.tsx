@@ -22,9 +22,9 @@ import {
   BookOpen
 } from 'lucide-react'
 import { Button } from '@/components/ui/shadcn-button'
-import { Spinner } from '@/components/ui/spinner'
 import { useSessionDetails } from '@/hooks/session/useSessionDetails'
 import { RatingModal } from '../rating/RatingModel'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export function SessionHistoryDetails() {
   const { sessionId } = useParams<{ sessionId: string }>()
@@ -47,18 +47,16 @@ export function SessionHistoryDetails() {
     refetch() 
   }
 
-  if (isLoading) {
+   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center p-8">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Spinner size="lg" />
-        </motion.div>
-      </div>
-    )
+      <LoadingSpinner
+        size="lg"
+        text="Loading session details..."
+        color="white"
+        bgColor="dark"
+        fullScreen={true}
+      />
+    );
   }
 
   if (error || !session) {
