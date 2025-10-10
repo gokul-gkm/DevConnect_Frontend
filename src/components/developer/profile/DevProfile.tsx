@@ -4,6 +4,7 @@ import { Edit, Github, Linkedin, Twitter, Globe, MapPin, Mail, Phone, Download, 
 import { Badge } from "@/components/ui/badge";
 import { cn } from '@/lib/utils';
 import { useDeveloperProfile } from '@/hooks/profile/useDeveloperProfile';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -23,18 +24,7 @@ const DeveloperProfile = () => {
   const { profile, isLoading, error } = useDeveloperProfile();
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 to-slate-900 w-full">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center gap-4"
-        >
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500" />
-          <div className="text-slate-400 animate-pulse">Loading developer profile...</div>
-        </motion.div>
-      </div>
-    );
+    return <LoadingSpinner text='Loading developer profile...' bgColor='dark' />
   }
 
   if (error) {

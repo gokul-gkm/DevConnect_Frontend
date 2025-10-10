@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Sidebar } from '@/components/layout/ProfileSidebar'
 import { EditProfile } from '@/components/user/Profile/EditProfile'
-import { Loader2 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import { useProfile } from '@/hooks/profile/useProfile';
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export default  function EditProfilePage() {
   const [activeItem, setActiveItem] = useState('Edit Profile');
@@ -20,10 +20,14 @@ export default  function EditProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-      </div>
-    )
+      <LoadingSpinner
+        size="lg"
+        text="Loading edit profile..."
+        color="white"
+        bgColor="dark"
+        fullScreen={true}
+      />
+    );
   }
 
   if (isError || !userData) {

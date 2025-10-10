@@ -58,8 +58,10 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
         }
       }
     })
+  console.log(errors)
   
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      console.log("image uploading...")
       const file = e.target.files?.[0]
       if (!file) return
   
@@ -79,6 +81,7 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
     
     const onSubmit = async (data: ProfileFormData) => {
         try {
+          console.log("Submit clicked")
           const formData = new FormData()
           formData.append('username', data.username)
           if (data.contact) formData.append('contact', data.contact.toString())

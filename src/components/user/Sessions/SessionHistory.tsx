@@ -29,10 +29,10 @@ import { HistorySession } from '@/types/types'
 import { useNavigate } from 'react-router-dom'
 import { useSessionHistory } from '@/hooks/session/useSessionHistory'
 import { useDebounce } from '@/hooks/useDebounce'
-import { Spinner } from '@/components/ui/spinner'
 import { StatsCard } from '@/components/user/Sessions/StatsCard'
 import { SessionTable } from '@/components/user/Sessions/SessionTable'
 import Pagination from '@/components/ui/Pagination'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export function SessionHistory() {
   const [sorting, setSorting] = useState<SortingState>([])
@@ -233,12 +233,16 @@ export function SessionHistory() {
     }
   ];
 
-  if (isLoading) {
+   if (isLoading) {
     return (
-      <div className="flex justify-center p-8">
-        <Spinner />
-      </div>
-    )
+      <LoadingSpinner
+        size="lg"
+        text="Loading session history..."
+        color="white"
+        bgColor="dark"
+        fullScreen={true}
+      />
+    );
   }
 
   return (
