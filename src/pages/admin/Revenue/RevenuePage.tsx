@@ -76,8 +76,8 @@ const RevenuePage = () => {
       cell: ({ row }) => (
         <div className="flex flex-col">
           <div className="flex items-center">
+            <div className="text-sm text-slate-300 ml-1">{row.original.averageRating ||0}</div>
             <div className="text-yellow-500">★</div>
-            <div className="text-sm text-slate-300 ml-1">{row.original.averageRating}</div>
           </div>
          
         </div>
@@ -108,8 +108,8 @@ const RevenuePage = () => {
       header: 'Average Rating',
       cell: ({ row }) => (
         <div className="flex items-center">
+          <div className="text-sm text-slate-300 mr-1">{row.original.averageRating || 0}</div>
           <div className="text-yellow-500">★</div>
-          <div className="text-sm text-slate-300 ml-1">{row.original.averageRating}</div>
         </div>
       )
     },

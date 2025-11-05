@@ -5,17 +5,18 @@ import {
   Calendar, Code, Languages, DollarSign, Clock,
   GraduationCap, Briefcase, Building2, Star,
   User, Zap, CheckCircle,
-  MessageSquare
+  MessageSquare,
+  Mail
 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
-import { Spinner } from '@/components/ui/spinner';
-import { Tooltip } from "@/components/ui/ThemedTooltip"; // Import the reusable tooltip
+import { Tooltip } from "@/components/ui/ThemedTooltip";
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useDeveloperPublicProfile } from '@/hooks/profile/useDeveloperPublicProfile';
 import { ChatApi } from '@/service/Api/ChatApi';
 import toast from 'react-hot-toast';
 import ProjectCarousel from './ProjectCarousel';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -54,15 +55,16 @@ const DeveloperPublicProfile = () => {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="relative">
-          <div className="absolute inset-0 bg-white/5 blur-xl rounded-full" />
-          <Spinner className="w-12 h-12 text-white" />
-        </div>
-      </div>
-    );
-  }
+      return (
+        <LoadingSpinner
+          size="lg"
+          text="Loading developer profile..."
+          color="white"
+          bgColor="dark"
+          fullScreen={true}
+        />
+      );
+    }
 
   if (error) {
     return (
@@ -71,7 +73,7 @@ const DeveloperPublicProfile = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-rose-950/50 border border-rose-500/20 mb-4">
             <Zap className="w-8 h-8 text-rose-400" />
           </div>
-          <h3 className="text-xl font-semibold text-rose-400">Error loading profile</h3>
+          <h3 className="text-xl font-semibold text-rose-400">Error Loading Profile</h3>
         </div>
       </div>
     );
@@ -154,10 +156,10 @@ const DeveloperPublicProfile = () => {
                 <img
                   src={profile?.profilePicture || "/default-avatar.jpg"}
                   alt="Profile"
-                  className="w-32 h-32 rounded-2xl object-cover border-2 border-purple-500/30"
+                  className="w-48 h-48 rounded-2xl object-cover border-2 border-purple-500/30"
                 />
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/20 to-transparent group-hover:from-purple-500/30 transition-all duration-300" />
-                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-purple-500/20 to-transparent opacity-0 group-hover:opacity-100 blur-xl transition-all duration-300" />
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/10 to-transparent group-hover:from-purple-500/20 transition-all duration-300" />
+                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-purple-500/20 to-transparent opacity-0 group-hover:opacity-30 blur-xl transition-all duration-300" />
               </Tooltip>
             </motion.div>
             
@@ -169,15 +171,26 @@ const DeveloperPublicProfile = () => {
               >
                 {profile?.username}
               </motion.h1>
+                            <div className="flex gap-2 mt-0 justify-center md:justify-start">
+
               <Tooltip content="Developer's current location" position="top">
                 <div className="flex items-center gap-2 text-gray-400 mt-2 justify-center md:justify-start cursor-pointer">
                   <MapPin className="w-4 h-4" />
                   <span>{profile?.location || 'Location not specified'}</span>
                 </div>
-              </Tooltip>
+                </Tooltip>
+                </div>
+              <div className="flex gap-2 mt-0 justify-center md:justify-start">
+              <Tooltip content="Developer's email" position="top">
+                <div className="flex items-center gap-2 text-gray-400 mt-2 justify-center md:justify-start cursor-pointer">
+                  <Mail className="w-4 h-4" />
+                  <span>{profile?.email}</span>
+                </div>
+                </Tooltip>
+                </div>
               
-              <div className="flex gap-4 mt-6 justify-center md:justify-start">
-                <Tooltip content="Start a real-time conversation" position="top">
+              <div className="flex gap-4 mt-4 justify-center md:justify-start">
+                <Tooltip content={`Start a real-time conversation with ${profile?.username}`} position="top">
                   <motion.button
                     onClick={handleStartChat}
                     whileHover={{ scale: 1.02 }}
@@ -185,7 +198,7 @@ const DeveloperPublicProfile = () => {
                     className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-xl shadow-lg shadow-indigo-950/20 border border-white/10 transition-all duration-300"
                   >
                     <MessageSquare className="w-4 h-4" />
-                    <span className="font-medium">Chat with Developer</span>
+                    <span className="font-medium">Chat</span>
                   </motion.button>
                 </Tooltip>
 

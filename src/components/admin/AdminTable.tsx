@@ -9,11 +9,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Pagination from "@/components/ui/Pagination";
+import { paginationType } from '@/types/ui.type';
 
 type AdminTableProps<TData> = {
   data: TData[];
   columns: ColumnDef<TData>[];
-  pagination?: any;
+  pagination?: paginationType;
   updateParams?: (params: any) => void;
   isLoading?: boolean;
   emptyMessage?: string;

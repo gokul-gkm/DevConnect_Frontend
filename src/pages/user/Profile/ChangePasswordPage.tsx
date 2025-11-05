@@ -88,7 +88,7 @@ export default function ChangePasswordPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-white/10 hover:bg-white/5 text-white/70 hover:text-white transition-colors px-6"
+                    className="border-white/10 hover:bg-white/5 text-white/70 hover:text-white transition-colors px-6 rounded-xl"
                     onClick={() => window.history.back()}
                   >
                     Cancel
@@ -98,7 +98,7 @@ export default function ChangePasswordPage() {
                     disabled={isPending || !form.formState.isValid}
                     className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 
                       text-white px-6 shadow-lg shadow-purple-500/20 transition-all hover:shadow-purple-500/40
-                      disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
                   >
                     {isPending ? (
                       <div className="flex items-center gap-2">

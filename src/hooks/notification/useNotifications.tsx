@@ -149,20 +149,12 @@ export const useNotifications = (isAuthenticated: boolean) => {
         setNotifications(prev => [data.notification, ...prev]);
         setUnreadCount(prev => prev + 1);
       }
+      
     };
 
     const handleSessionUpdate = (data: any) => {
       console.log('Session update received:', data);
-      if (data.notification) {
-        console.log('Handling notification format');
-        setNotifications(prev => {
-          const newNotifications = [data.notification, ...prev];
-          console.log('Updated notifications with notification:', newNotifications);
-          return newNotifications;
-        });
-        setUnreadCount(prev => prev + 1);
-      } else if (data.sessionId && data.status) {
-        console.log('Handling session status update');
+      if (data.sessionId && data.status) {
         const statusNotification: Notification = {
           id: data.sessionId,
           title: 'Session Status Updated',
@@ -172,13 +164,6 @@ export const useNotifications = (isAuthenticated: boolean) => {
           timestamp: new Date().toISOString(),
           sender: data.sender
         };
-        
-        setNotifications(prev => {
-          const newNotifications = [statusNotification, ...prev];
-          console.log('Updated notifications with status:', newNotifications);
-          return newNotifications;
-        });
-        setUnreadCount(prev => prev + 1);
         
         toast.custom((t) => (
           <div className={`
@@ -209,8 +194,9 @@ export const useNotifications = (isAuthenticated: boolean) => {
           console.log('Socket not connected, waiting for connection...');
           await socketService.waitForConnection();
         }
+
+        await fetchNotifications();
         
-        console.log('Setting up notification socket listeners');
         
         socketService.off('notification:new', handleNewNotification);
         socketService.off('session:updated', handleSessionUpdate);
@@ -229,7 +215,7 @@ export const useNotifications = (isAuthenticated: boolean) => {
           }
         });
         
-        await fetchNotifications();
+       
       } catch (error) {
         console.error('Error setting up socket listeners:', error);
       }

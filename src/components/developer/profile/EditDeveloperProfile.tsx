@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import { X, Loader2, User, Mail, Phone, MapPin, Briefcase, Building, Clock, DollarSign, GraduationCap, School, Calendar, Github, Linkedin, Twitter, Globe, Image as ImageIcon, FileText } from 'lucide-react';
@@ -57,29 +57,54 @@ const EditDeveloperProfile = () => {
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [resume, setResume] = useState<File | null>(null);
 
-  const { register, handleSubmit, control, formState: { errors } } = useForm<DeveloperProfileFormData>({
-    resolver: zodResolver(developerProfileSchema),
-    defaultValues: {
-      username: profile?.username || '',
-      email: profile?.email || '',
-      bio: profile?.bio || '',
-      contact: profile?.contact || '',
-      location: profile?.location || '',
-      jobTitle: profile?.jobTitle || '',
-      companyName: profile?.companyName || '',
-      experience: profile?.experience || '',
-      hourlyRate: profile?.hourlyRate?.toString() || '',
-      degree: profile?.education?.degree || '',
-      institution: profile?.education?.institution || '',
-      year: profile?.education?.year || '',
-      github: profile?.socialLinks?.github || '',
-      linkedIn: profile?.socialLinks?.linkedIn || '',
-      twitter: profile?.socialLinks?.twitter || '',
-      portfolio: profile?.socialLinks?.portfolio || '',
-      skills: profile?.skills || [],
-      languages: profile?.languages || [],
-    }
-  });
+  const { register, handleSubmit, control, formState: { errors }, reset } = useForm<DeveloperProfileFormData>({
+  resolver: zodResolver(developerProfileSchema),
+  defaultValues: {
+    username: '',
+    email: '',
+    bio: '',
+    contact: '',
+    location: '',
+    jobTitle: '',
+    companyName: '',
+    experience: '',
+    hourlyRate: '',
+    degree: '',
+    institution: '',
+    year: '',
+    github: '',
+    linkedIn: '',
+    twitter: '',
+    portfolio: '',
+    skills: [],
+    languages: [],
+  }
+});
+
+useEffect(() => {
+  if (profile) {
+    reset({
+      username: profile.username || '',
+      email: profile.email || '',
+      bio: profile.bio || '',
+      contact: profile.contact || '',
+      location: profile.location || '',
+      jobTitle: profile.jobTitle || '',
+      companyName: profile.companyName || '',
+      experience: profile.experience || '',
+      hourlyRate: profile.hourlyRate?.toString() || '',
+      degree: profile.education?.degree || '',
+      institution: profile.education?.institution || '',
+      year: profile.education?.year || '',
+      github: profile.socialLinks?.github || '',
+      linkedIn: profile.socialLinks?.linkedIn || '',
+      twitter: profile.socialLinks?.twitter || '',
+      portfolio: profile.socialLinks?.portfolio || '',
+      skills: profile.skills || [],
+      languages: profile.languages || [],
+    });
+  }
+}, [profile, reset]);
 
   const onDropProfileImage = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles[0]) {
