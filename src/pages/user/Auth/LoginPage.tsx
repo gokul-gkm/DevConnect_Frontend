@@ -1,8 +1,6 @@
 "use client";
-import React from "react";
 import { Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
-import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { BottomGradient } from "@/components/ui/BottomGradient";
 import { useForm } from "react-hook-form";
@@ -31,108 +29,116 @@ export default function UserLoginPage() {
   };
 
   return (
-    <div className="h-screen flex items-center">
-      <div className="max-w-sm w-full mx-auto rounded-none md:rounded-xl p-4 py-4 md:p-8 bg-black dark:bg-black mb-6 shadow-[rgba(6,_24,_44,_0.4)_0px_0px_0px_2px,_rgba(6,_24,_44,_0.65)_0px_4px_6px_-1px,_rgba(255,_255,_255,_0.08)_0px_1px_0px_inset]">
-        <div className="text-center">
-          <h2 className="font-semibold text-lg text-neutral-200 dark:text-neutral-200">
-            Log in to your account
-          </h2>
-          <p className="text-neutral-600 text-xs max-w-xs mt-2 dark:text-neutral-300">
-            Welcome back! Please enter your details.
-          </p>
+    <div className="min-h-screen h-screen flex items-center justify-center bg-black overflow-hidden">
+      <div className="w-full h-full flex flex-col md:flex-row">
+        <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-12 bg-black min-h-full">
+          <div className="w-full max-w-sm">
+            <div className="mb-6 space-y-2">
+              <h1 className="text-3xl md:text-3xl font-bold text-white">Log in to your account</h1>
+              <p className="text-sm text-gray-400">Welcome back! Please enter your details.</p>
+            </div>
+
+            <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-xs font-medium text-white">
+                  Email Address
+                </Label>
+                <Input
+                  id="email"
+                  placeholder="example@gmail.com"
+                  type="email"
+                  className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all rounded-xl h-10 text-sm"
+                  {...register("email")}
+                />
+                {errors.email && (
+                  <span className="text-xs text-red-500 mt-0.5 block">
+                    {errors.email.message}
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-xs font-medium text-white">
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  placeholder="••••••••"
+                  type="password"
+                  className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all rounded-xl h-10 text-sm"
+                  {...register("password")}
+                />
+                {errors.password && (
+                  <span className="text-xs text-red-500 mt-0.5 block">
+                    {errors.password.message}
+                  </span>
+                )}
+              </div>
+
+              <div className="text-end">
+                <Link to="/auth/forgot-password">
+                  <span className="text-blue-600 text-xs hover:underline">
+                    Forgot password?
+                  </span>
+                </Link>
+              </div>
+
+              <button
+                className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 dark:bg-zinc-800 w-full text-white rounded-xl h-10 font-medium text-sm shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                type="submit"
+                disabled={isLogging}
+              >
+                {isLogging ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Signing In...
+                  </>
+                ) : (
+                  "Sign In →"
+                )}
+                <BottomGradient />
+              </button>
+
+              <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-3 h-[1px] w-full" />
+
+              <div className="flex gap-2 justify-center">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  size="large"
+                  text="signup_with"
+                  logo_alignment="left"
+                  shape="rectangular"
+                  theme="filled_black"
+                />
+              </div>
+            </form>
+
+            <div className="text-center mt-4">
+              <p className="text-gray-400 text-xs">
+                Don't have an account?{" "}
+                <Link to="/auth/register">
+                  <span className="text-blue-600 hover:underline">Sign Up</span>
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
 
-        <form className="my-3" onSubmit={handleSubmit(onSubmit)}>
-          <LabelInputContainer className="mb-3">
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              placeholder="example@gmail.com"
-              type="email"
-              {...register("email")}
-            />
-            {errors.email && (
-              <span className="text-xs text-red-500">
-                {errors.email.message}
-              </span>
-            )}
-          </LabelInputContainer>
-
-          <LabelInputContainer className="mb-3">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              placeholder="••••••••"
-              type="password"
-              {...register("password")}
-            />
-            {errors.password && (
-              <span className="text-xs text-red-500">
-                {errors.password.message}
-              </span>
-            )}
-          </LabelInputContainer>
-
-          <div className="text-end mb-3">
-            <Link to="/auth/forgot-password">
-              <span className="text-blue-700 text-xs hover:underline">
-                Forgot password?
-              </span>
-            </Link>
-          </div>
-
-          <button
-            className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600  dark:bg-zinc-800 w-full text-white rounded-xl h-9 font-medium text-sm shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset] flex items-center justify-center"
-            type="submit"
-            disabled={isLogging}
-          >
-            {isLogging ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Signing In...
-              </>
-            ) : (
-              "Sign In →"
-            )}
-            <BottomGradient />
-          </button>
-
-       
-
-          <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-4 h-[1px] w-full" />
-
-          <div className="flex gap-2 justify-center">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleError}
-              size="large"
-              text="signup_with"
-              logo_alignment="left"
-              shape="rectangular"
-              theme="filled_black"
+        <div className="hidden md:flex md:w-1/2 items-center justify-center p-12 bg-black relative overflow-hidden">
+          <div className="relative z-10 flex items-center justify-center ">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black opacity-100 z-10 h-full pointer-events-none"></div>
+            <img
+              src="/devAvatar.png"
+              alt="DevConnect Community"
+              width={450}
+              height={450}
+              className="rounded-2xl object-cover shadow-2xl"
             />
           </div>
-        </form>
-
-        <div className="text-center">
-          <p className="text-neutral-600 text-xs mt-2 dark:text-neutral-300">
-            Don't have an account?{" "}
-            <Link to="/auth/register">
-              <span className="text-blue-700 hover:underline">Sign Up</span>
-            </Link>
-          </p>
+          <div className="absolute left-0 top-0 h-full w-px bg-gradient-to-b from-transparent via-blue-500/30 to-transparent"></div>
         </div>
       </div>
     </div>
   );
 }
-
-const LabelInputContainer = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  return <div className={cn("flex flex-col gap-2", className)}>{children}</div>;
-};
