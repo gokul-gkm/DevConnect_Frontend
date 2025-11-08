@@ -34,7 +34,7 @@ const DevAuthApi = {
         const response = await axiosClient.post(devAuthRoutes.verifyOtp, { email, otp });
         return response.data;
     },
-    resendOtp: async (email: string): Promise<{ message: string }> => {
+    resendOtp: async (email: string): Promise<{ message: string, expiresAt: string }> => {
         const response = await axiosClient.post(devAuthRoutes.resendOtp, { email });
         return response.data;
     },

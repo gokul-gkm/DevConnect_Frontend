@@ -63,9 +63,7 @@ const EditProject = () => {
             formData.append('title', data.title);
             formData.append('category', data.category);
             formData.append('description', data.description);
-            if (data.projectLink) {
-                formData.append('projectLink', data.projectLink);
-            }
+            formData.append('projectLink', data.projectLink || '');
             if (data.coverImage && data.coverImage instanceof File) {
                 formData.append('coverImage', data.coverImage);
             }

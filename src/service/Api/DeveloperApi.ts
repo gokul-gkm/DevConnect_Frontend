@@ -1,6 +1,7 @@
 import axiosClient from "@/service/axiosinstance/axios";
 import { DeveloperProfile, Project } from "@/types/types";
 import { developerRoutes } from "@/utils/constants";
+import { ChangePasswordFormData } from "@/utils/validation/userValidation";
 import { format } from 'date-fns';
 
 const DeveloperApi = {
@@ -12,6 +13,16 @@ const DeveloperApi = {
         const response = await axiosClient.put(developerRoutes.updateProfile, formData);
         return response.data;
     },
+
+    changePassword: async (data: ChangePasswordFormData) => {
+        try {
+          const response = await axiosClient.put(developerRoutes.changePassword, data);
+          return response.data;
+        } catch (error: any) {
+          console.error('API Error:', error.response?.data || error)
+          throw error
+        }
+      },
     
     getProjects: async (page: number = 1) => {
         const response = await axiosClient.get(`${developerRoutes.getProjects}?page=${page}&limit=5`);

@@ -72,6 +72,7 @@ import ReviewsPage from "@/pages/developer/Reviews/ReviewsPage";
 import DeveloperLeaderboard from "@/pages/admin/Leaderboard/DeveloperLeaderboard";
 import DeveloperSessionHistoryPage from "@/pages/developer/Sessions/DeveloperSessionHistoryPage";
 import DeveloperSessionHistoryDetailsPage from "@/pages/developer/Sessions/DeveloperSessionHistoryDetailsPage";
+import DeveloperChangePasswordPage from "@/pages/developer/Profile/DeveloperChangePasswordPage";
 
 export const Router = createBrowserRouter([
   {
@@ -184,6 +185,14 @@ export const Router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRole={Role.DEVELOPER}>
             <EditDeveloperProfilePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "change-password",
+        element: (
+          <ProtectedRoute allowedRole={Role.DEVELOPER}>
+            <DeveloperChangePasswordPage />
           </ProtectedRoute>
         ),
       },

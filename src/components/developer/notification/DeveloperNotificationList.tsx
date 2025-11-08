@@ -32,6 +32,7 @@ import { StatsCard } from '@/components/ui/StatsCard';
 import { StatsCardGrid } from '@/components/ui/StatsCardGrid';
 import { useNotificationContext } from '@/contexts/NotificationContext';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import Pagination from '@/components/ui/Pagination';
 
 type NotificationType = 'message' | 'session' | 'update' | 'alert';
 
@@ -74,7 +75,7 @@ const cardVariants = {
 
 export default function DeveloperNotificationList() {
   
-  const { notifications, unreadCount, isLoading, markAsRead, markAllAsRead, deleteNotification } = useNotificationContext();
+  const { notifications, unreadCount, isLoading, markAsRead, markAllAsRead, deleteNotification, pagination, updateParams } = useNotificationContext();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<NotificationType | 'all'>('all');
@@ -104,7 +105,7 @@ export default function DeveloperNotificationList() {
   const stats = [
     {
       label: 'All Notifications',
-      value: notifications.length,
+      value: pagination.totalItems,
       icon: Bell,
       gradient: 'from-gray-900 to-black',
     },
@@ -394,6 +395,9 @@ export default function DeveloperNotificationList() {
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+      <div className="max-w-5xl mx-auto">
+        <Pagination pagination={{ currentPage: pagination.page, totalPages: pagination.totalPages }} updateParams={({ page }) => updateParams({ page })} />
       </div>
     </div>
   );

@@ -5,21 +5,36 @@ import { toast } from "react-hot-toast";
 import { useOTP } from "@/hooks/userAuth/useOtp";
 import { Loader2 } from "lucide-react";
 
+const OTP_TIMER_DURATION = 60;
+const OTP_EXPIRES_KEY = "otp_expires_at";
+
 const UserOTPPage: React.FC = () => {
   const location = useLocation();
   const { email } = location.state || { email: "" };
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
-  const [timeLeft, setTimeLeft] = useState<number>(105);
+  const [timeLeft, setTimeLeft] = useState<number>(OTP_TIMER_DURATION);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
   const { verifyOtp, isVerifying, resendOtp, isResending } = useOTP();
 
-  useEffect(() => {
-    if (!email) {
-      toast.error("No email provided");
-      navigate("/auth/register");
-    }
-  }, [email, navigate]);
+useEffect(() => {
+  if (!email) {
+    toast.error("No email provided");
+    navigate("/auth/register");
+    return;
+  }
+
+  const storedExpires = localStorage.getItem(OTP_EXPIRES_KEY);
+  const now = Date.now();
+
+if (storedExpires) {
+  const expiresAt = new Date(storedExpires).getTime();
+  const remaining = Math.max(0, Math.floor((expiresAt - now) / 1000));
+  setTimeLeft(remaining);
+} else {
+  setTimeLeft(0);
+}
+}, [email, navigate]);
 
   const handleOtpChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -48,12 +63,16 @@ const UserOTPPage: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (timeLeft > 0) {
-      const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timerId);
-    }
-  }, [timeLeft]);
+useEffect(() => {
+  if (timeLeft > 0) {
+    const timerId = setTimeout(() => {
+      setTimeLeft(prev => prev - 1);
+    }, 1000);
+    return () => clearTimeout(timerId);
+  } else {
+    localStorage.removeItem(OTP_EXPIRES_KEY);
+  }
+}, [timeLeft]);
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -73,12 +92,25 @@ const UserOTPPage: React.FC = () => {
     verifyOtp({ email, otp: otpString });
   };
 
-  const handleResendOTP = async () => {
-    if (timeLeft > 0) return;
-    resendOtp(email);
-    setTimeLeft(105);
-    setOtp(["", "", "", "", "", ""]);
-  };
+const handleResendOTP = async () => {
+  if (timeLeft > 0) return;
+  setOtp(["", "", "", "", "", ""]);
+
+  try {
+    const data = await resendOtp(email);
+    if (data?.expiresAt) {
+      const expiresAt = new Date(data.expiresAt).getTime();
+      localStorage.setItem(OTP_EXPIRES_KEY, data.expiresAt);
+      const remaining = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+      setTimeLeft(remaining);
+    } else {
+      setTimeLeft(OTP_TIMER_DURATION);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -87,9 +119,10 @@ const UserOTPPage: React.FC = () => {
 
         <div className="relative z-10 flex flex-col items-center">
           <div className="bg-white rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mb-4 sm:mb-6 shadow-lg">
-            <span className="text-black text-base sm:text-lg font-medium">
-              {formatTime(timeLeft)}
-            </span>
+
+            <span className={`text-base font-medium ${timeLeft === 0 ? 'text-gray-500' : 'text-black'}`}>
+  {timeLeft > 0 ? formatTime(timeLeft) : "00:00"}
+</span>
           </div>
 
           <p className="text-gray-400 text-xs sm:text-sm mb-4 sm:mb-6">
@@ -108,7 +141,7 @@ const UserOTPPage: React.FC = () => {
                   onChange={(e) => handleOtpChange(e, index)}
                   onKeyDown={(e) => handleKeyDown(e, index)}
                   className="w-8 h-10 sm:w-9 sm:h-12 bg-[#1A1A1A] text-white text-lg sm:text-xl 
-                           text-center rounded-md border border-gray-800 
+                           text-center rounded-xl border border-gray-800 
                            focus:border-[#0066ff] focus:outline-none transition-all 
                            duration-200 shadow-sm"
                   maxLength={1}
@@ -119,7 +152,7 @@ const UserOTPPage: React.FC = () => {
 
             <button
               type="submit"
-              className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 dark:bg-zinc-800 w-full text-white rounded-md h-9 font-medium text-sm shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset] flex items-center justify-center"
+              className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 dark:bg-zinc-800 w-full text-white rounded-xl h-9 font-medium text-sm shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset] flex items-center justify-center"
             >
               {isVerifying ? (
                 <>
@@ -136,7 +169,7 @@ const UserOTPPage: React.FC = () => {
               type="button"
               onClick={handleResendOTP}
               disabled={isResending || timeLeft > 0}
-              className="w-full text-[#0066ff] py-2 text-xs sm:text-sm rounded-md 
+              className="w-full text-[#0066ff] py-2 text-xs sm:text-sm rounded-xl
                        hover:text-[#4d94ff] transition-colors duration-200 
                        disabled:text-gray-600"
             >

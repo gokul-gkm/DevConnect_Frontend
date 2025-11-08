@@ -10,6 +10,9 @@ interface NotificationContextType {
   markAllAsRead: () => Promise<boolean>;
   deleteNotification: (id: string) => Promise<boolean>;
   refresh: () => Promise<void>;
+  pagination: { page: number; limit: number; totalPages: number; totalItems: number };
+  updateParams: (params: { page?: number; limit?: number }) => Promise<void>;
+  totalsByType: { message: number; session: number; update: number; alert: number };
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);

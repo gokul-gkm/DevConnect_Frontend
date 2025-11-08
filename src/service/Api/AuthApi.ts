@@ -5,6 +5,7 @@ import { authRoutes } from "@/utils/constants";
 const AuthApi = {
     register: async(data: IRegisterData): Promise<IAuthResponse> => {
         const response = await axiosClient.post(authRoutes.register, data);
+        console.log(response)
         return response.data;
     },
     login: async (email: string, password: string): Promise<IAuthResponse> => {
@@ -20,8 +21,10 @@ const AuthApi = {
         const response = await axiosClient.post(authRoutes.verifyOtp, { email, otp });
         return response.data;
     },
-    resendOtp: async (email: string): Promise<{ message: string }> => {
+    resendOtp: async (email: string): Promise<{ message: string, expiresAt: string }> => {
+        console.log("before resend");
         const response = await axiosClient.post(authRoutes.resendOtp, { email });
+        console.log(response, "in authapi resend otp")
         return response.data;
     },
     logOut: async (): Promise<void> => {
