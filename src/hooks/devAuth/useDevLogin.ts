@@ -47,7 +47,7 @@ export const useDevLogin = () => {
     },
     onError: (error: any) => {
       toast.error(
-        error.response?.data?.message ||
+        error?.message ||
           "Login failed. Please check your credentials."
       );
     }

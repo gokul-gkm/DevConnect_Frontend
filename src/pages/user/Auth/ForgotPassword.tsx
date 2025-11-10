@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { forgotPasswordSchema } from "@/utils/validation/userValidation";
 import { useForgotPassword } from '@/hooks/userAuth/useForgotPassword'
+import { Background } from "@/components/ui/Background";
 
 type ForgotPasswordData = z.infer<typeof forgotPasswordSchema>;
 
@@ -29,6 +30,7 @@ export default function UserForgotPassword() {
   };
 
   return (
+    <Background>
     <div className="max-w-sm w-full mx-auto rounded-none md:rounded-xl px-4 py-4 md:p-8 bg-black dark:bg-black mb-20 mt-24 shadow-[rgba(6,_24,_44,_0.4)_0px_0px_0px_2px,_rgba(6,_24,_44,_0.65)_0px_4px_6px_-1px,_rgba(255,_255,_255,_0.08)_0px_1px_0px_inset]">
       <div className="text-center">
         <h2 className="font-semibold text-lg text-neutral-200 dark:text-neutral-200">
@@ -63,7 +65,8 @@ export default function UserForgotPassword() {
           <BottomGradient />
         </button>
       </form>
-    </div>
+      </div>
+      </Background>
   );
 }
 

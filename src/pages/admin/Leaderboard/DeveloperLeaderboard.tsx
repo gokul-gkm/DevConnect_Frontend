@@ -163,7 +163,7 @@ export default function DeveloperLeaderboard() {
         const earnings = row.original.totalEarnings;
         return (
           <div className="font-medium text-green-400">
-            ₹{earnings.toLocaleString()}
+            ${earnings.toLocaleString()}
           </div>
         );
       },
@@ -251,7 +251,7 @@ export default function DeveloperLeaderboard() {
               title="Top Developer"
               value={developers[0]?.username || 'None'}
               icon={Trophy}
-              description={`${developers[0]?.rating.toFixed(1) || 0} ★ | ₹${developers[0]?.totalEarnings.toLocaleString() || 0}`}
+              description={`${developers[0]?.rating.toFixed(1) || 0} ★ | $${developers[0]?.totalEarnings.toLocaleString() || 0}`}
               className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 shadow-lg backdrop-blur-md"
             />
           </div>
@@ -269,7 +269,7 @@ export default function DeveloperLeaderboard() {
               title="Top Earner"
               value={[...developers].sort((a, b) => b.totalEarnings - a.totalEarnings)[0]?.username || 'None'}
               icon={DollarSign}
-              description={`₹${[...developers].sort((a, b) => b.totalEarnings - a.totalEarnings)[0]?.totalEarnings.toLocaleString() || 0}`}
+              description={`$${[...developers].sort((a, b) => b.totalEarnings - a.totalEarnings)[0]?.totalEarnings.toLocaleString() || 0}`}
               className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 shadow-lg backdrop-blur-md"
             />
           </div>

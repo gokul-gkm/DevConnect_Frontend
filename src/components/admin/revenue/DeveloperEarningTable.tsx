@@ -68,7 +68,7 @@ const DeveloperEarningsTable = ({
     {
       accessorKey: 'totalEarnings',
       header: 'Total Earnings',
-      cell: ({ row }) => <span className="text-slate-300">₹ {row.original.totalEarnings}</span>
+      cell: ({ row }) => <span className="text-slate-300">$ {row.original.totalEarnings}</span>
     }
   ];
 

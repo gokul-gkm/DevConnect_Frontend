@@ -11,6 +11,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useRegister } from "@/hooks/userAuth/useRegister";
 import { useGoogleLogin } from "@/hooks/userAuth/useGoogleLogin";
 import { Loader2 } from "lucide-react";
+import { motion } from "framer-motion"; 
 
 export default function UserRegisterPage() {
   const { register: registerUser, isRegistering } = useRegister();
@@ -30,19 +31,22 @@ export default function UserRegisterPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-black -mt-20">
+    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-black mt-20">
       <div className="w-full h-full flex flex-col md:flex-row">
         <div className="hidden md:flex md:w-1/2 items-center justify-center p-12 bg-black relative overflow-hidden">
-          <div className="relative z-10 flex items-center justify-center">
+          <motion.div className="relative z-10 flex items-center justify-center"
+            initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}>
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black opacity-100 z-10 h-full pointer-events-none"></div>
             <img
-              src="/devAvatar.png"
+              src="/devReg.png"
               alt="DevConnect Community"
               width={450}
               height={450}
               className="rounded-2xl object-cover shadow-2xl"
             />
-          </div>
+          </motion.div>
           <div className="absolute right-0 top-0 h-full w-px bg-gradient-to-b from-transparent via-blue-500/30 to-transparent"></div>
         </div>
 
