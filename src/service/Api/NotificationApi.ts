@@ -2,10 +2,11 @@ import axiosClient from "@/service/axiosinstance/axios";
 import { notificationRoutes } from "@/utils/constants";
 
 const NotificationApi = {
-    getNotifications: async () => {
+
+    getNotifications: async (params?: { page?: number; limit?: number }) => {
         try {
-            const response = await axiosClient.get(notificationRoutes.getAll);
-            return response.data;
+            const response = await axiosClient.get(notificationRoutes.getAll, { params });
+            return response.data; 
         } catch (error: any) {
             console.error('API Error:', error.response?.data || error);
             throw error;

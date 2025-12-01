@@ -187,9 +187,23 @@ class SocketService {
         
         this.socket.removeAllListeners('disconnect');
         this.socket.removeAllListeners('user:blocked');
+        this.socket.removeAllListeners('newAccessToken'); 
         
         this.socket.on('user:blocked', () => {
             this.handleUserBlocked();
+        });
+
+        this.socket.on('newAccessToken', (newToken: string) => {
+
+            localStorage.setItem('access-token', newToken);
+
+            if (this.socket) {
+                this.socket.auth = { token: newToken };
+            }
+
+            this.forceReconnect();
+            
+            toast.success('Session refreshed automatically');
         });
     }
 
@@ -572,7 +586,7 @@ class SocketService {
 
     onNewNotification(callback: (data: any) => void) {
         if (!this.socket) return;
-        console.log('Setting up new notification listener');
+        console.log('🎉Setting up new notification listener');
         if (this.hasNewNotificationListener) {
             this.socket.off('notification:new');
         }
@@ -685,7 +699,7 @@ class SocketService {
 
     logout() {
         let userId = null;
-        let userRole = localStorage.getItem('user-role') || 'user';
+        const userRole = localStorage.getItem('user-role') || 'user';
         
         if (storeRef) {
             try {

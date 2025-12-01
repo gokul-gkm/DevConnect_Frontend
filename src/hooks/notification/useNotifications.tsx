@@ -22,21 +22,33 @@ export const useNotifications = (isAuthenticated: boolean) => {
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const notificationsRef = useRef<Notification[]>([]);
+
+  const [pagination, setPagination] = useState<{ page: number; limit: number; totalPages: number; totalItems: number }>({
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+    totalItems: 0
+  });
+
+  const [totalsByType, setTotalsByType] = useState<{ message: number; session: number; update: number; alert: number }>({
+    message: 0, session: 0, update: 0, alert: 0
+  });
     
-
-
   useEffect(() => {
     notificationsRef.current = notifications;
   }, [notifications]);
 
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = useCallback(async (opts?: { page?: number; limit?: number }) => {
     try {
       if (!isAuthenticated) return; 
       setIsLoading(true);
-      const response = await NotificationApi.getNotifications();
+      const page = opts?.page ?? pagination.page;
+      const limit = opts?.limit ?? pagination.limit;
+
+      const response = await NotificationApi.getNotifications({ page, limit });
       
-      if (response.success && response.data) {
-        const mappedNotifications = response.data.map((notif: any) => ({
+      if (response.success) {
+        const mappedNotifications = (response.data || []).map((notif: any) => ({
           id: notif._id,
           title: notif.title,
           message: notif.message,
@@ -50,6 +62,12 @@ export const useNotifications = (isAuthenticated: boolean) => {
         }));
         
         setNotifications(mappedNotifications);
+        if (response.pagination) {
+          setPagination(response.pagination);
+        }
+        if (response.totalsByType) {
+          setTotalsByType(response.totalsByType);
+        }
       }
       
       const countResponse = await NotificationApi.getUnreadCount();
@@ -61,7 +79,7 @@ export const useNotifications = (isAuthenticated: boolean) => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isAuthenticated, pagination.page, pagination.limit]);
 
   const markAsRead = useCallback(async (id: string) => {
     try {
@@ -149,20 +167,12 @@ export const useNotifications = (isAuthenticated: boolean) => {
         setNotifications(prev => [data.notification, ...prev]);
         setUnreadCount(prev => prev + 1);
       }
+      
     };
 
     const handleSessionUpdate = (data: any) => {
       console.log('Session update received:', data);
-      if (data.notification) {
-        console.log('Handling notification format');
-        setNotifications(prev => {
-          const newNotifications = [data.notification, ...prev];
-          console.log('Updated notifications with notification:', newNotifications);
-          return newNotifications;
-        });
-        setUnreadCount(prev => prev + 1);
-      } else if (data.sessionId && data.status) {
-        console.log('Handling session status update');
+      if (data.sessionId && data.status) {
         const statusNotification: Notification = {
           id: data.sessionId,
           title: 'Session Status Updated',
@@ -172,13 +182,6 @@ export const useNotifications = (isAuthenticated: boolean) => {
           timestamp: new Date().toISOString(),
           sender: data.sender
         };
-        
-        setNotifications(prev => {
-          const newNotifications = [statusNotification, ...prev];
-          console.log('Updated notifications with status:', newNotifications);
-          return newNotifications;
-        });
-        setUnreadCount(prev => prev + 1);
         
         toast.custom((t) => (
           <div className={`
@@ -209,8 +212,9 @@ export const useNotifications = (isAuthenticated: boolean) => {
           console.log('Socket not connected, waiting for connection...');
           await socketService.waitForConnection();
         }
+
+        await fetchNotifications();
         
-        console.log('Setting up notification socket listeners');
         
         socketService.off('notification:new', handleNewNotification);
         socketService.off('session:updated', handleSessionUpdate);
@@ -229,7 +233,7 @@ export const useNotifications = (isAuthenticated: boolean) => {
           }
         });
         
-        await fetchNotifications();
+       
       } catch (error) {
         console.error('Error setting up socket listeners:', error);
       }
@@ -244,6 +248,14 @@ export const useNotifications = (isAuthenticated: boolean) => {
     };
   }, [fetchNotifications]);
 
+  const updateParams = useCallback(async (params: { page?: number; limit?: number }) => {
+    const next = {
+      page: params.page ?? pagination.page,
+      limit: params.limit ?? pagination.limit
+    };
+    await fetchNotifications(next);
+  }, [pagination.page, pagination.limit, fetchNotifications]);
+
   return {
     notifications,
     unreadCount,
@@ -251,6 +263,9 @@ export const useNotifications = (isAuthenticated: boolean) => {
     markAsRead,
     markAllAsRead,
     deleteNotification,
-    refresh: fetchNotifications
+    refresh: fetchNotifications,
+    pagination,
+    updateParams,
+    totalsByType
   };
 };

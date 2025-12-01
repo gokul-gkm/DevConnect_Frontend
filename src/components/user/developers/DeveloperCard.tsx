@@ -4,7 +4,6 @@ import {
   Linkedin,
   Twitter,
   DollarSign,
-  Mail,
   User,
   ExternalLink,
   ChevronRight,
@@ -141,7 +140,7 @@ const DeveloperCard = ({ developer, index }: DeveloperCardProps) => {
           >
             <div className="flex flex-col items-center mb-2">
               <motion.div
-                className="relative w-32 h-32 rounded-full overflow-hidden mb-3
+                className="relative w-40 h-40 rounded-full overflow-hidden mb-3
                          border-2 border-indigo-500/20"
                 whileHover={{
                   scale: 1.03,
@@ -189,15 +188,6 @@ const DeveloperCard = ({ developer, index }: DeveloperCardProps) => {
               )}
             </div>
 
-            <div
-              className="flex items-center justify-center mb-2"
-              style={{ transform: "translateZ(8px)" }}
-            >
-              <Mail className="w-3.5 h-3.5 text-indigo-300/70 mr-1.5" />
-              <span className="text-zinc-400 text-xs truncate">
-                {developer.email}
-              </span>
-            </div>
             <div className="mt-auto" style={{ transform: "translateZ(12px)" }}>
               <motion.button
                 onHoverStart={() => setIsActive3D(true)}

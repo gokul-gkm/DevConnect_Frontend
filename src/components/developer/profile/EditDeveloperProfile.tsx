@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
-import { X, Loader2, User, Mail, Phone, MapPin, Briefcase, Building, Clock, DollarSign, GraduationCap, School, Calendar, Github, Linkedin, Twitter, Globe, Image as ImageIcon, FileText } from 'lucide-react';
+import { X, Loader2, User, Mail, Phone, MapPin, Briefcase, Building, Clock, DollarSign, GraduationCap, School, Calendar, Github, Linkedin, Twitter, Globe, Image as ImageIcon, FileText, PenTool } from 'lucide-react';
 import { useForm, Controller, FieldError, Merge, FieldErrorsImpl } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
@@ -57,29 +57,54 @@ const EditDeveloperProfile = () => {
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [resume, setResume] = useState<File | null>(null);
 
-  const { register, handleSubmit, control, formState: { errors } } = useForm<DeveloperProfileFormData>({
-    resolver: zodResolver(developerProfileSchema),
-    defaultValues: {
-      username: profile?.username || '',
-      email: profile?.email || '',
-      bio: profile?.bio || '',
-      contact: profile?.contact || '',
-      location: profile?.location || '',
-      jobTitle: profile?.jobTitle || '',
-      companyName: profile?.companyName || '',
-      experience: profile?.experience || '',
-      hourlyRate: profile?.hourlyRate?.toString() || '',
-      degree: profile?.education?.degree || '',
-      institution: profile?.education?.institution || '',
-      year: profile?.education?.year || '',
-      github: profile?.socialLinks?.github || '',
-      linkedIn: profile?.socialLinks?.linkedIn || '',
-      twitter: profile?.socialLinks?.twitter || '',
-      portfolio: profile?.socialLinks?.portfolio || '',
-      skills: profile?.skills || [],
-      languages: profile?.languages || [],
-    }
-  });
+  const { register, handleSubmit, control, formState: { errors }, reset } = useForm<DeveloperProfileFormData>({
+  resolver: zodResolver(developerProfileSchema),
+  defaultValues: {
+    username: '',
+    email: '',
+    bio: '',
+    contact: '',
+    location: '',
+    jobTitle: '',
+    companyName: '',
+    experience: '',
+    hourlyRate: '',
+    degree: '',
+    institution: '',
+    year: '',
+    github: '',
+    linkedIn: '',
+    twitter: '',
+    portfolio: '',
+    skills: [],
+    languages: [],
+  }
+});
+
+useEffect(() => {
+  if (profile) {
+    reset({
+      username: profile.username || '',
+      email: profile.email || '',
+      bio: profile.bio || '',
+      contact: profile.contact || '',
+      location: profile.location || '',
+      jobTitle: profile.jobTitle || '',
+      companyName: profile.companyName || '',
+      experience: profile.experience || '',
+      hourlyRate: profile.hourlyRate?.toString() || '',
+      degree: profile.education?.degree || '',
+      institution: profile.education?.institution || '',
+      year: profile.education?.year || '',
+      github: profile.socialLinks?.github || '',
+      linkedIn: profile.socialLinks?.linkedIn || '',
+      twitter: profile.socialLinks?.twitter || '',
+      portfolio: profile.socialLinks?.portfolio || '',
+      skills: profile.skills || [],
+      languages: profile.languages || [],
+    });
+  }
+}, [profile, reset]);
 
   const onDropProfileImage = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles[0]) {
@@ -336,6 +361,24 @@ const EditDeveloperProfile = () => {
                 <input {...register('hourlyRate')} type="number" className={inputClassName} />
                 <ErrorMessage error={errors.hourlyRate} />
               </div>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div className={sectionClassName} variants={itemVariants}>
+          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <PenTool className="w-5 h-5" />
+            Bio
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+            <div>
+              <textarea
+                {...register('bio')}
+                className={`${inputClassName} h-32 resize-none leading-relaxed`}
+                placeholder="Write something about yourself..."
+              />
+              <ErrorMessage error={errors.bio} />
             </div>
           </div>
         </motion.div>

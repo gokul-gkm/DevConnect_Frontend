@@ -77,7 +77,7 @@ export function UserProfile({ userData }: UserProfileProps) {
                   className="relative"
                 >
                   <Tooltip content="Profile picture" position="bottom">
-                    <Avatar className="w-32 h-32 ring-4 ring-purple-500/30 rounded-2xl">
+                    <Avatar className="w-36 h-36 ring-4 ring-purple-500/30 rounded-2xl">
                       <AvatarImage
                         src={userData.profilePicture}
                         className="object-cover"
@@ -87,9 +87,7 @@ export function UserProfile({ userData }: UserProfileProps) {
                       </AvatarFallback>
                     </Avatar>
                   </Tooltip>
-                  <Tooltip content="Online" position="right">
-                    <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-green-500 rounded-full ring-4 ring-black cursor-pointer" />
-                  </Tooltip>
+              
                 </motion.div>
 
                 <div className="flex-1 text-center md:text-left">

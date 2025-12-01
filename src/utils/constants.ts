@@ -50,6 +50,7 @@ export const userRoutes = {
 export const developerRoutes = {
     getProfile: '/developer/profile',
     updateProfile: '/developer/profile',
+    changePassword: '/users/change-password',
     getProjects: '/developer/projects',
     addProject: '/developer/projects',
     editProject: '/developer/projects',

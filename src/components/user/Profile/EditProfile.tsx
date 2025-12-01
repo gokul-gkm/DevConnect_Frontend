@@ -58,10 +58,8 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
         }
       }
     })
-  console.log(errors)
   
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      console.log("image uploading...")
       const file = e.target.files?.[0]
       if (!file) return
   
@@ -74,14 +72,12 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
         toast.error('Please upload an image file')
         return
       }
-  
       setSelectedImage(file)
       setPreviewUrl(URL.createObjectURL(file))
     }
     
     const onSubmit = async (data: ProfileFormData) => {
         try {
-          console.log("Submit clicked")
           const formData = new FormData()
           formData.append('username', data.username)
           if (data.contact) formData.append('contact', data.contact.toString())
@@ -346,7 +342,7 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
               <Button
                 type="button"
                 variant="outline"
-                className="border-white/10 hover:bg-white/5 text-white/70 hover:text-white transition-colors px-6"
+                className="border-white/10 hover:bg-white/5 text-white/70 hover:text-white transition-colors px-6 rounded-xl"
                 onClick={() => window.history.back()}
               >
                 Cancel
@@ -354,7 +350,7 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 shadow-lg shadow-purple-500/20 transition-all hover:shadow-purple-500/40"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 shadow-lg shadow-purple-500/20 transition-all hover:shadow-purple-500/40 rounded-xl"
               >
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">

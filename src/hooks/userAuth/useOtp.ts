@@ -11,39 +11,35 @@ export const useOTP = () => {
     isPending: isVerifying
   } = useMutation({
     mutationFn: async ({ email, otp }: { email: string; otp: string }) => {
-      try {
-        const response = await AuthApi.verifyOtp(email, otp);
-        return response;
-      } catch (error: any) {
-        throw error;
-      }
+      const response = await AuthApi.verifyOtp(email, otp);
+      return response;
     },
     onSuccess: () => {
       toast.success("OTP verified successfully!");
+      localStorage.removeItem("otp_expires_at");
       navigate("/auth/login");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to verify OTP");
+      toast.error(error?.message || "Failed to verify OTP");
     }
   });
 
   const {
-    mutate: resendOtp,
+    mutateAsync: resendOtp,
     isPending: isResending
   } = useMutation({
     mutationFn: async (email: string) => {
-      try {
-        const response = await AuthApi.resendOtp(email);
-        return response;
-      } catch (error: any) {
-        throw error;
-      }
+      const response = await AuthApi.resendOtp(email);
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data?.expiresAt) {
+        localStorage.setItem("otp_expires_at", data.expiresAt);
+      }
       toast.success("New OTP sent successfully!");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to resend OTP");
+      toast.error(error?.message || "Failed to resend OTP");
     }
   });
 

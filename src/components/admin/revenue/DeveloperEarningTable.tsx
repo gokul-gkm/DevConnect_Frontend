@@ -59,15 +59,16 @@ const DeveloperEarningsTable = ({
       header: 'Average Rating',
       cell: ({ row }) => (
         <div className="flex items-center">
-          <div className="text-yellow-500">★</div>
           <div className="text-sm text-slate-300 ml-1">{row.original.averageRating}</div>
+
+          <div className="text-yellow-500">★</div>
         </div>
       )
     },
     {
       accessorKey: 'totalEarnings',
       header: 'Total Earnings',
-      cell: ({ row }) => <span className="text-slate-300">₹ {row.original.totalEarnings}</span>
+      cell: ({ row }) => <span className="text-slate-300">$ {row.original.totalEarnings}</span>
     }
   ];
 

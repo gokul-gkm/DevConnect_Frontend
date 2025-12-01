@@ -203,7 +203,7 @@ const AdminSessionsPage = () => {
       header: 'Price',
       cell: ({ row }) => {
         const session = row.original;
-        return <span className="text-sm text-slate-300">₹ {session.price}</span>;
+        return <span className="text-sm text-slate-300">$ {session.price}</span>;
       }
     },
     {

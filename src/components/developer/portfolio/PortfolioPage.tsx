@@ -6,6 +6,7 @@ import { useProjects } from '@/hooks/projects/useProjects';
 import { useState } from 'react';
 import ProjectCard from '@/components/developer/portfolio/ProjectCard';
 import ProjectPagination from '@/components/developer/portfolio/ProjectPagination'
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 const PortfolioPage = () => {
     const navigate = useNavigate();
@@ -15,6 +16,18 @@ const PortfolioPage = () => {
     const handlePageChange = (newPage: number) => {
         setCurrentPage(newPage);
     };
+
+     if (isLoading) {
+    return (
+      <LoadingSpinner
+        size="lg"
+        text="Loading portfolio..."
+        color="white"
+        bgColor="dark"
+        fullScreen={true}
+      />
+    );
+  }
 
     return (
         <div className="min-h-screen bg-black p-4 sm:p-6 relative overflow-hidden">
@@ -65,10 +78,12 @@ const PortfolioPage = () => {
                     </div>
                 </motion.div>
 
+                
                 {isLoading && (
                     <div className="flex justify-center items-center min-h-[400px]">
                         <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
                     </div>
+                 
                 )}
 
 

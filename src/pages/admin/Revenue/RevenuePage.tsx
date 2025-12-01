@@ -76,8 +76,8 @@ const RevenuePage = () => {
       cell: ({ row }) => (
         <div className="flex flex-col">
           <div className="flex items-center">
+            <div className="text-sm text-slate-300 ml-1">{row.original.averageRating ||0}</div>
             <div className="text-yellow-500">★</div>
-            <div className="text-sm text-slate-300 ml-1">{row.original.averageRating}</div>
           </div>
          
         </div>
@@ -86,7 +86,7 @@ const RevenuePage = () => {
     {
       accessorKey: 'totalEarnings',
       header: 'Total Earnings',
-      cell: ({ row }) => <span className="text-slate-300">₹ {row.original.totalEarnings}</span>
+      cell: ({ row }) => <span className="text-slate-300">$ {row.original.totalEarnings}</span>
     }
   ];
 
@@ -108,15 +108,15 @@ const RevenuePage = () => {
       header: 'Average Rating',
       cell: ({ row }) => (
         <div className="flex items-center">
+          <div className="text-sm text-slate-300 mr-1">{row.original.averageRating || 0}</div>
           <div className="text-yellow-500">★</div>
-          <div className="text-sm text-slate-300 ml-1">{row.original.averageRating}</div>
         </div>
       )
     },
     {
       accessorKey: 'totalRevenue',
       header: 'Total Revenue',
-      cell: ({ row }) => <span className="text-slate-300">₹ {row.original.totalRevenue}</span>
+      cell: ({ row }) => <span className="text-slate-300">$ {row.original.totalRevenue}</span>
     }
   ];
 
@@ -170,7 +170,7 @@ const RevenuePage = () => {
           <div className="h-full">
             <StatCard
               title="Total Revenue"
-              value={`₹${revenueStats.totalRevenue.toLocaleString()}`}
+              value={`$${revenueStats.totalRevenue.toLocaleString()}`}
               icon={DollarSign}
               description="Overall platform earnings"
               className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 shadow-lg backdrop-blur-md"
@@ -179,7 +179,7 @@ const RevenuePage = () => {
           <div className="h-full">
             <StatCard
               title="Platform Fees"
-              value={`₹${revenueStats.platformFees.toLocaleString()}`}
+              value={`$${revenueStats.platformFees.toLocaleString()}`}
               icon={Wallet}
               description="Revenue from platform fees"
               className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 shadow-lg backdrop-blur-md"
@@ -188,7 +188,7 @@ const RevenuePage = () => {
           <div className="h-full">
             <StatCard
               title="Developer Earnings"
-              value={`₹${revenueStats.developerEarnings.toLocaleString()}`}
+              value={`$${revenueStats.developerEarnings.toLocaleString()}`}
               icon={User}
               description="Paid to developers"
               className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 shadow-lg backdrop-blur-md"

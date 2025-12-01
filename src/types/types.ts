@@ -40,7 +40,7 @@ export interface User {
     _id: string;
     username: string;
     email: string;
-    location: any;
+    location: string;
     role: 'user';
     status: 'active' | 'blocked';
     isVerified: boolean;

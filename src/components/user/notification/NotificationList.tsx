@@ -32,6 +32,7 @@ import { useNotificationContext } from "@/contexts/NotificationContext";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { StatsCardGrid } from "@/components/ui/StatsCardGrid";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import Pagination from "@/components/ui/Pagination";
 
 type NotificationType = "message" | "session" | "update" | "alert";
 
@@ -80,6 +81,9 @@ export default function UserNotificationList() {
     markAsRead,
     markAllAsRead,
     deleteNotification,
+    pagination,
+    updateParams,
+    totalsByType
   } = useNotificationContext();
 
   useEffect(() => {
@@ -119,7 +123,7 @@ export default function UserNotificationList() {
   const stats = [
     {
       label: "All Notifications",
-      value: notifications.length,
+      value: pagination.totalItems,
       icon: Bell,
       gradient: "from-gray-900 to-black",
     },
@@ -131,13 +135,13 @@ export default function UserNotificationList() {
     },
     {
       label: "Messages",
-      value: notifications.filter((n) => n.type === "message").length,
+      value: totalsByType.message,
       icon: MessageSquare,
       gradient: notificationTypeConfig.message.gradient,
     },
     {
       label: "Sessions",
-      value: notifications.filter((n) => n.type === "session").length,
+      value: totalsByType.session,
       icon: Calendar,
       gradient: notificationTypeConfig.session.gradient,
     },
@@ -436,6 +440,10 @@ export default function UserNotificationList() {
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+      
+      <div className="max-w-5xl mx-auto">
+        <Pagination pagination={{ currentPage: pagination.page, totalPages: pagination.totalPages }} updateParams={({ page }) => updateParams({ page })} />
       </div>
     </div>
   );

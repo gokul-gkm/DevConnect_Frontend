@@ -3,19 +3,18 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from "@/components/ui/shadcn-button"
-import { Sidebar } from '@/components/layout/ProfileSidebar'
-import Navbar from '@/components/layout/Navbar'
 import { Lock } from 'lucide-react'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { changePasswordSchema, type ChangePasswordFormData } from "@/utils/validation/userValidation"
-import { useChangePassword } from '@/hooks/profile/useChangePassword'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 import { PasswordRequirements } from '@/components/ui/PasswordRequirements'
+import { useDeveloperChangePassword } from '@/hooks/profile/useDeveloperChangePassword'
+import { DeveloperProfileSidebar } from '@/components/layout/DevProfileSidebar'
 
-export default function ChangePasswordPage() {
-  const [activeItem, setActiveItem] = useState('Password & Security')
-  const { mutate: changePassword, isPending } = useChangePassword()
+export default function DeveloperChangePasswordPage() {
+  const [_activeItem, setActiveItem] = useState('Password & Security')
+  const { mutate: changePassword, isPending } = useDeveloperChangePassword()
 
   const form = useForm<ChangePasswordFormData>({
     resolver: zodResolver(changePasswordSchema),
@@ -38,10 +37,9 @@ export default function ChangePasswordPage() {
 
   return (
     <>
-      <Navbar />
-      <div className="min-h-screen bg-[#0A0A0A] text-white flex mt-16">
-        <Sidebar activeItem={activeItem} setActiveItem={setActiveItem} />
-        <main className="flex-1 lg:ml-72">
+      <div className="min-h-screen bg-black/80 text-white flex mt-16">
+      <DeveloperProfileSidebar  setActiveItem={setActiveItem} />
+        <main className="flex-1">
           <div className="min-h-screen p-4 lg:p-8 pt-32 lg:pt-8">
             <div className="max-w-4xl mx-auto space-y-12">
               <form onSubmit={form.handleSubmit(onSubmit)}>

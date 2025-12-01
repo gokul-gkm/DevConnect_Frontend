@@ -17,15 +17,16 @@ export const useDevOTP = () => {
     },
     onSuccess: () => {
       toast.success("OTP verified successfully!");
+      localStorage.removeItem("dev_otp_expires_at");
       navigate("/developer/auth/dev-request");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to verify OTP");
+      toast.error(error?.message || "Failed to verify OTP");
     }
   });
 
   const {
-    mutate: resendOtp,
+    mutateAsync: resendOtp,
     isPending: isResending,
     error: resendError
   } = useMutation({
@@ -33,11 +34,14 @@ export const useDevOTP = () => {
       const response = await DevAuthApi.resendOtp(email);
       return response;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data?.expiresAt) {
+        localStorage.setItem("dev_otp_expires_at", data.expiresAt);
+      }
       toast.success("New OTP sent successfully!");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to resend OTP");
+      toast.error(error?.message || "Failed to resend OTP");
     }
   });
 

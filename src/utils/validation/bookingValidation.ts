@@ -2,9 +2,11 @@ import { z } from 'zod';
 
 export const bookingSchema = z.object({
   title: z.string()
+    .trim()
     .min(5, 'Title must be at least 5 characters')
     .max(100, 'Title must not exceed 100 characters'),
   description: z.string()
+    .trim()
     .min(20, 'Description must be at least 20 characters')
     .max(500, 'Description must not exceed 500 characters'),
   topics: z.array(z.string())

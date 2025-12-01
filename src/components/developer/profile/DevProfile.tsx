@@ -146,13 +146,15 @@ const DeveloperProfile = () => {
           <div className="p-6 sm:p-8">
             <h2 className="text-xl font-bold text-white mb-6">Professional Information</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+
               <div className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
-                <Briefcase className="w-5 h-5 text-gray-400" />
+                <Code className="w-5 h-5 text-gray-400" />
                 <div>
-                  <h3 className="text-white font-semibold">Experience</h3>
-                  <p className="text-gray-400">{profile?.experience}</p>
+                  <h3 className="text-white font-semibold">Job Title</h3>
+                  <p className="text-gray-400">{profile?.jobTitle}</p>
                 </div>
               </div>
+
 
               <div className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
                 <Building2 className="w-5 h-5 text-gray-400" />
@@ -163,10 +165,10 @@ const DeveloperProfile = () => {
               </div>
 
               <div className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
-                <Code className="w-5 h-5 text-gray-400" />
+                <Briefcase className="w-5 h-5 text-gray-400" />
                 <div>
-                  <h3 className="text-white font-semibold">Job Title</h3>
-                  <p className="text-gray-400">{profile?.jobTitle}</p>
+                  <h3 className="text-white font-semibold">Experience</h3>
+                  <p className="text-gray-400">{profile?.experience}</p>
                 </div>
               </div>
             </div>

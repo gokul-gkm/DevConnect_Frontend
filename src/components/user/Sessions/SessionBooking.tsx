@@ -11,6 +11,7 @@ import { useSessionBooking } from '@/hooks/session/useSessionBooking';
 import { useBookingForm } from '@/hooks/session/useBookingForm';
 import { Controller } from 'react-hook-form';
 import { useEffect } from 'react';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 interface TimeSlot {
   time: string;
@@ -53,14 +54,16 @@ export default function SessionBooking() {
     }
   }, [developer]);
 
+
   if (isLoadingDeveloper) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="relative">
-          <div className="absolute inset-0 bg-white/5 blur-xl rounded-full" />
-          <Spinner className="w-12 h-12 text-white" />
-        </div>
-      </div>
+      <LoadingSpinner
+        size="lg"
+        text="Loading session booking..."
+        color="white"
+        bgColor="dark"
+        fullScreen={true}
+      />
     );
   }
 

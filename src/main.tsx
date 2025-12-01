@@ -15,7 +15,7 @@ import { NotificationProvider } from "./contexts/NotificationContext.tsx";
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
 
-let persistor = persistStore(store);
+const persistor = persistStore(store);
 
 createRoot(document.getElementById("root")!).render(
   <QueryProvider>

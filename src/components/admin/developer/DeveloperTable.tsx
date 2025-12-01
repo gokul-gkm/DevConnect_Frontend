@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { motion } from "framer-motion";
 import { ArrowUpDown, Eye, Mail, Users } from 'lucide-react';
 import Pagination from '@/components/ui/Pagination';
+import { paginationType } from '@/types/ui.type';
 
 type Developer = {
     _id: string;
@@ -19,9 +20,11 @@ type Developer = {
     };
 };
 
+
+
 type DevelopersTableProps = {
     developers: Developer[];
-    pagination: any;
+    pagination: paginationType;
     queryParams: any;
     onSort: (sortBy: string) => void;
     onToggleStatus: (developerId: string) => void;

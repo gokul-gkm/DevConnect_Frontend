@@ -10,11 +10,13 @@ import { FilePreview } from './FilePreview';
 import { TypingIndicator } from './TypingIndicator';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { OnlineStatusDot } from './OnlineStatusDot';
+import { DateSeparator } from './DateSeparator';
+import { isSameDay } from '@/utils/date';
 
 export const ChatWindow = () => {
     const { selectedChat, messages, messageLoading, hasMore, loadMoreMessages, handleSendMessage, handleTyping } = useChat();
-    const typingStatus = useAppSelector(state => state.chat.typingStatus);
-    const onlineStatus = useAppSelector(state => state.chat.onlineStatus);
+    const typingStatus = useAppSelector(state => state.chat.typingStatus) as Record<string, boolean>;
+    const onlineStatus = useAppSelector(state => state.chat.onlineStatus) as Record<string, boolean>;
     const [newMessage, setNewMessage] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -160,6 +162,15 @@ export const ChatWindow = () => {
         );
     };
 
+    const shouldShowDateSeparator = (currentMessage: any, previousMessage: any | null): boolean => {
+        if (!previousMessage) return true;
+        
+        const currentDate = new Date(currentMessage.createdAt);
+        const previousDate = new Date(previousMessage.createdAt);
+        
+        return !isSameDay(currentDate, previousDate);
+    };
+
     if (!selectedChat) {
         return (
             <motion.div 
@@ -270,50 +281,59 @@ export const ChatWindow = () => {
                     {messages
                         .slice()
                         .reverse()
-                        .map((message: any, index) => (
-                        <motion.div
-                            key={`${message._id}-${index}`}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className={`flex ${
-                                message.senderType === 'user' ? 'justify-end' : 'justify-start'
-                            } mb-4`}
-                        >
-                            {message.senderType === 'developer' && (
-                                <div className="flex-shrink-0 mr-3">
-                                    <AvatarIcon 
-                                        profilePicture={selectedChat.developerId.profilePicture}
-                                        username={selectedChat.developerId.username}
-                                        gradientFrom="blue-600"
-                                        gradientTo="purple-600"
-                                        fallbackLetter="D"
-                                    />
-                                </div>
-                            )}
+                        .map((message: any, index) => {
+                            const previousMessage = index > 0 ? messages.slice().reverse()[index - 1] : null;
+                            const showDateSeparator = shouldShowDateSeparator(message, previousMessage);
                             
-                            <MessageBubble 
-                                content={message.content}
-                                mediaContent={renderMediaContent(message)}
-                                isOutgoing={message.senderType === 'user'}
-                                timestamp={message.createdAt}
-                                isRead={message.read}
-                                showReadReceipt={true}
-                            />
-                            
-                            {message.senderType === 'user' && (
-                                <div className="flex-shrink-0 ml-3">
-                                    <AvatarIcon 
-                                        profilePicture={selectedChat.userId.profilePicture}
-                                        username={selectedChat.userId.username}
-                                        gradientFrom="purple-600"
-                                        gradientTo="pink-600"
-                                        fallbackLetter="U"
-                                    />
+                            return (
+                                <div key={`${message._id}-${index}`}>
+                                    {showDateSeparator && (
+                                        <DateSeparator timestamp={message.createdAt} />
+                                    )}
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        className={`flex ${
+                                            message.senderType === 'user' ? 'justify-end' : 'justify-start'
+                                        } mb-4`}
+                                    >
+                                        {message.senderType === 'developer' && (
+                                            <div className="flex-shrink-0 mr-3">
+                                                <AvatarIcon 
+                                                    profilePicture={selectedChat.developerId.profilePicture}
+                                                    username={selectedChat.developerId.username}
+                                                    gradientFrom="blue-600"
+                                                    gradientTo="purple-600"
+                                                    fallbackLetter="D"
+                                                />
+                                            </div>
+                                        )}
+                                        
+                                        <MessageBubble 
+                                            content={message.content}
+                                            mediaContent={renderMediaContent(message)}
+                                            isOutgoing={message.senderType === 'user'}
+                                            timestamp={message.createdAt}
+                                            isRead={message.read}
+                                            showReadReceipt={true}
+                                        />
+                                        
+                                        {message.senderType === 'user' && (
+                                            <div className="flex-shrink-0 ml-3">
+                                                <AvatarIcon 
+                                                    profilePicture={selectedChat.userId.profilePicture}
+                                                    username={selectedChat.userId.username}
+                                                    gradientFrom="purple-600"
+                                                    gradientTo="pink-600"
+                                                    fallbackLetter="U"
+                                                />
+                                            </div>
+                                        )}
+                                    </motion.div>
                                 </div>
-                            )}
-                        </motion.div>
-                    ))}
+                            );
+                        })}
                 </AnimatePresence>
                 <div ref={messagesEndRef} />
             </div>

@@ -11,7 +11,8 @@ import {
   CalendarPlus,
   CalendarCheck ,
   Wallet,
-  CalendarCheck2
+  CalendarCheck2,
+  Lock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -66,11 +67,15 @@ const menuItems = [
     icon: Star,
     path: '/developer/reviews'
   },
-
   {
     title: 'Availability',
     icon: Clock,
     path: '/developer/availability'
+  },
+  {
+    title: 'Change Password',
+    icon: Lock,
+    path: '/developer/change-password'
   }
 ];
 
