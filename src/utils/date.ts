@@ -25,7 +25,7 @@ export const formatChatMessageTime = (timestamp: string | number | Date | null |
   const timeFormat = 'h:mm a'; 
   const time = format(messageDate, timeFormat);
   
-  return time; // Only show time, date will be shown in separator
+  return time;
 };
 
 export const formatDateSeparator = (timestamp: string | number | Date | null | undefined): string => {
