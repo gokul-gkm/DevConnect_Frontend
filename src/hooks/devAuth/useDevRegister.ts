@@ -25,8 +25,11 @@ export const useDevRegister = () => {
       });
       return response;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
       toast.success("Registration successful! Please verify your email.");
+      if (response?.expiresAt) {
+        localStorage.setItem("dev_otp_expires_at", response.expiresAt);
+      }
       navigate(`/developer/auth/verify-otp`, { state: { email: variables.email } });
     },
     onError: (error: any, variables) => {

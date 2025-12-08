@@ -26,8 +26,11 @@ export const useRegister = () => {
         throw error;
       }
     },
-    onSuccess: (_response, variables) => {
+    onSuccess: (response, variables) => {
       toast.success("Registration successful! Please verify your email.");
+      if (response?.expiresAt) {
+        localStorage.setItem("otp_expires_at", response.expiresAt);
+      }
       navigate(`/auth/verify-otp`, { state: { email: variables.email } });
     },
     onError: (error: any) => {
@@ -40,7 +43,7 @@ export const useRegister = () => {
         });
       } else {
         toast.error(
-          error.response?.data?.message || "Registration failed. Please try again."
+          error.message || "Registration failed. Please try again."
         );
       }
     }

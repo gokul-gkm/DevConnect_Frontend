@@ -13,6 +13,7 @@ export interface IRegisterData {
 
 
 export interface IAuthResponse {
+    expiresAt?: string;
     success: boolean;
     message: string;
     token?: string;

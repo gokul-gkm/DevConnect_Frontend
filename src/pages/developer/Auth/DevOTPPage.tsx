@@ -32,6 +32,9 @@ const DevOTPPage: React.FC = () => {
       const expiresAt = new Date(storedExpires).getTime();
       const remaining = Math.max(0, Math.floor((expiresAt - now) / 1000));
       setTimeLeft(remaining);
+      if (remaining === 0) {
+        localStorage.removeItem(DEV_OTP_EXPIRES_KEY);
+      }
     } else {
       setTimeLeft(0);
     }

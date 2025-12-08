@@ -36,16 +36,6 @@ export default function ScheduledSessions() {
     return matchesSearch;
   });
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
-  //       <div className="relative">
-  //         <div className="absolute inset-0 bg-indigo-500/10 blur-[100px] rounded-full -z-10" />
-  //         <LoadingSpinner text='Loading Scheduled Sessions...' bgColor='dark' />
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   if (isLoading) {
     return <LoadingSpinner text='Loading Scheduled Sessions...' bgColor='dark' />
