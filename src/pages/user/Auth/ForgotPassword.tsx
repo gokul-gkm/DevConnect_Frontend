@@ -37,7 +37,7 @@ export default function UserForgotPassword() {
           Reset password
         </h2>
         <p className="text-neutral-300 text-xs max-w-xs mt-2 dark:text-neutral-300">
-          Enter your email address to receive a one-time password (OTP) and reset
+          Enter your email address to receive a reset link and reset
           your password.
         </p>
       </div>
@@ -61,7 +61,7 @@ export default function UserForgotPassword() {
           type="submit"
           disabled={isLoading}
         >
-          {isLoading ? "Sending..." : "Send OTP →"}
+          {isLoading ? "Sending..." : "Send Link →"}
           <BottomGradient />
         </button>
       </form>

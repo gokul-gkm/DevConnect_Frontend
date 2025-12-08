@@ -17,24 +17,28 @@ const UserOTPPage: React.FC = () => {
   const navigate = useNavigate();
   const { verifyOtp, isVerifying, resendOtp, isResending } = useOTP();
 
-useEffect(() => {
-  if (!email) {
-    toast.error("No email provided");
-    navigate("/auth/register");
-    return;
-  }
+  useEffect(() => {
+    if (!email) {
+      toast.error("No email provided");
+      navigate("/auth/register");
+      return;
+    }
 
-  const storedExpires = localStorage.getItem(OTP_EXPIRES_KEY);
-  const now = Date.now();
+    const storedExpires = localStorage.getItem(OTP_EXPIRES_KEY);
+    const now = Date.now();
 
-if (storedExpires) {
-  const expiresAt = new Date(storedExpires).getTime();
-  const remaining = Math.max(0, Math.floor((expiresAt - now) / 1000));
-  setTimeLeft(remaining);
-} else {
-  setTimeLeft(0);
-}
-}, [email, navigate]);
+    if (storedExpires) {
+      const expiresAt = new Date(storedExpires).getTime();
+      const remaining = Math.max(0, Math.floor((expiresAt - now) / 1000));
+      setTimeLeft(remaining);
+      
+      if (remaining === 0) {
+        localStorage.removeItem(OTP_EXPIRES_KEY);
+      }
+    } else {
+      setTimeLeft(0);
+    }
+  }, [email, navigate]);
 
   const handleOtpChange = (
     e: React.ChangeEvent<HTMLInputElement>,
