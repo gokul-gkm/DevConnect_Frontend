@@ -3,7 +3,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { User } from "@/types/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/shadcn-button";
-import { Users, ArrowUpDown, Search, Shield, Mail, Eye } from "lucide-react";
+import { Users, ArrowUpDown, Search, Shield, Mail, Eye, ShieldAlert } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { debounce } from "lodash";
@@ -12,6 +12,7 @@ import { useAdminUsers } from "@/hooks/admin/useAdminUsers";
 import AdminTable from "@/components/admin/AdminTable";
 import StatsCards from '@/components/admin/StatsCards';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import ConfirmActionDialog from "@/components/ui/ConfirmActionDialog";
 
 function UsersListPage() {
   const navigate = useNavigate();
@@ -24,6 +25,32 @@ function UsersListPage() {
     updateParams,
     toggleStatusMutation,
   } = useAdminUsers();
+
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    userId: "",
+    username: "",
+    action: "block" as "block" | "unblock"
+  });
+  
+
+  const openConfirmDialog = (user: User) => {
+    setConfirmDialog({
+      open: true,
+      userId: user._id,
+      username: user.username,
+      action: user.status === "active" ? "block" : "unblock"
+    });
+  };
+  
+
+  const handleConfirm = () => {
+    toggleStatusMutation.mutate(confirmDialog.userId, {
+      onSuccess: () => setConfirmDialog((p) => ({ ...p, open: false }))
+    });
+  };
+  
+  
 
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -170,12 +197,10 @@ function UsersListPage() {
         header: "Actions",
         cell: ({ row }) => (
           <div className="flex justify-end">
-            <Button
-              variant={
-                row.original.status === "active" ? "destructive" : "default"
-              }
+           <Button
+              variant={row.original.status === "active" ? "destructive" : "default"}
               size="sm"
-              onClick={() => toggleStatusMutation.mutate(row.original._id)}
+              onClick={() => openConfirmDialog(row.original)}
               disabled={toggleStatusMutation.isPending}
               className={cn(
                 "w-24 transition-all shadow-lg rounded-full",
@@ -246,6 +271,7 @@ function UsersListPage() {
   }
   
   return (
+    <>
     <div className="min-h-screen bg-gradient-to-br from-slate-950 to-slate-900 p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -292,6 +318,30 @@ function UsersListPage() {
         />
       </motion.div>
     </div>
+
+    <ConfirmActionDialog
+      isOpen={confirmDialog.open}
+      isProcessing={toggleStatusMutation.isPending}
+      title={`${confirmDialog.action === "block" ? "Block" : "Unblock"} User?`}
+      description={
+        confirmDialog.action === "block"
+          ? `Are you sure you want to block "${confirmDialog.username}"?`
+          : `Are you sure you want to unblock "${confirmDialog.username}"?`
+      }
+      icon={ShieldAlert}
+      iconColor={confirmDialog.action === "block" ? "text-red-500" : "text-green-500"}
+      pulseColor={confirmDialog.action === "block" ? "bg-red-500/20" : "bg-green-500/20"}
+      confirmText={confirmDialog.action === "block" ? "Block User" : "Unblock User"}
+      confirmColor={
+        confirmDialog.action === "block"
+          ? "from-red-500 to-red-600"
+          : "from-green-500 to-green-600"
+      }
+      onClose={() => setConfirmDialog((p) => ({ ...p, open: false }))}
+      onConfirm={handleConfirm}
+    />
+
+</>
   );
 }
 
