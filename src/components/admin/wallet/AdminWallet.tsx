@@ -5,23 +5,39 @@ import { AdminTransactionHistory } from './AdminTransactionHistroy';
 import { cn } from '@/lib/utils';
 import { useAdminWallet } from '@/hooks/payments/useAdminWallet';
 
-const stats = [
-  {
-    label: 'Total Income',
-    value: '$2,450.00',
-    icon: ArrowDownLeft,
-    gradient: 'from-green-500/20 to-green-500/5'
-  },
-  {
-    label: 'Total Platform Fee',
-    value: '$1,250.00',
-    icon: ArrowUpRight,
-    gradient: 'from-red-500/20 to-red-500/5'
-  },
-];
 
 export const AdminWallet = () => {
   const { wallet, isLoading } = useAdminWallet();
+  let totalIncome = undefined;
+  let totalPlatformFees = undefined;
+  if (wallet) {
+    
+    const completed = wallet.transactions.filter(t => t.status === 'completed');
+
+     totalIncome = completed.filter(t => t.type === 'credit')
+    .reduce((sum, t) => sum + t.amount, 0);
+
+     totalPlatformFees = completed
+    .filter(t => t.type === 'credit')
+    .reduce((sum, t) => sum + t.amount * 0.20, 0);
+  }
+
+
+  const stats = [
+    {
+      label: 'Total Income',
+      value: `$${totalIncome}`,
+      icon: ArrowDownLeft,
+      gradient: 'from-green-500/20 to-green-500/5'
+    },
+    {
+      label: 'Total Platform Fee',
+      value: `$${totalPlatformFees}`,
+      icon: ArrowUpRight,
+      gradient: 'from-red-500/20 to-red-500/5'
+    },
+  ];
+   
 
   if (isLoading) {
     return (

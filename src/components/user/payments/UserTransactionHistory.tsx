@@ -68,6 +68,11 @@ export const UserTransactionHistory = () => {
                 <div>
                   <p className="text-slate-200 font-medium">{transaction.description}</p>
                   <p className="text-sm text-slate-400">{formatDate(transaction.createdAt)}</p>
+                   {transaction.sessionId && (
+                    <p className="text-xs text-slate-500 mt-1">
+                      Session ID: <span className="text-slate-300">{transaction.sessionId}</span>
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-4">
