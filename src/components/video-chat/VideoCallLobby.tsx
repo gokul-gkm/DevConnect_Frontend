@@ -58,7 +58,7 @@ export default function VideoCallLobby() {
   const [isReadyToJoin, setIsReadyToJoin] = useState(false);
   const audioContext = useRef<AudioContext | null>(null);
   const audioAnalyser = useRef<AnalyserNode | null>(null);
-  const audioDataArray = useRef<Uint8Array<ArrayBuffer> | null>(null);
+  const audioDataArray = useRef<Uint8Array | null>(null);
   const [isHost, setIsHost] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   
@@ -168,6 +168,8 @@ export default function VideoCallLobby() {
       console.error('Error setting up audio visualization:', err);
     }
   };
+
+  
   
   const getAvailableDevices = async () => {
     try {
