@@ -51,33 +51,6 @@ export const DeveloperWallet = () => {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: 'Total Earnings', value: formatCurrency( 0), icon: ArrowDownLeft, color: 'text-green-400' },
-            { label: 'Total Withdrawals', value: formatCurrency( 0), icon: ArrowUpRight, color: 'text-red-400' },
-            { label: 'Pending Amount', value: formatCurrency( 0), icon: Loader2, color: 'text-yellow-400' },
-            { label: 'Session Revenue', value: formatCurrency(0), icon: DollarSign, color: 'text-blue-400' }
-          ].map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-slate-900/50 backdrop-blur-lg rounded-xl border border-slate-800/50 p-4"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-400">{stat.label}</p>
-                  <p className={cn("text-xl font-semibold mt-1", stat.color)}>{stat.value}</p>
-                </div>
-                <div className="p-3 bg-slate-800/50 rounded-xl">
-                  <stat.icon className={cn("w-5 h-5", stat.color)} />
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
     
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -114,6 +87,11 @@ export const DeveloperWallet = () => {
                     <div>
                       <p className="text-slate-200 font-medium">{transaction.description}</p>
                       <p className="text-sm text-slate-400">{formatDate(transaction.createdAt)}</p>
+                       {transaction.sessionId && (
+                          <p className="text-xs text-slate-500 mt-1">
+                            Session ID: <span className="text-slate-300">{transaction.sessionId}</span>
+                          </p>
+                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-4">

@@ -203,7 +203,7 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
               </h2>
               <Textarea
                 {...register('bio')}
-                className="dark:bg-zinc-900/50 border-white/5 focus:border-purple-500/50 min-h-[120px] rounded-xl"
+                className="bg-zinc-900/50 dark:bg-zinc-900/50 border-white/5 focus:border-purple-500/50 min-h-[120px] rounded-xl"
                 placeholder="Tell us about yourself..."
               />
               {errors.bio && (

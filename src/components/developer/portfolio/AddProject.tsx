@@ -160,7 +160,7 @@ const AddProject = () => {
                 <div className="relative group">
                   <Textarea
                     {...register("description")}
-                    className="dark:bg-black/40 border-white/10 text-white/90 min-h-[120px] 
+                    className="bg-black/40 border-white/10 text-white/90 min-h-[120px] 
                              focus:border-white/20 focus:ring-2 focus:ring-white/10 
                              hover:border-white/20 transition-colors duration-300
                              placeholder:text-white/30 rounded-xl"

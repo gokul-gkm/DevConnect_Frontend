@@ -11,7 +11,6 @@ import { useSessionDetails } from '@/hooks/session/useSessionDetails';
 import { PaymentButton } from '../payments/PaymentButton';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { socketService } from '@/service/socket/socketService'
 import VideoSessionApi from '@/service/Api/VideoSessionApi';
 import { CancelSessionModal } from './CancelSessionModal';
 import SessionApi from '@/service/Api/SessionApi';
@@ -48,18 +47,6 @@ export default function SessionDetails() {
   useEffect(() => {
     if (!sessionId) return;
     
-    const handleSessionStarted = (data: any) => {
-      if (data.sessionId === sessionId) {
-        setIsSessionActive(true);
-        toast.success('Your session has started! Developer is waiting for you to join.', {
-          duration: 8000,
-          icon: '🎥',
-        });
-      }
-    };
-    
-    socketService.on('video:session:initiated', handleSessionStarted);
-    
 
     const checkSessionStatus = async () => {
       try {
@@ -73,7 +60,6 @@ export default function SessionDetails() {
         }
       } catch (error) {
         console.error('Error checking session status:', error);
-        toast.error('Failed to check session status');
       } finally {
         setIsCheckingStatus(false);
       }
@@ -81,9 +67,7 @@ export default function SessionDetails() {
 
     checkSessionStatus();
 
-    return () => {
-      socketService.off('video:session:initiated', handleSessionStarted);
-    };
+    return () => { };
   }, [sessionId]);
 
   const handleJoinCall = async () => {

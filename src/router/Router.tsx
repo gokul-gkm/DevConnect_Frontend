@@ -73,527 +73,532 @@ import DeveloperLeaderboard from "@/pages/admin/Leaderboard/DeveloperLeaderboard
 import DeveloperSessionHistoryPage from "@/pages/developer/Sessions/DeveloperSessionHistoryPage";
 import DeveloperSessionHistoryDetailsPage from "@/pages/developer/Sessions/DeveloperSessionHistoryDetailsPage";
 import DeveloperChangePasswordPage from "@/pages/developer/Profile/DeveloperChangePasswordPage";
+import GlobalRouterEffects from "@/components/layout/GlobalRouterEffects";
 
 export const Router = createBrowserRouter([
   {
-    path: "/auth",
-    element: <Auth />,
+    path: "/",
+    element: <GlobalRouterEffects />,
     children: [
       {
-        path: "register",
-        element: (
-          <PublicRoute routeType={Role.USER}>
-            <UserRegisterPage />
-          </PublicRoute>
-        ),
-      },
-      {
-        path: "login",
-        element: (
-          <PublicRoute routeType={Role.USER}>
-            {" "}
-            <UserLoginPage />
-          </PublicRoute>
-        ),
-      },
-      {
-        path: "verify-otp",
-        element: (
-          <PublicRoute routeType={Role.USER}>
-            <UserOTPPage />
-          </PublicRoute>
-        ),
-      },
-      {
-        path: "forgot-password",
-        element: (
-          <PublicRoute routeType={Role.USER}>
-            <UserForgotPassword />
-          </PublicRoute>
-        ),
-      },
-      {
-        path: "reset-password",
-        element: (
-          <PublicRoute routeType={Role.USER}>
-            <UserResetPassword />
-          </PublicRoute>
-        ),
-      },
-    ],
-  },
-  {
-    path: "developer",
-    element: <DevAuth />,
-    children: [
-      {
-        path: "auth",
+        path: "/auth",
+        element: <Auth />,
         children: [
           {
             path: "register",
             element: (
-              <DevPublicRoute>
-                <DevRegisterPage />
-              </DevPublicRoute>
-            ),
-          },
-          {
-            path: "verify-otp",
-            element: (
-              <DevPublicRoute>
-                <DevOTPPage />
-              </DevPublicRoute>
+              <PublicRoute routeType={Role.USER}>
+                <UserRegisterPage />
+              </PublicRoute>
             ),
           },
           {
             path: "login",
             element: (
-              <DevPublicRoute>
-                <DevLogin />
-              </DevPublicRoute>
+              <PublicRoute routeType={Role.USER}>
+                {" "}
+                <UserLoginPage />
+              </PublicRoute>
             ),
           },
           {
-            path: "dev-request",
+            path: "verify-otp",
             element: (
-              <DevPublicRoute>
-                <DeveloperRequestPage />
-              </DevPublicRoute>
+              <PublicRoute routeType={Role.USER}>
+                <UserOTPPage />
+              </PublicRoute>
+            ),
+          },
+          {
+            path: "forgot-password",
+            element: (
+              <PublicRoute routeType={Role.USER}>
+                <UserForgotPassword />
+              </PublicRoute>
+            ),
+          },
+          {
+            path: "reset-password",
+            element: (
+              <PublicRoute routeType={Role.USER}>
+                <UserResetPassword />
+              </PublicRoute>
+            ),
+          },
+        ],
+      },
+      {
+        path: "developer",
+        element: <DevAuth />,
+        children: [
+          {
+            path: "auth",
+            children: [
+              {
+                path: "register",
+                element: (
+                  <DevPublicRoute>
+                    <DevRegisterPage />
+                  </DevPublicRoute>
+                ),
+              },
+              {
+                path: "verify-otp",
+                element: (
+                  <DevPublicRoute>
+                    <DevOTPPage />
+                  </DevPublicRoute>
+                ),
+              },
+              {
+                path: "login",
+                element: (
+                  <DevPublicRoute>
+                    <DevLogin />
+                  </DevPublicRoute>
+                ),
+              },
+              {
+                path: "dev-request",
+                element: (
+                  <DevPublicRoute>
+                    <DeveloperRequestPage />
+                  </DevPublicRoute>
+                ),
+              },
+            ],
+          },
+
+          {
+            path: "dashboard",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <DevDashboard />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "profile",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <DeveloperProfilePage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "edit-profile",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <EditDeveloperProfilePage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "change-password",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <DeveloperChangePasswordPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "portfolio",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <DevPortfolioPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "portfolio/add-project",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <AddProjectPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "portfolio/projects/edit/:projectId",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <EditProjectPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "session-requests",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <SessionRequestPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "session-requests/:sessionId",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <SessionRequestDetailsPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "sessions/scheduled",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <ScheduledSessionsPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "sessions/scheduled/:sessionId",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <ScheduledSessionsDetailsPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "sessions/history",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <DeveloperSessionHistoryPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "sessions/history/:sessionId",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <DeveloperSessionHistoryDetailsPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "wallet",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <DeveloperWalletPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "notifications",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <DeveloperNotificationPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "availability",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <DeveloperAvailabilityPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "reviews",
+            element: (
+              <ProtectedRoute allowedRole={Role.DEVELOPER}>
+                <ReviewsPage />
+              </ProtectedRoute>
             ),
           },
         ],
       },
 
       {
-        path: "dashboard",
+        path: "developer/chats",
         element: (
           <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <DevDashboard />
+            <DeveloperChatPage />
           </ProtectedRoute>
         ),
       },
       {
-        path: "profile",
+        path: "developer/chats/:chatId",
         element: (
           <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <DeveloperProfilePage />
+            <DeveloperChatPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/about",
+        element: <AboutUs />,
+      },
+      {
+        path: "admin",
+        children: [
+          {
+            path: "login",
+            element: <AdminLoginPage />,
+          },
+        ],
+      },
+      {
+        path: "/admin",
+        element: <AdminLayout />,
+        children: [
+          {
+            path: "dashboard",
+            element: (
+              <AdminProtectedRoute>
+                <Dashboard />
+              </AdminProtectedRoute>
+            ),
+          },
+          {
+            path: "users",
+            element: (
+              <AdminProtectedRoute>
+                <UsersListPage />{" "}
+              </AdminProtectedRoute>
+            ),
+          },
+          {
+            path: "users/:userId",
+            element: (
+              <AdminProtectedRoute>
+                {" "}
+                <UserDetails />
+              </AdminProtectedRoute>
+            ),
+          },
+          {
+            path: "developers",
+            element: (
+              <AdminProtectedRoute>
+                <AdminDeveloperPage />
+              </AdminProtectedRoute>
+            ),
+          },
+          {
+            path: "developers/:id",
+            element: (
+              <AdminProtectedRoute>
+                <DevDetails />
+              </AdminProtectedRoute>
+            ),
+          },
+          {
+            path: "developers/requests",
+            element: (
+              <AdminProtectedRoute>
+                <DeveloperRequestsPage />
+              </AdminProtectedRoute>
+            ),
+          },
+          {
+            path: "developer-requests/:id",
+            element: (
+              <AdminProtectedRoute>
+                <DevRequestDetails />
+              </AdminProtectedRoute>
+            ),
+          },
+          {
+            path: "wallet",
+            element: (
+              <AdminProtectedRoute>
+                <AdminWallet />
+              </AdminProtectedRoute>
+            ),
+          },
+          {
+            path: "revenue",
+            element: (
+              <AdminProtectedRoute>
+                <Revenue />
+              </AdminProtectedRoute>
+            ),
+          },
+          {
+            path: "sessions",
+            element: (
+              <AdminProtectedRoute>
+                <AdminSessionsPage />
+              </AdminProtectedRoute>
+            ),
+          },
+          {
+            path: "leaderboard",
+            element: (
+              <AdminProtectedRoute>
+                <DeveloperLeaderboard />
+              </AdminProtectedRoute>
+            ),
+          },
+          {
+            path: "*",
+            element: <AdminNotFoundPage />,
+          },
+        ],
+      },
+      {
+        path: "profile",
+        element: (
+          <ProtectedRoute allowedRole={Role.USER}>
+            <UserProfilePage />
           </ProtectedRoute>
         ),
       },
       {
         path: "edit-profile",
         element: (
-          <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <EditDeveloperProfilePage />
+          <ProtectedRoute allowedRole={Role.USER}>
+            <EditProfilePage />
           </ProtectedRoute>
         ),
       },
       {
         path: "change-password",
         element: (
-          <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <DeveloperChangePasswordPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "portfolio",
-        element: (
-          <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <DevPortfolioPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "portfolio/add-project",
-        element: (
-          <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <AddProjectPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "portfolio/projects/edit/:projectId",
-        element: (
-          <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <EditProjectPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "session-requests",
-        element: (
-          <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <SessionRequestPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "session-requests/:sessionId",
-        element: (
-          <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <SessionRequestDetailsPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "sessions/scheduled",
-        element: (
-          <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <ScheduledSessionsPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "sessions/scheduled/:sessionId",
-        element: (
-          <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <ScheduledSessionsDetailsPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "sessions/history",
-        element: (
-          <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <DeveloperSessionHistoryPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "sessions/history/:sessionId",
-        element: (
-          <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <DeveloperSessionHistoryDetailsPage />
+          <ProtectedRoute allowedRole={Role.USER}>
+            <ChangePasswordPage />
           </ProtectedRoute>
         ),
       },
       {
         path: "wallet",
-        element: (
-          <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <DeveloperWalletPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "notifications",
-        element: (
-          <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <DeveloperNotificationPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "availability",
-        element: (
-          <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <DeveloperAvailabilityPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "reviews",
-        element: (
-          <ProtectedRoute allowedRole={Role.DEVELOPER}>
-            <ReviewsPage />
-          </ProtectedRoute>
-        ),
-      },
-
-    ],
-  },
-
-  {
-    path: "developer/chats",
-    element: (
-      <ProtectedRoute allowedRole={Role.DEVELOPER}>
-        <DeveloperChatPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "developer/chats/:chatId",
-    element: (
-      <ProtectedRoute allowedRole={Role.DEVELOPER}>
-        <DeveloperChatPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/about",
-    element: (
-      <AboutUs />
-),
-  },
-  {
-    path: "admin",
-    children: [
-      {
-        path: "login",
-        element: <AdminLoginPage />,
-      },
-    ],
-  },
-  {
-    path: "/admin",
-    element: <AdminLayout />,
-    children: [
-      {
-        path: "dashboard",
-        element: (
-          <AdminProtectedRoute>
-            <Dashboard />
-          </AdminProtectedRoute>
-        ),
-      },
-      {
-        path: "users",
-        element: (
-          <AdminProtectedRoute>
-            <UsersListPage />{" "}
-          </AdminProtectedRoute>
-        ),
-      },
-      {
-        path: "users/:userId",
-        element: (
-          <AdminProtectedRoute>
-            {" "}
-            <UserDetails />
-          </AdminProtectedRoute>
-        ),
-      },
-      {
-        path: "developers",
-        element: (
-          <AdminProtectedRoute>
-            <AdminDeveloperPage />
-          </AdminProtectedRoute>
-        ),
-      },
-      {
-        path: "developers/:id",
-        element: (
-          <AdminProtectedRoute>
-            <DevDetails />
-          </AdminProtectedRoute>
-        ),
-      },
-      {
-        path: "developers/requests",
-        element: (
-          <AdminProtectedRoute>
-            <DeveloperRequestsPage />
-          </AdminProtectedRoute>
-        ),
-      },
-      {
-        path: "developer-requests/:id",
-        element: (
-          <AdminProtectedRoute>
-            <DevRequestDetails />
-          </AdminProtectedRoute>
-        ),
-      },
-      {
-        path: "wallet",
-        element: (
-          <AdminProtectedRoute>
-            <AdminWallet />
-          </AdminProtectedRoute>
-        ),
-      }, {
-        path: "revenue",
-        element: (
-          <AdminProtectedRoute>
-            <Revenue/>
-          </AdminProtectedRoute>
-        )
-      },
-      {
-        path: "sessions",
-        element: (
-          <AdminProtectedRoute>
-            <AdminSessionsPage/>
-          </AdminProtectedRoute>
-        )
-      },
-      {
-        path: "leaderboard",
-        element: (
-          <AdminProtectedRoute>
-            <DeveloperLeaderboard/>
-          </AdminProtectedRoute>
-        )
-      },
-      {
-        path: "*",
-        element: <AdminNotFoundPage />,
-      },
-    ],
-  },
-  {
-    path: "profile",
-    element: (
-      <ProtectedRoute allowedRole={Role.USER}>
-        <UserProfilePage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "edit-profile",
-    element: (
-      <ProtectedRoute allowedRole={Role.USER}>
-        <EditProfilePage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "change-password",
-    element: (
-      <ProtectedRoute allowedRole={Role.USER}>
-        <ChangePasswordPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "wallet",
-    element: (
-      <ProtectedRoute allowedRole={Role.USER}>
-        <UserWalletPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "about",
-    element: <AboutUs />,
-  },
-  {
-    path: "/",
-    element: <RootPage />,
-  },
-  {
-    path: "video-call/:sessionId",
-    element: <VideoCall />,
-  },
-  {
-    path: "/video-call-lobby/:sessionId",
-    element: <VideoCallLobby />
-  },
-
-  {
-    path: "sessions",
-    children: [
-      {
-        path: "upcoming",
         element: (
           <ProtectedRoute allowedRole={Role.USER}>
-            <UpcomingSessionsPage />
+            <UserWalletPage />
           </ProtectedRoute>
         ),
       },
       {
-        path: "history",
+        path: "about",
+        element: <AboutUs />,
+      },
+      {
+        path: "/",
+        element: <RootPage />,
+      },
+      {
+        path: "video-call/:sessionId",
+        element: <VideoCall />,
+      },
+      {
+        path: "/video-call-lobby/:sessionId",
+        element: <VideoCallLobby />,
+      },
+
+      {
+        path: "sessions",
         children: [
           {
-            path: "",
+            path: "upcoming",
             element: (
               <ProtectedRoute allowedRole={Role.USER}>
-                <SessionHistoryPage />
+                <UpcomingSessionsPage />
               </ProtectedRoute>
             ),
           },
           {
-            path: ":sessionId",
+            path: "history",
+            children: [
+              {
+                path: "",
+                element: (
+                  <ProtectedRoute allowedRole={Role.USER}>
+                    <SessionHistoryPage />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: ":sessionId",
+                element: (
+                  <ProtectedRoute allowedRole={Role.USER}>
+                    <SessionHistoryDetailsPage />
+                  </ProtectedRoute>
+                ),
+              },
+            ],
+          },
+          {
+            path: "booking/:developerId",
             element: (
               <ProtectedRoute allowedRole={Role.USER}>
-                <SessionHistoryDetailsPage />
+                <SessionBookingPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "my-sessions",
+            element: (
+              <ProtectedRoute allowedRole={Role.USER}>
+                <SessionsPage />
               </ProtectedRoute>
             ),
           },
         ],
       },
       {
-        path: "booking/:developerId",
+        path: "sessions/:sessionId",
         element: (
           <ProtectedRoute allowedRole={Role.USER}>
-            <SessionBookingPage />
+            <SessionDetailsPage />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "search-developers",
+        element: <SearchDevelopersPage />,
+      },
+      {
+        path: "dev-profile/:developerId",
+        element: <DeveloperPublicProfilePage />,
+      },
+
+      {
+        path: "/payment/success",
+        element: (
+          <ProtectedRoute allowedRole={Role.USER}>
+            {" "}
+            <PaymentSuccess />
           </ProtectedRoute>
         ),
       },
       {
-        path: "my-sessions",
+        path: "/payment/cancel",
         element: (
           <ProtectedRoute allowedRole={Role.USER}>
-            <SessionsPage />
+            <PaymentCancel />
           </ProtectedRoute>
         ),
       },
+      {
+        path: "/chats",
+        element: (
+          <ProtectedRoute allowedRole={Role.USER}>
+            {" "}
+            <ChatPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/chats/:chatId",
+        element: (
+          <ProtectedRoute allowedRole={Role.USER}>
+            <ChatPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/notifications",
+        element: (
+          <ProtectedRoute allowedRole={Role.USER}>
+            <UserNotificationPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "*",
+        element: <NotFound />,
+      },
     ],
-  },
-  {
-    path: "sessions/:sessionId",
-    element: (
-      <ProtectedRoute allowedRole={Role.USER}>
-        <SessionDetailsPage />
-      </ProtectedRoute>
-    ),
-  },
-
-  {
-    path: "search-developers",
-    element: <SearchDevelopersPage />,
-  },
-  {
-    path: "dev-profile/:developerId",
-    element: <DeveloperPublicProfilePage />,
-  },
-
-  {
-    path: "/payment/success",
-    element: (
-      <ProtectedRoute allowedRole={Role.USER}>
-        {" "}
-        <PaymentSuccess />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/payment/cancel",
-    element: (
-      <ProtectedRoute allowedRole={Role.USER}>
-        <PaymentCancel />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/chats",
-    element: (
-      <ProtectedRoute allowedRole={Role.USER}>
-        {" "}
-        <ChatPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/chats/:chatId",
-    element: (
-      <ProtectedRoute allowedRole={Role.USER}>
-        <ChatPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/notifications",
-    element: (
-      <ProtectedRoute allowedRole={Role.USER}>
-        <UserNotificationPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "*",
-    element: <NotFound />,
   },
 ]);

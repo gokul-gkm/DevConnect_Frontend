@@ -47,7 +47,7 @@ export const SessionRejectionDialog: React.FC<SessionRejectionDialogProps> = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="p-0 gap-0 border-0 shadow-2xl overflow-hidden max-w-lg">
+      <DialogContent className="p-0 gap-0 border-0 shadow-2xl overflow-hidden max-w-lg bg-transparent">
         <motion.div
           variants={dialogVariants}
           initial="hidden"
@@ -80,7 +80,7 @@ export const SessionRejectionDialog: React.FC<SessionRejectionDialogProps> = ({
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
                   placeholder="Enter your reason for declining..."
-                  className="min-h-[160px] resize-none dark:bg-black/40 backdrop-blur-xl border-white/10 focus:border-white/20 text-white placeholder:text-gray-500 rounded-xl"
+                  className="min-h-[160px] resize-none bg-black/40 backdrop-blur-xl border-white/10 focus:border-white/20 text-white placeholder:text-gray-500 rounded-xl"
                 />
               </div>
               <p className="text-xs text-gray-500">

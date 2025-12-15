@@ -78,7 +78,7 @@ export function CancelSessionModal({ open, onClose, onSubmit, loading }: CancelS
                     onChange={e => setReason(e.target.value)}
                     disabled={loading}
                     rows={3}
-                    className="dark:bg-zinc-800/50 border dark:border-zinc-700/30 dark:text-white placeholder:text-zinc-400 focus:border-rose-500/50 focus:ring-rose-500/20 rounded-xl"
+                    className="bg-zinc-800/50 border border-zinc-700/30 text-white placeholder:text-zinc-400 focus:border-rose-500/50 focus:ring-rose-500/20 rounded-xl"
                   />
                   <AnimatePresence>
                     {error && (

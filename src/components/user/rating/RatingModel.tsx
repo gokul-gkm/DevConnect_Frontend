@@ -100,7 +100,7 @@ export function RatingModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose} modal={true}>
-      <DialogContent className="p-0 max-w-md overflow-hidden border-0 shadow-2xl">
+      <DialogContent className="p-0 max-w-md overflow-hidden border-0 shadow-2xl bg-transparent">
         <div className="bg-gradient-to-br from-black/80 to-zinc-900/90 backdrop-blur-xl rounded-3xl border border-white/10">
           <div className="relative">
             <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-purple-500/10 to-transparent rounded-t-3xl" />          
@@ -166,7 +166,7 @@ export function RatingModal({
           <div className="w-full">
             <Textarea
                     placeholder="Share your thoughts (optional)"
-                    className="dark:bg-zinc-800/50 dark:border-zinc-700/50 focus:border-purple-500/50 text-white resize-none 
+                    className="bg-zinc-800/50 border-zinc-700/50 focus:border-purple-500/50 text-white resize-none 
                       rounded-xl shadow-inner placeholder:text-zinc-500 text-sm"
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}

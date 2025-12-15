@@ -498,7 +498,7 @@ export default function DeveloperRequestPage() {
                   <div key={index} className="flex gap-2">
                     <Input
                       {...register(`languages.${index}`)}
-                      placeholder="Programming language"
+                      placeholder="Languages"
                       className="bg-neutral-800 border-neutral-700 h-10 text-base"
                     />
                     {index > 0 && (
