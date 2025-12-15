@@ -124,7 +124,7 @@ export default function SessionBooking() {
                   <Textarea
                     {...field}
                     placeholder="Describe what you'd like to discuss..."
-                    className="min-h-[100px] rounded-xl backdrop-blur-xl dark:bg-white/5 border-white/10 hover:border-white/20 focus:border-white/30"
+                    className="min-h-[100px] rounded-xl backdrop-blur-xl bg-white/5 border-white/10 hover:border-white/20 focus:border-white/30"
                   />
                   {errors.description && (
                     <p className="text-sm text-red-500">{errors.description.message}</p>

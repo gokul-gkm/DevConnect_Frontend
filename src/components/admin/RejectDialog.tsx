@@ -63,7 +63,7 @@ const RejectDialog: React.FC<RejectDialogProps> = ({
                         placeholder={`Please explain why this ${entityName.toLowerCase()} application is being rejected...`}
                         value={reason}
                         onChange={(e) => onReasonChange(e.target.value)}
-                        className="min-h-[120px] dark:bg-slate-800/70 dark:border-slate-700/80 rounded-xl dark:text-slate-300 
+                        className="min-h-[120px] bg-slate-800/70 border-slate-700/80 rounded-xl text-slate-300 
                         focus:border-red-500/30 focus:ring-red-500/10 placeholder-slate-500/70 resize-none shadow-inner"
                       />
                       

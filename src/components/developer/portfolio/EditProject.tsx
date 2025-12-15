@@ -177,7 +177,7 @@ const EditProject = () => {
                             </label>
                             <Textarea
                                 {...register('description')}
-                                className="dark:bg-white/5 border-white/10 text-white min-h-[120px] rounded-xl"
+                                className="bg-white/5 border-white/10 text-white min-h-[120px] rounded-xl"
                                 placeholder="Enter project description"
                             />
                             {errors.description && (
