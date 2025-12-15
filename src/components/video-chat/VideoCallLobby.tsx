@@ -153,7 +153,7 @@ export default function VideoCallLobby() {
         if (!audioAnalyser.current || !audioDataArray.current) return;
         
         audioAnalyser.current.getByteFrequencyData(audioDataArray.current);
-        const average = audioDataArray.current.reduce((acc, val) => acc + val, 0) / audioDataArray.current.length;
+        const average = audioDataArray.current.reduce((acc: number, val: number) => acc + val, 0) / audioDataArray.current.length;
         setAudioLevel(average);
         
         if (!isMuted) {
@@ -204,7 +204,7 @@ export default function VideoCallLobby() {
         requestAnimationFrame(() => {
           if (audioAnalyser.current && audioDataArray.current) {
             audioAnalyser.current.getByteFrequencyData(audioDataArray.current);
-            const average = audioDataArray.current.reduce((acc, val) => acc + val, 0) / audioDataArray.current.length;
+            const average = audioDataArray.current.reduce((acc : number, val: number) => acc + val, 0) / audioDataArray.current.length;
             setAudioLevel(average);
             
             if (!isMuted) {
