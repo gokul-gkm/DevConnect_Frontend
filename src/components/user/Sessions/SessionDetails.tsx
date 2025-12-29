@@ -196,7 +196,7 @@ export default function SessionDetails() {
                 <p className="text-sm sm:text-base text-gray-400">{session.description}</p>
               </div>
               <Badge className={cn(
-                "self-start px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl border font-medium backdrop-blur-xl",
+                "self-start px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl sm:rounded-xl border font-medium backdrop-blur-xl border-gray-900",
                 statusColors[session.status as SessionStatus]
               )}>
                 {session.status.replace('_', ' ')}

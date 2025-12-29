@@ -448,14 +448,14 @@ const ExpandedRow = ({ session, navigateToDetails }: { session: any; navigateToD
           <div className="space-y-5">
             <div className="space-y-2">
               <h4 className="text-xs font-medium text-white/50 uppercase tracking-wider">Payment</h4>
-              <div className="relative overflow-hidden bg-gradient-to-br from-zinc-900/40 to-black/60 border border-emerald-500/20 rounded-xl p-4 backdrop-blur-lg shadow-lg">
+              <div className="relative overflow-hidden bg-gradient-to-br from-zinc-900/40 to-black/60 border border-emerald-500/20 rounded-xl p-3 backdrop-blur-lg shadow-lg">
                 <div className="absolute -bottom-6 -right-6 w-20 h-20 bg-emerald-500/5 rounded-full blur-xl" />
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-black/60 to-emerald-950/30 border border-emerald-500/20 shadow-lg">
-                    <DollarSign className="w-4 h-4 text-emerald-400" />
+                  <div className="p-2 rounded-xl bg-gradient-to-br from-black/60 to-emerald-950/30 border border-emerald-500/20 shadow-lg">
+                    <DollarSign className="w-3 h-3 text-emerald-400" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-emerald-400">${session.price}</div>
+                    <div className="text-xl font-bold text-emerald-400">${session.price}</div>
                   </div>
                 </div>
               </div>

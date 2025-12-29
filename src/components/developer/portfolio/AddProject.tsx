@@ -70,8 +70,7 @@ const AddProject = () => {
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 sm:p-6 relative">
       <div className="absolute inset-0 bg-gradient-to-br from-black via-black/95 to-black" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.1),transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(147,51,234,0.1),transparent_50%)]" />
+     
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02] mix-blend-overlay" />
 
       <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center">

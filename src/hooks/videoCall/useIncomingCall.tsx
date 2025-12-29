@@ -60,7 +60,7 @@ export function useIncomingCall() {
                 stopRingtone();
                 toast.dismiss(t.id);
                 activeToastId.current = null;
-                 window.location.href = `/video-call-lobby/${data.sessionId}?mode=participant`;
+                //  window.location.href = `/video-call-lobby/${data.sessionId}?mode=participant`;
               }}
               className="px-3 py-1 text-sm rounded-md bg-emerald-600 text-white"
             >
