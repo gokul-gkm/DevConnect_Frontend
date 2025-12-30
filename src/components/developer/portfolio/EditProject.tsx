@@ -106,7 +106,7 @@ const EditProject = () => {
         <div className="min-h-screen bg-black p-4 sm:p-6 relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(17,24,39,0.7),rgba(0,0,0,0.4))]" />
             <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.02] mix-blend-overlay" />
-            <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 via-transparent to-purple-500/5" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black via-black to-black" />
             
             <div className="container mx-auto max-w-4xl relative">
                 <motion.button

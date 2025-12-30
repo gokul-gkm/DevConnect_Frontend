@@ -107,7 +107,7 @@ export const DeveloperProfileSidebar: React.FC<SidebarProps> = ({ setActiveItem 
   return (
     <>
   
-      <div className="hidden lg:flex flex-col w-72 min-h-screen bg-gradient-to-b from-black to-gray-900/50 border-r border-white/5">
+      <div className="hidden lg:flex flex-col w-72 min-h-screen bg-gradient-to-b from-black to-black border-r border-white/5">
         <div className="top-0 z-10">
           <div className="p-6">
             <div className="flex items-center gap-4 px-4 py-3 rounded-2xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-white/5">

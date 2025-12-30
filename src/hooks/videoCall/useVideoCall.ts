@@ -224,11 +224,17 @@ export function useVideoCall({
   }, [sessionId]);
 
   const toggleMute = useCallback(async () => {
-    if (!localStream) return;
-    if (await webRTCService.toggleAudio(!isMuted)) {
-      setIsMuted((v) => !v);
-    }
-  }, [localStream, isMuted]);
+  if (!localStream) return;
+
+  const audioTrack = localStream.getAudioTracks()[0];
+  if (!audioTrack) return;
+
+  const nextEnabled = !audioTrack.enabled;
+
+  if (await webRTCService.toggleAudio(nextEnabled)) {
+    setIsMuted(!nextEnabled);
+  }
+}, [localStream]);
 
   const toggleVideo = useCallback(async () => {
     if (!localStream) return;

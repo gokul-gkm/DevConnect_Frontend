@@ -36,9 +36,16 @@ export default function ScheduledSessions() {
     return matchesSearch;
   });
 
-
   if (isLoading) {
-    return <LoadingSpinner text='Loading Scheduled Sessions...' bgColor='dark' />
+    return (
+      <LoadingSpinner
+        size="lg"
+        text="Loading Scheduled Sessions..."
+        color="white"
+        bgColor="dark"
+        fullScreen={true}
+      />
+    );
   }
 
   return (
@@ -284,11 +291,11 @@ export default function ScheduledSessions() {
                           <div className="flex items-center gap-3 mt-4 pt-3 border-t border-zinc-800/30">
                             <div className="flex-1 flex items-center gap-2">
                               <img 
-                                src={session.userId.profilePicture || `https://ui-avatars.com/api/?name=${session.userId.username}`} 
-                                alt={session.userId.username} 
+                                src={session.userId?.profilePicture || `https://ui-avatars.com/api/?name=${session.userId?.username}`} 
+                                alt={session.userId?.username} 
                                 className="w-8 h-8 rounded-xl object-cover border border-zinc-700/50" 
                               />
-                              <span className="text-sm text-white">{session.userId.username}</span>
+                              <span className="text-sm text-white">{session.userId?.username}</span>
                         </div>
                         
                             <motion.button

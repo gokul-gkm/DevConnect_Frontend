@@ -8,7 +8,6 @@ import {
   VideoOff,
   PhoneOff,
   Share,
-  LayoutGrid,
   Maximize,
   Shield,
   Clock,
@@ -52,7 +51,7 @@ export default function VideoCall() {
   const [mainVideo, setMainVideo] = useState<VideoType>("remote");
   const [mainScreenOwner, setMainScreenOwner] = useState<string | null>(null);
   const [pinned, setPinned] = useState(false);
-  const [, setIsFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const [isIntentionallyEnded, setIsIntentionallyEnded] = useState(false);
@@ -356,14 +355,7 @@ export default function VideoCall() {
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 rounded-full bg-black/40 border border-zinc-800/60"
-            >
-              <LayoutGrid className="h-4 w-4 text-white" />
-            </Button>
+          <div className="flex gap-2"> 
 
             <Button
               variant="ghost"
@@ -377,111 +369,120 @@ export default function VideoCall() {
         </div>
 
         {/* ------------------------------ MAIN AREA ------------------------------ */}
-        <div className="flex flex-1 overflow-hidden">
-          <div className="flex-1 flex items-start justify-center p-6">
-            <div className="relative w-full max-w-3xl aspect-video rounded-2xl bg-black/40 border border-zinc-800 shadow-2xl overflow-hidden">
-              <video
-                ref={mainVideoRef}
-                autoPlay
-                playsInline
-                muted={mainVideo === "local"}
-                className={cn(
-                  "w-full h-full",
-                  mainVideo === "screen"
-                    ? "object-contain bg-black"
-                    : "object-cover"
-                )}
-              />
-              {isConnected &&
-                !isLoading &&
-                !isReconnecting &&
-                participants.length <= 1 && (
-                  <div className="absolute inset-0 z-20 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center text-white">
-                    <div className="h-14 w-14 rounded-full border-4 border-white/20 border-t-white animate-spin mb-4" />
-                    <p className="text-lg font-medium">
-                      {isHost
-                        ? "Waiting for user to join…"
-                        : "Connecting you to the developer…"}
-                    </p>
-                    <p className="text-sm text-zinc-400 mt-1">
-                      {isHost
-                        ? "The user will join once they accept the call"
-                        : "Please wait while the session connects"}
-                    </p>
-                  </div>
-                )}
+        <div className={cn(
+  "flex flex-1 overflow-hidden",
+  !isFullscreen && "pb-24"
+)}>
+  <div className="flex-1 flex justify-center items-center p-6">
+    <div className="relative w-full max-w-3xl aspect-video rounded-3xl overflow-hidden">
 
-              <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl flex items-center gap-2 border border-zinc-700 text-sm text-white">
-                {mainVideo === "screen" ? (
-                  <>
-                    <MonitorUp className="h-4 w-4 text-indigo-400" />
-                    {mainScreenOwner === "local"
-                      ? "Your Screen"
-                      : `Screen (${mainScreenOwner})`}
-                  </>
-                ) : (
-                  <>
-                    {mainVideo === "local"
-                      ? "You"
-                      : participants?.[1]?.username || "Remote"}
-                  </>
-                )}
 
-                {pinned && (
-                  <span className="text-indigo-400 text-xs ml-2">(Pinned)</span>
-                )}
-              </div>
+      <div className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-indigo-500/20 via-purple-500/10 to-cyan-500/10 blur-xl opacity-70" />
+
+      <div className="relative h-full w-full rounded-3xl bg-black/40 backdrop-blur-xl border border-white/10 shadow-[0_40px_120px_-20px_rgba(0,0,0,0.9)] overflow-hidden">
+
+        <video
+          ref={mainVideoRef}
+          autoPlay
+          playsInline
+          muted={mainVideo === "local"}
+          className={cn(
+            "w-full h-full",
+            mainVideo === "screen"
+              ? "object-contain bg-black"
+              : "object-cover"
+          )}
+        />
+
+        <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_80px_rgba(0,0,0,0.6)]" />
+
+        {isConnected &&
+          !isLoading &&
+          !isReconnecting &&
+          participants.length <= 1 && (
+            <div className="absolute inset-0 z-20 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center text-white">
+              <div className="h-14 w-14 rounded-full border-4 border-white/20 border-t-white animate-spin mb-4" />
+              <p className="text-lg font-medium">
+                {isHost
+                  ? "Waiting for user to join…"
+                  : "Connecting you to the developer…"}
+              </p>
+              <p className="text-sm text-zinc-400 mt-1">
+                {isHost
+                  ? "The user will join once they accept the call"
+                  : "Please wait while the session connects"}
+              </p>
             </div>
+          )}
+
+        <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl flex items-center gap-2 border border-zinc-700 text-sm text-white">
+          {mainVideo === "screen" ? (
+            <>
+              <MonitorUp className="h-4 w-4 text-indigo-400" />
+              {mainScreenOwner === "local"
+                ? "Your Screen"
+                : `Screen (${mainScreenOwner})`}
+            </>
+          ) : (
+            <>
+              {mainVideo === "local"
+                ? "You"
+                : participants?.[1]?.username || "Remote"}
+            </>
+          )}
+
+          {pinned && (
+            <span className="text-indigo-400 text-xs ml-2">(Pinned)</span>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* ------------------------------ RIGHT PANEL ------------------------------ */}
+  <div className="hidden md:flex w-80 flex-col p-4 gap-4 overflow-y-auto border-l border-zinc-800/40 bg-black/30">
+    <div className="text-zinc-300 text-sm px-1 mb-1">Participants</div>
+
+    {sidebarTiles.length === 0 ? (
+      <div className="text-zinc-500 text-xs px-2">No preview tiles</div>
+    ) : (
+      sidebarTiles.map((tile) => (
+        <div
+          key={tile.key}
+          className="rounded-xl bg-black/40 border border-zinc-800/40 p-2 shadow-lg cursor-pointer hover:bg-black/50"
+          onClick={() => swapToMain(tile.key)}
+        >
+          <div className="w-full aspect-video rounded-xl overflow-hidden bg-black border border-white/10">
+            <video
+              ref={(el) => {
+                setTileRef(tile.key)(el);
+                if (!el || !tile.stream) return;
+                try {
+                  if (el.srcObject !== tile.stream) {
+                    el.srcObject = tile.stream;
+                  }
+                  setTimeout(() => el.play().catch(() => {}), 30);
+                } catch {}
+              }}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+            />
           </div>
 
-          {/* ------------------------------ RIGHT PANEL ------------------------------ */}
-          <div className="hidden md:flex w-80 flex-col p-4 gap-4 overflow-y-auto border-l border-zinc-800/40 bg-black/30">
-            <div className="text-zinc-300 text-sm px-1 mb-1">Participants</div>
-
-            {sidebarTiles.length === 0 ? (
-              <div className="text-zinc-500 text-xs px-2">No preview tiles</div>
-            ) : (
-              sidebarTiles.map((tile) => (
-                <div
-                  key={tile.key}
-                  className="rounded-xl bg-black/40 border border-zinc-800/40 p-2 shadow-lg cursor-pointer hover:bg-black/50"
-                  onClick={() => swapToMain(tile.key)}
-                >
-                  <div className="w-full aspect-video rounded-lg overflow-hidden bg-black">
-                    <video
-                      ref={(el) => {
-                        setTileRef(tile.key)(el);
-
-                        if (!el || !tile.stream) return;
-
-                        try {
-                          if (el.srcObject !== tile.stream) {
-                            el.srcObject = tile.stream;
-                          }
-
-                          setTimeout(() => {
-                            el.play().catch(() => {});
-                          }, 30);
-                        } catch {}
-                      }}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-
-                  <div className="mt-2 text-xs text-zinc-300 flex items-center gap-1">
-                    {tile.type === "screen" && (
-                      <MonitorUp className="h-3 w-3 text-indigo-400" />
-                    )}
-                    {tile.label}
-                  </div>
-                </div>
-              ))
+          <div className="mt-2 text-xs text-zinc-300 flex items-center gap-1">
+            {tile.type === "screen" && (
+              <MonitorUp className="h-3 w-3 text-indigo-400" />
             )}
+            {tile.label}
           </div>
         </div>
+      ))
+    )}
+  </div>
+</div>
+
 
         {/* ------------------------------ BOTTOM TOOLBAR ------------------------------ */}
         <div className="fixed bottom-0 left-0 right-0 py-4 bg-black/40 backdrop-blur-md border-t border-zinc-800/50">
