@@ -40,7 +40,7 @@ export function useIncomingCall() {
   });
 
   useEffect(() => {
-    const handleIncomingCall = (data: { sessionId: string }) => {
+    const handleIncomingCall = (_data: { sessionId: string }) => {
       if (activeToastId.current) return;
 
       startRingtone();
