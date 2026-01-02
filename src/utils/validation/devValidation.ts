@@ -5,7 +5,6 @@ const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/web
 const ACCEPTED_RESUME_TYPES = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 
 export const developerSchema = z.object({
-  username: z.string().min(2, 'Full name is required'),
   email: z.string().email('Invalid email format'),
   bio: z.string().min(10, 'Bio should be at least 10 characters'),
   expertise: z.array(z.string()).min(1, 'Select at least one expertise').max(5, 'Maximum 5 expertise allowed'),

@@ -45,7 +45,6 @@ export default function DeveloperRequestPage() {
   } = useForm<DeveloperFormData>({
     resolver: zodResolver(developerSchema),
     defaultValues: {
-      username: "",
       email: "",
       bio: "",
       sessionCost: 500,
@@ -147,7 +146,6 @@ export default function DeveloperRequestPage() {
   const onSubmit = async (data: DeveloperFormData) => {
     const formData = new FormData();
 
-    formData.append("username", data.username);
     formData.append("email", data.email);
     formData.append("bio", data.bio);
     formData.append("degree", data.degree);
@@ -220,21 +218,7 @@ export default function DeveloperRequestPage() {
                 Personal Information
               </h2>
               <div className="space-y-6">
-                <div>
-                  <Label htmlFor="username" className="text-base">
-                    Full name
-                  </Label>
-                  <Input
-                    {...register("username")}
-                    placeholder="Your name"
-                    className="bg-neutral-800 border-neutral-700 mt-2 h-10 text-base"
-                  />
-                  {errors.username && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {errors.username.message}
-                    </p>
-                  )}
-                </div>
+               
                 <div>
                   <Label htmlFor="email" className="text-base">
                     Email

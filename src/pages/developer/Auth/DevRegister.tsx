@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { Link } from "react-router-dom";
 import { BottomGradient } from "@/components/ui/BottomGradient";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registrationSchema } from "@/utils/validation/userValidation";
 import { IRegisterData } from "@/types/types";
@@ -11,6 +11,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useDevRegister } from "@/hooks/devAuth/useDevRegister";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion"; 
+import PhoneInput from "react-phone-number-input"
 
 export default function DevRegisterPage() {
   const { register: registerUser, isLoading, googleLogin } = useDevRegister();
@@ -18,6 +19,7 @@ export default function DevRegisterPage() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<IRegisterData>({
     resolver: zodResolver(registrationSchema),
@@ -88,13 +90,21 @@ export default function DevRegisterPage() {
                   <Label htmlFor="contact" className="text-xs font-medium text-white">
                     Contact
                   </Label>
-                  <Input
-                    id="contact"
-                    placeholder="9876-543-210"
-                    type="tel"
-                    className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all rounded-xl h-10 text-sm"
-                    {...register("contact")}
+                  <Controller
+                    name="contact"
+                    control={control}
+                    render={({ field }) => (
+                      <PhoneInput
+                        {...field}
+                        international
+                        withCountryCallingCode
+                        defaultCountry="IN"
+                        placeholder="Enter phone number"
+                        className="w-full rounded-xl dark:bg-zinc-900 border border-zinc-800 text-white focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500"
+                      />
+                    )}
                   />
+
                   {errors.contact && (
                     <span className="text-xs text-red-500 mt-0.5 block">
                       {errors.contact.message}
