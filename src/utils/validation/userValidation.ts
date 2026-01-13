@@ -1,14 +1,27 @@
 import * as z from "zod";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 
 export const registrationSchema = z
   .object({
     username: z.string().min(3, "Username must be at least 3 characters long"),
-    email: z.string().email("Invalid email address"),
-    contact: z
+    email: z
       .string()
-      .regex(/^\d{10,}$/, "Please enter a valid phone number"),
+      .trim()
+      .min(5, "Email is too short")
+      .email("Invalid email format")
+      .regex(
+        /^[a-zA-Z0-9._%+-]{3,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        "Email must have at least 3 characters before @"
+      ),
+    contact: z.string().refine((value) => {
+      const phone = parsePhoneNumberFromString(value);
+      return phone?.isValid();
+    }, {
+      message: "Enter a valid international phone number",
+    }),
     password: z
       .string()
+      .trim()
       .min(8, "Password must be at least 8 characters long")
       .regex(/[a-z]/, "Password must contain at least one lowercase letter")
       .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
@@ -55,23 +68,6 @@ export const registrationSchema = z
     path: ["confirmPassword"],
   });
 
-
-export const editProfileSchema = z.object({
-  username: z.string().min(2, 'Username must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().optional(),
-  location: z.string().optional(),
-  bio: z.string().optional(),
-  skills: z.array(z.string()),
-  avatarUrl: z.string().optional(),
-  socialLinks: z.object({
-    github: z.string().url('Invalid URL').optional().or(z.literal('')),
-    linkedin: z.string().url('Invalid URL').optional().or(z.literal('')),
-    twitter: z.string().url('Invalid URL').optional().or(z.literal('')),
-    portfolio: z.string().url('Invalid URL').optional().or(z.literal(''))
-  })
-})
-
 export const profileSchema = z.object({
   username: z.string().trim()
     .min(2, 'Username must be at least 2 characters')
@@ -79,13 +75,12 @@ export const profileSchema = z.object({
         message: 'Username should be at least 2 characters',
       }),
   email: z.string().email(),
-  contact: z.union([
-    z.string()
-      .min(10, 'Contact number must be at least 10 digits')
-      .max(15, 'Contact number must not exceed 15 digits')
-      .regex(/^\d+$/, 'Contact must contain only numbers'),
-    z.number()
-  ]).optional(),
+  contact: z.string().refine((value) => {
+    const phone = parsePhoneNumberFromString(value);
+    return phone?.isValid();
+  }, {
+    message: "Enter a valid international phone number",
+  }),
   location: z.string().optional(),
   bio: z.string().trim().min(10, 'Bio should be at least 10 characters').refine((val) => val.trim().length >= 10, {
     message: 'Bio should be at least 10 characters',

@@ -10,6 +10,7 @@ import CustomSelector from '@/components/shared/CustomSelector';
 import { skillOptions, languageOptions } from '@/utils/selectOptions';
 import { developerProfileSchema, DeveloperProfileFormData } from '@/utils/validation/devProfileValidation';
 import { getFileNameFromUrls } from '@/utils/fileUtils';
+import PhoneInput from 'react-phone-number-input'
 
 interface ErrorMessageProps {
   error?: FieldError | Merge<FieldError, FieldErrorsImpl<any>>;
@@ -161,7 +162,7 @@ useEffect(() => {
 
       await updateProfile(formData);
     } catch (error) {
-      toast.error('Failed to update profile');
+      toast.error( 'Failed to update profile!!!');
     }
   };
 
@@ -305,7 +306,20 @@ useEffect(() => {
                   <Phone className="w-4 h-4" />
                   Contact
                 </label>
-                <input {...register('contact')} className={inputClassName} />
+                <Controller
+                  name="contact"
+                  control={control}
+                  render={({ field }) => (
+                    <PhoneInput
+                      {...field}
+                      international
+                      withCountryCallingCode
+                      defaultCountry="IN"
+                      placeholder="Enter phone number"
+                      className="w-full rounded-xl bg-zinc-900 border border-zinc-800 text-white focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500"
+                    />
+                  )}
+                />
                 <ErrorMessage error={errors.contact} />
               </div>
 

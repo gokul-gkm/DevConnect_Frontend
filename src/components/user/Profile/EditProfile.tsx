@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { motion } from 'framer-motion'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { ProfileFormData, profileSchema } from '@/utils/validation/userValidation'
+import PhoneInput from 'react-phone-number-input'
 
 const AVAILABLE_SKILLS = [
   "JavaScript", "TypeScript", "React", "Node.js", "Python", "Java", "C++", 
@@ -39,6 +40,7 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
       handleSubmit,
       formState: { errors, isSubmitting },
       setValue,
+      control,
       watch
     } = useForm<ProfileFormData>({
       resolver: zodResolver(profileSchema),
@@ -169,10 +171,19 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm text-gray-400">Phone</label>
-                  <Input
-                    {...register('contact')}
-                    className="bg-zinc-900/50 border-white/5 focus:border-purple-500/50"
-                    placeholder="Enter your phone number"
+                  <Controller
+                    name="contact"
+                    control={control}
+                    render={({ field }) => (
+                      <PhoneInput
+                        {...field}
+                        international
+                        withCountryCallingCode
+                        defaultCountry="IN"
+                        placeholder="Enter phone number"
+                        className="w-full rounded-xl dark:bg-zinc-900 border border-zinc-800 text-white focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500"
+                      />
+                    )}
                   />
                   {errors.contact && (
                     <p className="mt-1 text-sm text-red-500">{errors.contact.message}</p>

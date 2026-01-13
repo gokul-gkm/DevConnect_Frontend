@@ -1,12 +1,16 @@
+import parsePhoneNumberFromString from 'libphonenumber-js';
 import {z} from 'zod'
 
 export const developerProfileSchema = z.object({
   username: z.string().trim().min(3, 'Username must be at least 3 characters'),
   email: z.string().trim().email('Invalid email address'),
   bio: z.string().trim().min(10, 'Bio must be at least 10 characters'),
-  contact: z.union([z.string().trim(), z.number()])
-    .transform(val => val.toString())
-    .refine((val) => val.length >= 10, { message: 'Contact number must be at least 10 digits' }),
+  contact: z.string().refine((value) => {
+    const phone = parsePhoneNumberFromString(value);
+    return phone?.isValid();
+  }, {
+    message: "Enter a valid international phone number",
+  }),
   location: z.string().trim().optional(),
   jobTitle: z.string().trim().min(2, 'Job title is required'),
   companyName: z.string().trim().min(2, 'Company name is required'),
