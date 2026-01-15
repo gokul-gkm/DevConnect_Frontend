@@ -11,10 +11,14 @@ import { GoogleLogin } from "@react-oauth/google";
 import { useDevLogin } from "@/hooks/devAuth/useDevLogin";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion"; 
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 type LoginData = z.infer<typeof loginSchema>;
 
 export default function DevLogin() {
+
+  const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading, googleLogin } = useDevLogin();
 
   const {
@@ -71,6 +75,7 @@ export default function DevLogin() {
                 <Label htmlFor="password" className="text-xs font-medium text-white">
                   Password
                 </Label>
+                <div className="relative"> 
                 <Input
                   id="password"
                   placeholder="••••••••"
@@ -78,6 +83,14 @@ export default function DevLogin() {
                   className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all rounded-xl h-10 text-sm"
                   {...register("password")}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                  </div>
                 {errors.password && (
                   <span className="text-xs text-red-500 mt-0.5 block">
                     {errors.password.message}

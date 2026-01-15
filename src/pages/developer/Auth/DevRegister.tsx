@@ -12,21 +12,71 @@ import { useDevRegister } from "@/hooks/devAuth/useDevRegister";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion"; 
 import PhoneInput from "react-phone-number-input"
+import { Eye, EyeOff } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useCheckUsername } from "@/hooks/common/useCheckUsername";
+import { useDebounce } from "@/hooks/useDebounce";
+
 
 export default function DevRegisterPage() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { register: registerUser, isLoading, googleLogin } = useDevRegister();
+  const { checkUsername, isChecking, isAvailable } = useCheckUsername();
+  
+  const lastCheckedUsernameRef = useRef<string | null>(null);
+  
 
   const {
     register,
     handleSubmit,
     control,
+    watch,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<IRegisterData>({
     resolver: zodResolver(registrationSchema),
     mode: "onChange",
   });
 
+    const username = watch("username");
+    const debouncedUsername = useDebounce(username, 500);
+  
+    
+    useEffect(() => {
+      if (!debouncedUsername) return;
+  
+      if (errors.username) return;
+  
+      if (lastCheckedUsernameRef.current === debouncedUsername) return;
+  
+      lastCheckedUsernameRef.current = debouncedUsername;
+  
+      checkUsername(debouncedUsername);
+    }, [debouncedUsername]);
+  
+      
+    useEffect(() => {
+      if (isAvailable === false) {
+        setError("username", {
+          type: "manual",
+          message: "Username already taken",
+        });
+      }
+  
+      if (isAvailable === true) {
+        clearErrors("username");
+      }
+    }, [isAvailable]);
+  
+    
+    useEffect(() => {
+      lastCheckedUsernameRef.current = null;
+    }, [debouncedUsername]);
+
   const onSubmit = (data: IRegisterData) => {
+    if (isAvailable === false) return;
     registerUser(data);
   };
 
@@ -84,6 +134,17 @@ export default function DevRegisterPage() {
                       {errors.username.message}
                     </span>
                   )}
+                   {isChecking && !errors.username && (
+                    <span className="text-xs text-gray-400 mt-0.5 block">
+                      Checking username availability…
+                    </span>
+                  )}
+
+                  {isAvailable && !errors.username && (
+                    <span className="text-xs text-green-500 mt-0.5 block">
+                      Username is available ✓
+                    </span>
+                  )}
                 </div>
 
                 <div className="space-y-1.5">
@@ -136,6 +197,9 @@ export default function DevRegisterPage() {
                   <Label htmlFor="password" className="text-xs font-medium text-white">
                     Password
                   </Label>
+                  <div className="relative">
+
+
                   <Input
                     id="password"
                     placeholder="••••••••"
@@ -143,6 +207,14 @@ export default function DevRegisterPage() {
                     className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all rounded-xl h-10 text-sm"
                     {...register("password")}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                   {errors.password && (
                     <span className="text-xs text-red-500 mt-0.5 block">
                       {errors.password.message}
@@ -154,6 +226,9 @@ export default function DevRegisterPage() {
                   <Label htmlFor="confirmpassword" className="text-xs font-medium text-white">
                     Confirm Password
                   </Label>
+                  <div className="relative">
+
+                  
                   <Input
                     id="confirmpassword"
                     placeholder="••••••••"
@@ -161,6 +236,15 @@ export default function DevRegisterPage() {
                     className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all rounded-xl h-10 text-sm"
                     {...register("confirmPassword")}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition"
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+
                   {errors.confirmPassword && (
                     <span className="text-xs text-red-500 mt-0.5 block">
                       {errors.confirmPassword.message}

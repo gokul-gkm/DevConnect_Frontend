@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/utils";
@@ -9,14 +9,15 @@ import { resetPasswordSchema } from "@/utils/validation/userValidation";
 import { useSearchParams, Navigate } from "react-router-dom";
 import { useResetPassword } from "@/hooks/userAuth/useResetPassword";
 import * as z from "zod";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 type ResetPasswordData = z.infer<typeof resetPasswordSchema>;
 
 export default function UserResetPassword() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { resetPassword, isResetting } = useResetPassword();
 
   const {
@@ -53,12 +54,23 @@ export default function UserResetPassword() {
       <form className="my-3" onSubmit={handleSubmit(onSubmit)}>
         <LabelInputContainer className="mb-2">
           <Label htmlFor="password">New Password</Label>
+          <div className="relative">
+
+          
           <Input
             id="password"
             type="password"
             placeholder="••••••••"
             {...register("password")}
           />
+          <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+            </div>
           {errors.password && (
             <span className="text-xs text-red-500">
               {errors.password.message}
@@ -68,12 +80,23 @@ export default function UserResetPassword() {
 
         <LabelInputContainer className="mb-4">
           <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <div className="relative">
+
+         
           <Input
             id="confirmPassword"
             type="password"
             placeholder="••••••••"
             {...register("confirmPassword")}
           />
+           <button
+              type="button"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition"
+            >
+              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+             </div>
           {errors.confirmPassword && (
             <span className="text-xs text-red-500">
               {errors.confirmPassword.message}

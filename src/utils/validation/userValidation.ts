@@ -3,7 +3,22 @@ import { parsePhoneNumberFromString } from "libphonenumber-js";
 
 export const registrationSchema = z
   .object({
-    username: z.string().min(3, "Username must be at least 3 characters long"),
+    username: z
+  .string()
+  .trim()
+  .min(3, "Name must be at least 3 characters")
+  .max(40, "Name must not exceed 40 characters")
+  .regex(
+    /^[a-zA-Z0-9]+(?: [a-zA-Z0-9]+)*$/,
+    "Name can contain letters, numbers, and single spaces only"
+  )
+  .refine(
+    (value) => (value.match(/[a-zA-Z]/g)?.length ?? 0) >= 3,
+    {
+      message: "Name must contain at least 3 letters",
+    }
+  ),
+
     email: z
       .string()
       .trim()
@@ -40,7 +55,15 @@ export const registrationSchema = z
   });
 
   export const loginSchema = z.object({
-    email: z.string().email("Please enter a valid email"),
+    email: z
+      .string()
+      .trim()
+      .min(5, "Email is too short")
+      .email("Invalid email format")
+      .regex(
+        /^[a-zA-Z0-9._%+-]{3,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        "Email must have at least 3 characters before @"
+      ),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters long"),
@@ -49,7 +72,15 @@ export const registrationSchema = z
   export type LoginFormData = z.infer<typeof loginSchema>;
 
   export const forgotPasswordSchema = z.object({
-    email: z.string().email("Invalid email address").nonempty("Email is required"),
+    email: z
+          .string()
+          .trim()
+          .min(5, "Email is too short")
+          .email("Invalid email format")
+          .regex(
+            /^[a-zA-Z0-9._%+-]{3,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+            "Email must have at least 3 characters before @"
+          ).nonempty("Email is required"),
   });
 
   export const resetPasswordSchema = z
@@ -69,12 +100,31 @@ export const registrationSchema = z
   });
 
 export const profileSchema = z.object({
-  username: z.string().trim()
-    .min(2, 'Username must be at least 2 characters')
-    .max(30, 'Username must not exceed 30 characters').refine((val) => val.trim().length >= 2, {
-        message: 'Username should be at least 2 characters',
-      }),
-  email: z.string().email(),
+    username: z
+      .string()
+      .trim()
+      .min(3, "Name must be at least 3 characters")
+      .max(40, "Name must not exceed 40 characters")
+      .regex(
+        /^[a-zA-Z0-9]+(?: [a-zA-Z0-9]+)*$/,
+        "Name can contain letters, numbers, and single spaces only"
+      )
+      .refine(
+        (value) => (value.match(/[a-zA-Z]/g)?.length ?? 0) >= 3,
+        {
+          message: "Name must contain at least 3 letters",
+        }
+      ),
+
+  email: z
+      .string()
+      .trim()
+      .min(5, "Email is too short")
+      .email("Invalid email format")
+      .regex(
+        /^[a-zA-Z0-9._%+-]{3,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        "Email must have at least 3 characters before @"
+      ),
   contact: z.string().refine((value) => {
     const phone = parsePhoneNumberFromString(value);
     return phone?.isValid();
