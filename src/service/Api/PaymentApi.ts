@@ -3,12 +3,15 @@ import { paymentRoutes } from "@/utils/constants";
 import { CreatePaymentSessionResponse, Wallet } from "@/types/payment";
 
 const PaymentApi = {
-    async createPaymentSession(sessionId: string): Promise<CreatePaymentSessionResponse> {
-        const response = await axiosClient.post<CreatePaymentSessionResponse>(
-            `${paymentRoutes.createSession}/${sessionId}/payment`
-        );
-        return response.data;
-    },
+    async createPaymentSession(
+  sessionId: string
+): Promise<CreatePaymentSessionResponse> {
+  const response = await axiosClient.post<CreatePaymentSessionResponse>(
+    `${paymentRoutes.createSession}/${sessionId}/payment`
+  );
+  return response.data;
+},
+
 
     async getWallet(): Promise<Wallet> {
         const response = await axiosClient.get<Wallet>(paymentRoutes.wallet);

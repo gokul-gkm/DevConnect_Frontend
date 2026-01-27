@@ -59,7 +59,8 @@ export const useDevRegister = () => {
             username: data.user.username,
             email: data.user.email,
             role: data.user.role,
-            _id: data.user._id
+            _id: data.user._id,
+            token: data.token!
           })
         );
         toast.success("Login successful!");

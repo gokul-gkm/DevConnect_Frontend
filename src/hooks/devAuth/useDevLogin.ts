@@ -4,7 +4,6 @@ import { toast } from 'react-hot-toast';
 import DevAuthApi from '@/service/Api/DevAuthApi';
 import { useAppDispatch } from '@/hooks/useAppSelector';
 import { setCredentials } from '@/redux/slices/authSlice';
-import { socketService } from '@/service/socket/socketService';
 
 
 export const useDevLogin = () => {
@@ -27,15 +26,11 @@ export const useDevLogin = () => {
             username: data.user.username,
             email: data.user.email,
             role: data.user.role,
-            _id: data.user._id
+            _id: data.user._id,
+            token: data.token!
           })
         );
         
-        try {
-          await socketService.connect(data.token!, 'developer');
-        } catch (error) {
-          console.error("Error connecting socket:", error);
-        }
         console.log(data.user)
         localStorage.setItem('user-id', data.user._id);
         localStorage.setItem("access-token", data.token!);
@@ -61,18 +56,17 @@ export const useDevLogin = () => {
       const response = await DevAuthApi.googleLogin(credential);
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess:async (data) => {
       if (data.success && data.user) {
         dispatch(
           setCredentials({
             username: data.user.username,
             email: data.user.email,
             role: data.user.role,
-            _id: data.user._id
+            _id: data.user._id,
+            token: data.token!
           })
-        );
-        
-        socketService.connect(data.token!, 'developer');
+        );   
         toast.success("Login successful!");
         navigate("/developer/dashboard");
       }

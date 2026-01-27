@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, X, Menu, User, LogOut, Bell } from 'lucide-react';
+import { Search, X, Menu, User, LogOut, Bell, MessageCircle } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
 import { logout } from '@/redux/slices/authSlice';
 import { socketService } from '@/service/socket/socketService';
 import { cn } from '@/lib/utils';
 import { useNotificationContext } from '@/contexts/NotificationContext';
 import AuthApi from '@/service/Api/AuthApi';
+import { useUnreadMessagesContext } from '@/contexts/UnreadMessagesContext';
 
 const navItems = [
   { name: 'Home', delay: 0, url: '/' },
@@ -25,18 +26,10 @@ const Navbar: React.FC = () => {
   const dispatch = useAppDispatch();
   const { isAuthenticated, username, email, _id } = useAppSelector((state) => state.user);
   const { unreadCount } = useNotificationContext();
-  useEffect(() => {
-    if (isAuthenticated && _id) {
-        const token = localStorage.getItem('access-token');
-        if (token) {
-            socketService.connect(token);
-        }
-    }
-    
-    return () => {
-        socketService.cleanup();
-    };
-  }, [isAuthenticated, _id]);
+  const { unreadCount: unreadMessageCount } = useUnreadMessagesContext();
+  
+  console.log("unreadmessagecount : ", unreadMessageCount)
+
 
   const handleLogout = () => {
     socketService.logout();
@@ -145,11 +138,6 @@ const Navbar: React.FC = () => {
     );
   };
 
-  useEffect(() => {
-    return () => {
-        socketService.cleanup();
-    };
-  }, []);
 
   return (
     <motion.nav
@@ -237,6 +225,25 @@ const Navbar: React.FC = () => {
             </motion.button>
 
             {isAuthenticated && (
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => navigate('/chats')}
+              className="p-2 rounded-full relative
+                       bg-white/5 hover:bg-white/10
+                       border border-white/10 hover:border-white/20
+                       backdrop-blur-sm transition-all duration-300"
+            >
+              <MessageCircle className="w-4 h-4 md:w-5 md:h-5 text-white" />
+              {unreadMessageCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+                </span>
+              )}
+            </motion.button>
+            )}
+
+        {isAuthenticated && (
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}

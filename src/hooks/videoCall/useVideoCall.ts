@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { socketService } from "@/service/socket/socketService";
 import { webRTCService } from "@/service/webrtc/webRTCService";
 
+/* ============================ TYPES ============================ */
+
 interface UseVideoCallProps {
   sessionId: string;
   isHost?: boolean;
@@ -40,12 +42,17 @@ interface UseVideoCallReturn {
   endCall: () => void;
 }
 
+/* ============================ HOOK ============================ */
+
 export function useVideoCall({
   sessionId,
   isHost = false,
   onError,
 }: UseVideoCallProps): UseVideoCallReturn {
   const memoSessionId = useMemo(() => sessionId, [sessionId]);
+
+  const userRole =
+    (localStorage.getItem("user-role") as "user" | "developer") || "user";
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStreams, setRemoteStreams] = useState(
@@ -57,6 +64,7 @@ export function useVideoCall({
 
   const [screenShareStream, setScreenShareStream] =
     useState<MediaStream | null>(null);
+
   const [participants, setParticipants] = useState<VideoCallParticipant[]>([]);
   const [sessionData] = useState<any>(null);
 
@@ -72,13 +80,12 @@ export function useVideoCall({
   const [error, setError] = useState<string | null>(null);
 
   const mountedRef = useRef(true);
-  const isInitializingRef = useRef(false);
+  const initializingRef = useRef(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const userRole =
-    (localStorage.getItem("user-role") as "user" | "developer") || "user";
-
   const TIMER_KEY = `call-start-${sessionId}`;
+
+  /* ============================ TIMER ============================ */
 
   const startTimer = (startTs: number) => {
     stopTimer();
@@ -93,6 +100,8 @@ export function useVideoCall({
       timerRef.current = null;
     }
   };
+
+  /* ============================ WEBRTC CALLBACKS ============================ */
 
   useEffect(() => {
     webRTCService.onTrack((stream, peerId) => {
@@ -122,35 +131,80 @@ export function useVideoCall({
     });
   }, []);
 
+  /* ============================ INIT ============================ */
+
+
   useEffect(() => {
+    console.log("🎬 [useVideoCall] Initialization effect triggered", {
+      sessionId: memoSessionId,
+      userRole,
+      isHost,
+      isReconnecting
+    });
     mountedRef.current = true;
 
     const initialize = async () => {
-      if (isReconnecting || isInitializingRef.current) return;
 
-      isInitializingRef.current = true;
+      if (initializingRef.current) {
+        console.log("⏭️ [useVideoCall] Already initializing, skipping");
+        return;
+      }
+    
+      if (isReconnecting) {
+        console.log("⏭️ [useVideoCall] Reconnecting in progress, skipping normal init");
+        return;
+      }
+      
+      if (localStream && isConnected) {
+        console.log("⏭️ [useVideoCall] Already initialized with stream, skipping");
+        return;
+      }
+      
+      console.log("🚀 [useVideoCall] Starting initialization");
+      initializingRef.current = true;
       setIsLoading(true);
       setError(null);
 
       try {
+        console.log("⏳ [useVideoCall] Step 1: Waiting for socket connection");
         const socketReady = await socketService.waitForConnection();
-        if (!socketReady) throw new Error("Signaling server unavailable");
+        if (!socketReady) {
+          console.error("❌ [useVideoCall] Socket connection failed");
+          throw new Error("Signaling server unavailable");
+        }
+        console.log("✅ [useVideoCall] Socket connected");
 
-        const stream = await webRTCService.startLocalStream({
-          audio: true,
-          video: true,
+        console.log("📹 [useVideoCall] Step 2: Getting local media stream");
+        const stream = await webRTCService.startLocalStream();
+        if (!stream) {
+          console.error("❌ [useVideoCall] Media stream failed");
+          throw new Error("Camera/Microphone permission denied");
+        }
+        console.log("✅ [useVideoCall] Local stream obtained", {
+          audioTracks: stream.getAudioTracks().length,
+          videoTracks: stream.getVideoTracks().length
         });
-        if (!stream) throw new Error("Failed to access camera/microphone");
 
+        console.log("🔧 [useVideoCall] Step 3: Initializing WebRTC", {
+          sessionId: memoSessionId,
+          role: userRole
+        });
         const ok = await webRTCService.initialize(
           memoSessionId,
-          userRole,
-          isHost
+          userRole
         );
-        if (!ok) throw new Error("Failed to initialize WebRTC");
+        if (!ok) {
+          console.error("❌ [useVideoCall] WebRTC initialization failed");
+          throw new Error("WebRTC initialization failed");
+        }
+        console.log("✅ [useVideoCall] WebRTC initialized");
 
-        if (!mountedRef.current) return;
+        if (!mountedRef.current) {
+          console.warn("⚠️ [useVideoCall] Component unmounted during init");
+          return
+        };
 
+        console.log("✅ [useVideoCall] Step 4: Setting up local stream and state");
         setLocalStream(stream);
         setIsConnected(true);
         setIsLoading(false);
@@ -159,58 +213,121 @@ export function useVideoCall({
         if (!start) {
           start = Date.now().toString();
           localStorage.setItem(TIMER_KEY, start);
+          console.log("⏱️ [useVideoCall] Call timer started");
+        } else {
+          console.log("⏱️ [useVideoCall] Resuming existing call timer");
         }
         startTimer(parseInt(start));
+
+        console.log("🎉 [useVideoCall] Initialization complete");
       } catch (err: any) {
+        console.error("❌ [useVideoCall] Initialization error:", err);
         setError(err.message);
         setIsConnected(false);
         onError?.(err.message);
       } finally {
-        isInitializingRef.current = false;
+        initializingRef.current = false;
+        console.log("🏁 [useVideoCall] Initialization finished");
       }
     };
 
     initialize();
+
     return () => {
+      console.log("🧹 [useVideoCall] Cleanup");
       mountedRef.current = false;
     };
-  }, [memoSessionId, isHost, isReconnecting]);
+  }, [memoSessionId, userRole, isHost, isReconnecting, localStream, isConnected]);
+
+  /* ============================ PARTICIPANTS ============================ */
 
   useEffect(() => {
+    console.log("👥 [useVideoCall] Participants effect triggered", {
+      localStream: !!localStream,
+      remoteStreamsCount: remoteStreams.size
+    });
     const list: VideoCallParticipant[] = [
       {
         id: "local",
         stream: localStream,
         role: userRole,
         username: "You",
-        profilePicture: localStorage.getItem("user-profile-pic") || undefined,
+        profilePicture:
+          localStorage.getItem("user-profile-pic") || undefined,
       },
     ];
 
     remoteStreams.forEach((stream, id) => {
-      list.push({ id, stream, role: "user", username: "Remote" });
+      console.log("👥 [useVideoCall] Adding remote participant:", id);
+      list.push({
+        id,
+        stream,
+        role: "user",
+        username: "Remote",
+      });
     });
-
+    console.log("👥 [useVideoCall] Total participants:", list.length);
     setParticipants(list);
-  }, [localStream, remoteStreams, remoteScreenStreams]);
+  }, [localStream, remoteStreams, userRole]);
+
+
+
+  /* ============================ SOCKET RECONNECT ============================ */
 
   useEffect(() => {
+    console.log("🔄 [useVideoCall] Socket reconnect effect triggered");
+
     const onDisconnect = () => {
+      console.log("🔴 [useVideoCall] Socket disconnected");
       setIsReconnecting(true);
       setIsConnected(false);
     };
 
     const onConnect = async () => {
-      setIsReconnecting(true);
-
+      console.log("🟢 [useVideoCall] Socket reconnected, reinitializing");
       try {
-        await webRTCService.reconnect(sessionId);
-        await webRTCService.renegotiateAllPeers();
-
-        setIsConnected(true);
-        setIsReconnecting(false);
-      } catch {
         setIsReconnecting(true);
+        
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        console.log("📹 [useVideoCall] Reconnect: Getting local media stream");
+        const stream = await webRTCService.startLocalStream();
+        if (!stream) {
+          console.error("❌ [useVideoCall] Reconnect: Media stream failed");
+          throw new Error("Camera/Microphone permission denied");
+        }
+        console.log("✅ [useVideoCall] Reconnect: Local stream obtained");
+        
+        // Initialize WebRTC
+        const ok = await webRTCService.initialize(memoSessionId, userRole);
+        if (!ok) {
+          console.error("❌ [useVideoCall] Reconnect: WebRTC initialization failed");
+          throw new Error("WebRTC initialization failed");
+        }
+        
+        if (mountedRef.current) {
+          setLocalStream(stream);
+          setIsConnected(true);
+          setIsLoading(false);
+          
+          let start = localStorage.getItem(TIMER_KEY);
+          if (!start) {
+            start = Date.now().toString();
+            localStorage.setItem(TIMER_KEY, start);
+            console.log("⏱️ [useVideoCall] Reconnect: Call timer started");
+          } else {
+            console.log("⏱️ [useVideoCall] Reconnect: Resuming existing call timer");
+          }
+          startTimer(parseInt(start));
+        }
+        
+        console.log("✅ [useVideoCall] Reconnection complete");
+      } catch(err) {
+        console.error("❌ [useVideoCall] Reconnection failed:", err);
+        setIsConnected(false);
+        setError(err instanceof Error ? err.message : "Reconnection failed");
+      } finally {
+        setIsReconnecting(false);
       }
     };
 
@@ -218,29 +335,28 @@ export function useVideoCall({
     socketService.on("connect", onConnect);
 
     return () => {
+      console.log("🧹 [useVideoCall] Removing reconnect listeners");
       socketService.off("disconnect", onDisconnect);
       socketService.off("connect", onConnect);
     };
-  }, [sessionId]);
+  }, [memoSessionId, userRole]);
 
-  const toggleMute = useCallback(async () => {
-  if (!localStream) return;
+  /* ============================ CONTROLS ============================ */
 
-  const audioTrack = localStream.getAudioTracks()[0];
-  if (!audioTrack) return;
-
-  const nextEnabled = !audioTrack.enabled;
-
-  if (await webRTCService.toggleAudio(nextEnabled)) {
-    setIsMuted(!nextEnabled);
-  }
-}, [localStream]);
-
-  const toggleVideo = useCallback(async () => {
+  const toggleMute = useCallback(() => {
     if (!localStream) return;
-    if (await webRTCService.toggleVideo(!isVideoEnabled)) {
-      setIsVideoEnabled((v) => !v);
-    }
+    const track = localStream.getAudioTracks()[0];
+    if (!track) return;
+
+    const next = !track.enabled;
+    webRTCService.toggleAudio(next);
+    setIsMuted(!next);
+  }, [localStream]);
+
+  const toggleVideo = useCallback(() => {
+    if (!localStream) return;
+    webRTCService.toggleVideo(!isVideoEnabled);
+    setIsVideoEnabled((v) => !v);
   }, [localStream, isVideoEnabled]);
 
   const toggleScreenShare = useCallback(async () => {
@@ -262,6 +378,8 @@ export function useVideoCall({
     }
   }, [isScreenSharing]);
 
+  /* ============================ END CALL ============================ */
+
   const endCall = useCallback(() => {
     stopTimer();
     localStorage.removeItem(TIMER_KEY);
@@ -269,7 +387,7 @@ export function useVideoCall({
     localStream?.getTracks().forEach((t) => t.stop());
 
     webRTCService.leaveRoom();
-    webRTCService.cleanup();
+    webRTCService.cleanup(false);
 
     setLocalStream(null);
     setRemoteStreams(new Map());

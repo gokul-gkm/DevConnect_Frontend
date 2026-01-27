@@ -16,7 +16,7 @@ export interface PaymentSession {
     | 'refunded';
   
   export interface CreatePaymentSessionResponse {
-    url: string;
+    clientSecret: string;
     sessionId: string;
   }
   

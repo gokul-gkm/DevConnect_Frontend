@@ -12,6 +12,8 @@ import { QueryProvider } from "./contexts/QueryProvider.tsx";
 
 import { SocketManager } from "@/components/socket/SocketManager";
 import { NotificationProvider } from "./contexts/NotificationContext.tsx";
+import { UnreadMessagesProvider } from "./contexts/UnreadMessagesContext.tsx";
+import { CallProvider } from "./contexts/CallContext.tsx";
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
 
@@ -22,11 +24,15 @@ createRoot(document.getElementById("root")!).render(
     <GoogleOAuthProvider clientId={googleClientId}>
       <Provider store={store}>
         <NotificationProvider>
-          <PersistGate persistor={persistor}>
-            <SocketManager />
-            <CustomToaster />
-            <RouterProvider router={Router} />
-          </PersistGate>
+          <UnreadMessagesProvider>
+            <CallProvider>
+              <PersistGate persistor={persistor}>
+              <SocketManager />
+              <CustomToaster />
+              <RouterProvider router={Router} />
+              </PersistGate>
+            </CallProvider>
+          </UnreadMessagesProvider>
         </NotificationProvider>
       </Provider>
     </GoogleOAuthProvider>

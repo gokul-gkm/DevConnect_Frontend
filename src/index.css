@@ -120,3 +120,12 @@ select::-webkit-scrollbar-thumb:hover {
   justify-content: center !important;
   margin: 0.1rem 0 !important;
 }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; 
+  scrollbar-width: none;    
+}

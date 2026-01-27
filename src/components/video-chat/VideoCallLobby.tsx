@@ -16,8 +16,8 @@ import { cn } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
 import { useSessionDetails } from '@/hooks/session/useSessionDetails';
 import SessionApi from '@/service/Api/SessionApi';
-import { useVideoCallState } from '@/hooks/videoCall/useVideoCallState';
 import VideoSessionApi from '@/service/Api/VideoSessionApi';
+import { socketService } from '@/service/socket/socketService';
 
 interface MobileAudioSettingsProps {
   isMuted: boolean;
@@ -61,18 +61,24 @@ export default function VideoCallLobby() {
   const audioDataArray = useRef<Uint8Array | null>(null);
   const [isHost, setIsHost] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
+
+  const [isSocketReady, setIsSocketReady] = useState(false);
+
   
   const { data: session } = useSessionDetails(sessionId);
-  const { isConnected, error: videoCallError, isInitializing } = useVideoCallState({
-    sessionId,
-    isHost
-  });
-  
+
   useEffect(() => {
-    if (videoCallError) {
-      toast.error(videoCallError);
-    }
-  }, [videoCallError]);
+  let mounted = true;
+
+  socketService.waitForConnection().then(ok => {
+    if (mounted && ok) setIsSocketReady(true);
+  });
+
+  return () => {
+    mounted = false;
+  };
+}, []);
+
   
   useEffect(() => {
     console.log('[VideoCallLobby Step 3] Setting up camera initialization');
@@ -293,31 +299,29 @@ export default function VideoCallLobby() {
     }
   };
   
-  const handleStartCall = async () => {
-    if (isInitializing || isJoining) return;
-    
-    try {
-      setIsJoining(true);
-      
-      if (isHost) {
-        await startVideoSession();
-      } else {
-        if (!isConnected) {
-          toast.error('Not connected to video call');
-          return;
-        }
-        localStorage.setItem('call-role', 'user');
-        localStorage.setItem('active-session-id', sessionId);
-        navigate(`/video-call/${sessionId}?role=user`);
-      }
-    } catch (error) {
-      console.error('Error starting call:', error);
-      toast.error('Failed to start call. Please try again.');
-    } finally {
-      setIsJoining(false);
+const handleStartCall = async () => {
+  if (isJoining) return;
+
+  try {
+    setIsJoining(true);
+
+    if (isHost) {
+      await startVideoSession();
+    } else {
+      localStorage.setItem('call-role', 'user');
+      localStorage.setItem('active-session-id', sessionId);
+
+      navigate(`/video-call/${sessionId}?role=user`);
     }
-  };
-  
+  } catch (error) {
+    console.error('Error starting call:', error);
+    toast.error('Failed to start call. Please try again.');
+  } finally {
+    setIsJoining(false);
+  }
+};
+
+
   const startVideoSession = async () => {
     try {
  
@@ -572,10 +576,10 @@ export default function VideoCallLobby() {
               <Button
                 className={cn(
                   "bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-xl py-3 px-8 mx-auto h-14 text-lg gap-2 border border-emerald-500/30 shadow-[0_8px_20px_-6px_rgba(16,185,129,0.3)]",
-                  (isJoining || isInitializing) && "opacity-70 cursor-not-allowed"
+                  (isJoining || !isSocketReady) && "opacity-70 cursor-not-allowed"
                 )}
                 onClick={handleStartCall}
-                disabled={!isReadyToJoin || isJoining || isInitializing}
+                disabled={!isReadyToJoin || !isSocketReady || isJoining }
               >
                 {isJoining ? (
                   <>

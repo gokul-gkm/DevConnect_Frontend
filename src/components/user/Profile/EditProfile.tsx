@@ -258,6 +258,10 @@ useEffect(() => {
                         withCountryCallingCode
                         defaultCountry="IN"
                         placeholder="Enter phone number"
+                        value={field.value || ""}
+                        onChange={(value) => {
+                          field.onChange(value ?? "");
+                        }}
                         className="w-full rounded-xl dark:bg-zinc-900 border border-zinc-800 text-white focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500"
                       />
                     )}
@@ -347,7 +351,7 @@ useEffect(() => {
                     }
                   }}
                   variant="outline"
-                  className="border-white/5 hover:bg-white/5"
+                  className="border-white/5 hover:bg-white/5 rounded-xl"
                   disabled={!newSkill}
                 >
                   <Plus className="w-4 h-4" />

@@ -40,12 +40,12 @@ export const useLogin = () => {
             username: response.user.username,
             email: response.user.email,
             role: role,
-            _id: response.user._id
+            _id: response.user._id,
+            token: response.token!
           })
         );
         
         try {
-          await socketService.connect(response.token!, 'user');
           
           if (role === 'developer') {
             socketService.emit('developer:set-online', { developerId: response.user._id });

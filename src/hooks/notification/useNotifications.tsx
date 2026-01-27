@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { socketService } from '@/service/socket/socketService';
 import { toast } from 'react-hot-toast';
 import NotificationApi from '@/service/Api/NotificationApi';
-import { Calendar } from 'lucide-react';
 
 export interface Notification {
   id: string;
@@ -19,242 +18,174 @@ export interface Notification {
 
 export const useNotifications = (isAuthenticated: boolean) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const notificationsRef = useRef<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [pagination, setPagination] = useState<{ page: number; limit: number; totalPages: number; totalItems: number }>({
+  const notificationsRef = useRef<Notification[]>([]);
+  const mountedRef = useRef(true);
+
+  const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
     totalPages: 1,
     totalItems: 0
   });
 
-  const [totalsByType, setTotalsByType] = useState<{ message: number; session: number; update: number; alert: number }>({
-    message: 0, session: 0, update: 0, alert: 0
+  const [totalsByType, setTotalsByType] = useState({
+    message: 0,
+    session: 0,
+    update: 0,
+    alert: 0
   });
-    
+
   useEffect(() => {
     notificationsRef.current = notifications;
   }, [notifications]);
 
+  /* =========================
+     FETCH
+  ========================= */
+
   const fetchNotifications = useCallback(async (opts?: { page?: number; limit?: number }) => {
+    if (!isAuthenticated) return;
+
     try {
-      if (!isAuthenticated) return; 
       setIsLoading(true);
+
       const page = opts?.page ?? pagination.page;
       const limit = opts?.limit ?? pagination.limit;
 
-      const response = await NotificationApi.getNotifications({ page, limit });
-      
-      if (response.success) {
-        const mappedNotifications = (response.data || []).map((notif: any) => ({
-          id: notif._id,
-          title: notif.title,
-          message: notif.message,
-          type: notif.type,
-          isRead: notif.isRead,
-          timestamp: notif.createdAt,
-          sender: notif.sender ? {
-            name: notif.sender.username,
-            avatar: notif.sender.profilePicture
-          } : undefined
+      const res = await NotificationApi.getNotifications({ page, limit });
+
+      if (res.success) {
+        const mapped: Notification[] = (res.data || []).map((n: any) => ({
+          id: n._id,
+          title: n.title,
+          message: n.message,
+          type: n.type,
+          isRead: n.isRead,
+          timestamp: n.createdAt,
+          sender: n.sender
+            ? { name: n.sender.username, avatar: n.sender.profilePicture }
+            : undefined
         }));
-        
-        setNotifications(mappedNotifications);
-        if (response.pagination) {
-          setPagination(response.pagination);
-        }
-        if (response.totalsByType) {
-          setTotalsByType(response.totalsByType);
-        }
+
+        setNotifications(mapped);
+        if (res.pagination) setPagination(res.pagination);
+        if (res.totalsByType) setTotalsByType(res.totalsByType);
       }
-      
-      const countResponse = await NotificationApi.getUnreadCount();
-      if (countResponse.success && countResponse.data) {
-        setUnreadCount(countResponse.data.count);
+
+      const unreadRes = await NotificationApi.getUnreadCount();
+      if (unreadRes.success) {
+        setUnreadCount(unreadRes.data.count);
       }
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+    } catch (err) {
+      console.error('Failed to fetch notifications', err);
     } finally {
       setIsLoading(false);
     }
   }, [isAuthenticated, pagination.page, pagination.limit]);
 
+  /* =========================
+     MARK READ
+  ========================= */
+
   const markAsRead = useCallback(async (id: string) => {
-    try {
-      const notification = notificationsRef.current.find(n => n.id === id);
-      const wasUnread = notification && !notification.isRead;
-      
-      setNotifications(prev => prev.map(n => 
-        n.id === id ? { ...n, isRead: true } : n
-      ));
+    const notif = notificationsRef.current.find(n => n.id === id);
+    if (!notif || notif.isRead) return true;
 
-      if (wasUnread) {
-        setUnreadCount(prev => Math.max(0, prev - 1));
-      }
+    setNotifications(prev =>
+      prev.map(n => (n.id === id ? { ...n, isRead: true } : n))
+    );
+    setUnreadCount(c => Math.max(0, c - 1));
 
-      socketService.markNotificationAsRead(id);
-      
-      await NotificationApi.markAsRead(id);
-      
-      return true;
-    } catch (error) {
-      console.error('Failed to mark notification as read:', error);
-      fetchNotifications();
-      return false;
-    }
-  }, [fetchNotifications]); 
+    socketService.markNotificationRead(id);
+    await NotificationApi.markAsRead(id);
+
+    return true;
+  }, []);
 
   const markAllAsRead = useCallback(async () => {
-    try {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    setUnreadCount(0);
 
-      const unreadNotifications = notificationsRef.current.filter(n => !n.isRead).length;
-      console.log(`Marking all ${unreadNotifications} notifications as read`);
-      
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-      setUnreadCount(0);
-      
-      socketService.markAllNotificationsAsRead();
-    
-      await NotificationApi.markAllAsRead();
-      
-      return true;
-    } catch (error) {
-      console.error('Failed to mark all notifications as read:', error);
-      fetchNotifications();
-      return false;
-    }
-  }, [fetchNotifications]);
+    socketService.markAllNotificationsRead();
+    await NotificationApi.markAllAsRead();
+
+    return true;
+  }, []);
+
+  /* =========================
+     DELETE
+  ========================= */
 
   const deleteNotification = useCallback(async (id: string) => {
-    try {
-      const notification = notificationsRef.current.find(n => n.id === id);
-      const wasUnread = notification && !notification.isRead;
+    const notif = notificationsRef.current.find(n => n.id === id);
+    const wasUnread = notif && !notif.isRead;
 
-      setNotifications(prev => prev.filter(n => n.id !== id));
-      
-      if (wasUnread) {
-        setUnreadCount(prev => Math.max(0, prev - 1));
-      }
-      
-      await NotificationApi.deleteNotification(id);
-      
-      toast.success('Notification deleted', {
-        style: {
-          background: '#0f172a',
-          border: '1px solid #f43f5e40',
-          color: '#ffffff'
-        }
-      });
-      
-      return true;
-    } catch (error) {
-      console.error('Failed to delete notification:', error);
-      fetchNotifications();
-      return false;
-    }
-  }, [fetchNotifications]);
+    setNotifications(prev => prev.filter(n => n.id !== id));
+    if (wasUnread) setUnreadCount(c => Math.max(0, c - 1));
+
+    await NotificationApi.deleteNotification(id);
+
+    toast.success('Notification deleted');
+    return true;
+  }, []);
+
+  /* =========================
+     SOCKET LISTENERS
+  ========================= */
+
 
   useEffect(() => {
-    let isMounted = true;
-    
-    const handleNewNotification = (data: any) => {
-      console.log('🎉New notification received:', data);
-      if (data && data.notification) {
+    mountedRef.current = true;
 
-        console.log('New notification received:', data.notification);
-        setNotifications(prev => [data.notification, ...prev]);
-        setUnreadCount(prev => prev + 1);
+    const init = async () => {
+      if (!socketService.isConnected()) {
+        await socketService.waitForConnection();
       }
-      
+
+      await fetchNotifications();
     };
 
-    const handleSessionUpdate = (data: any) => {
-      console.log('Session update received:', data);
-      if (data.sessionId && data.status) {
-        const statusNotification: Notification = {
-          id: data.sessionId,
-          title: 'Session Status Updated',
-          message: `Session has been ${data.status}`,
-          type: 'session' as const,
-          isRead: false,
-          timestamp: new Date().toISOString(),
-          sender: data.sender
-        };
-        
-        toast.custom((t) => (
-          <div className={`
-            ${t.visible ? 'animate-enter' : 'animate-leave'}
-            max-w-md w-full bg-black/80 backdrop-blur-xl shadow-lg rounded-2xl pointer-events-auto 
-            flex p-4 border border-white/10 transition-all duration-500 ease-in-out
-          `}>
-            <div className="w-full flex items-start gap-3">
-              <div className="p-2 rounded-xl bg-emerald-950/50 text-emerald-400">
-                <Calendar className="w-5 h-5" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-white">{statusNotification.title}</h3>
-                <p className="text-sm text-gray-300 mt-1 line-clamp-2">{statusNotification.message}</p>
-              </div>
-            </div>
-          </div>
-        ), {
-          duration: 5000,
-          position: 'top-right',
-        });
-      }
-    };
-
-    const setupSocketListeners = async () => {
-      try {
-        if (!socketService.isConnected()) {
-          console.log('Socket not connected, waiting for connection...');
-          await socketService.waitForConnection();
-        }
-
-        await fetchNotifications();
-        
-        
-        socketService.off('notification:new', handleNewNotification);
-        socketService.off('session:updated', handleSessionUpdate);
-        
-        socketService.on('notification:new', (data) => {
-          console.log('Received notification:new event:', data);
-          if (isMounted) {
-            handleNewNotification(data);
-          }
-        });
-        
-        socketService.on('session:updated', (data) => {
-          console.log('Received session:updated event:', data);
-          if (isMounted) {
-            handleSessionUpdate(data);
-          }
-        });
-        
-       
-      } catch (error) {
-        console.error('Error setting up socket listeners:', error);
-      }
-    };
-
-    setupSocketListeners();
+    init();
 
     return () => {
-      isMounted = false;
-      socketService.off('notification:new', handleNewNotification);
-      socketService.off('session:updated', handleSessionUpdate);
+      mountedRef.current = false;
     };
   }, [fetchNotifications]);
 
-  const updateParams = useCallback(async (params: { page?: number; limit?: number }) => {
-    const next = {
-      page: params.page ?? pagination.page,
-      limit: params.limit ?? pagination.limit
-    };
-    await fetchNotifications(next);
-  }, [pagination.page, pagination.limit, fetchNotifications]);
+  /* =========================
+     PAGINATION
+  ========================= */
+
+  const updateParams = useCallback(
+    async (params: { page?: number; limit?: number }) => {
+      await fetchNotifications({
+        page: params.page ?? pagination.page,
+        limit: params.limit ?? pagination.limit
+      });
+    },
+    [pagination.page, pagination.limit, fetchNotifications]
+  );
+
+  const addNotification = useCallback((n: any) => {
+  setNotifications(prev => [
+    {
+      id: n.id,
+      title: n.title,
+      message: n.message,
+      type: n.type,
+      isRead: false,
+      timestamp: n.timestamp,
+      sender: n.sender
+    },
+    ...prev
+  ]);
+
+  setUnreadCount(c => c + 1);
+}, []);
+
 
   return {
     notifications,
@@ -266,6 +197,7 @@ export const useNotifications = (isAuthenticated: boolean) => {
     refresh: fetchNotifications,
     pagination,
     updateParams,
-    totalsByType
+    totalsByType,
+    addNotification
   };
 };
