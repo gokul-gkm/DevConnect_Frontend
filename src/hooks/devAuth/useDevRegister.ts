@@ -2,13 +2,11 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import DevAuthApi from '@/service/Api/DevAuthApi';
-import { useAppDispatch } from '@/hooks/useAppSelector';
-import { setCredentials } from '@/redux/slices/authSlice';
+
 import { IRegisterData } from '@/types/types';
 
 export const useDevRegister = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
 
   const {
     mutate: register,
@@ -44,39 +42,10 @@ export const useDevRegister = () => {
     }
   });
 
-  const {
-    mutate: googleLogin,
-    isPending: isGoogleLoading
-  } = useMutation({
-    mutationFn: async (credential: string) => {
-      const response = await DevAuthApi.googleLogin(credential);
-      return response;
-    },
-    onSuccess: (data) => {
-      if (data.success && data.user) {
-        dispatch(
-          setCredentials({
-            username: data.user.username,
-            email: data.user.email,
-            role: data.user.role,
-            _id: data.user._id,
-            token: data.token!
-          })
-        );
-        toast.success("Login successful!");
-        navigate("/");
-      }
-    },
-    onError: (error: any) => {
-      console.error("Google login failed:", error);
-    }
-  });
 
   return {
     register,
     isLoading,
-    googleLogin,
-    isGoogleLoading,
     error
   };
 };

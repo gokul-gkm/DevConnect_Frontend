@@ -7,7 +7,6 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registrationSchema } from "@/utils/validation/userValidation";
 import { IRegisterData } from "@/types/types";
-import { GoogleLogin } from '@react-oauth/google';
 import { useDevRegister } from "@/hooks/devAuth/useDevRegister";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion"; 
@@ -21,7 +20,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 export default function DevRegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { register: registerUser, isLoading, googleLogin } = useDevRegister();
+  const { register: registerUser, isLoading } = useDevRegister();
   const { checkUsername, isChecking, isAvailable } = useCheckUsername();
   
   const lastCheckedUsernameRef = useRef<string | null>(null);
@@ -78,14 +77,6 @@ export default function DevRegisterPage() {
   const onSubmit = (data: IRegisterData) => {
     if (isAvailable === false) return;
     registerUser(data);
-  };
-
-  const handleGoogleSuccess = (credentialResponse: any) => {
-    googleLogin(credentialResponse.credential);
-  };
-
-  const handleGoogleError = () => {
-    console.error("Google login failed");
   };
 
   return (
@@ -271,17 +262,6 @@ export default function DevRegisterPage() {
 
               <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-3 h-[1px] w-full" />
 
-              <div className="flex gap-2 justify-center">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={handleGoogleError}
-                  size="large"
-                  text="signup_with"
-                  logo_alignment="left"
-                  shape="rectangular"
-                  theme="filled_black"
-                />
-              </div>
             </form>
 
             <div className="text-center mt-4">
