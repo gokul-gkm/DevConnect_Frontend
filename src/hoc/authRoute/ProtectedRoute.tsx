@@ -16,7 +16,7 @@ export const ProtectedRoute = ({ children, allowedRole }: ProtectedRouteProps) =
   }
 
   if (role !== allowedRole) {
-    const redirectPath = role === Role.DEVELOPER ? '/developer/dashboard' : '/';
+    const redirectPath = role === Role.DEVELOPER ? '/developer' : '/';
     return <Navigate to={redirectPath} replace />;
   }
 
