@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import AuthApi from '@/service/Api/AuthApi';
 import { useAppDispatch } from '@/hooks/useAppSelector';
 import { setCredentials } from '@/redux/slices/authSlice';
+import { socketService } from '@/service/socket/socketService';
 
 
 
@@ -16,7 +17,15 @@ export const useGoogleLogin = () => {
       return await AuthApi.googleLogin(credential);
     },
     onSuccess: (response) => {
+
+      
       if (response.success && response.user) {
+
+        const role = response.user.role || 'user';
+        localStorage.setItem("access-token", response.token!);
+        localStorage.setItem("user-role", role);
+        localStorage.setItem('user-id', response.user._id);
+
         dispatch(setCredentials({
           username: response.user.username,
           email: response.user.email,
@@ -25,6 +34,17 @@ export const useGoogleLogin = () => {
           token: response.token!
         }));
         console.log("👑Socket service connect useGoogleLogin")
+
+        try {        
+          if (role === 'developer') {
+            socketService.emit('developer:set-online', { developerId: response.user._id });
+          } else {
+            socketService.emit('user:set-online', { userId: response.user._id });
+          }
+        } catch (error) {
+          console.error("Error connecting socket:", error);
+        }
+     
         toast.success("Login successful!");
         navigate("/");
       }
