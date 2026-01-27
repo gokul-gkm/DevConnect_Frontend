@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import { X, Loader2, User, Mail, Phone, MapPin, Briefcase, Building, Clock, DollarSign, GraduationCap, School, Calendar, Github, Linkedin, Twitter, Globe, Image as ImageIcon, FileText, PenTool } from 'lucide-react';
@@ -11,6 +11,9 @@ import { skillOptions, languageOptions } from '@/utils/selectOptions';
 import { developerProfileSchema, DeveloperProfileFormData } from '@/utils/validation/devProfileValidation';
 import { getFileNameFromUrls } from '@/utils/fileUtils';
 import PhoneInput from 'react-phone-number-input'
+import { useAuth } from '@/hooks/useAuth';
+import { useCheckUsername } from '@/hooks/common/useCheckUsername';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface ErrorMessageProps {
   error?: FieldError | Merge<FieldError, FieldErrorsImpl<any>>;
@@ -57,9 +60,30 @@ const EditDeveloperProfile = () => {
   const { profile, updateProfile, isUpdating } = useDeveloperProfile();
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [resume, setResume] = useState<File | null>(null);
+  const { user } = useAuth();
+  const { checkUsername, isChecking, isAvailable } = useCheckUsername(user._id!);
 
-  const { register, handleSubmit, control, formState: { errors }, reset } = useForm<DeveloperProfileFormData>({
-  resolver: zodResolver(developerProfileSchema),
+  const lastCheckedUsernameRef = useRef<string | null>(null);
+  const originalUsernameRef = useRef<string | null>(null);
+
+useEffect(() => {
+  if (profile?.username) {
+    originalUsernameRef.current = profile.username;
+  }
+}, [profile]);
+
+  const { register,
+    handleSubmit,
+    control,
+    watch,
+    setError,
+    clearErrors,
+    formState: { errors },
+    reset } = useForm<DeveloperProfileFormData>({
+      resolver: zodResolver(developerProfileSchema),
+      mode: "onChange",       
+      reValidateMode: "onChange", 
+
   defaultValues: {
     username: '',
     email: '',
@@ -106,6 +130,57 @@ useEffect(() => {
     });
   }
 }, [profile, reset]);
+  
+  
+    const username = watch("username");
+    
+    const debouncedUsername = useDebounce(username, 500);
+    const isUsernameValid = !!debouncedUsername && !errors.username;
+  
+  //   useEffect(() => {
+  //   clearErrors("username");
+  //   lastCheckedUsernameRef.current = null;
+  // }, [username]);
+  
+      
+        
+  useEffect(() => {
+    if (!isUsernameValid) return;
+  
+    if (debouncedUsername === originalUsernameRef.current) return;
+  
+    if (lastCheckedUsernameRef.current === debouncedUsername) return;
+  
+    lastCheckedUsernameRef.current = debouncedUsername;
+  
+    checkUsername(debouncedUsername);
+  }, [debouncedUsername, isUsernameValid]);
+  
+      
+          
+  useEffect(() => {
+    if (!isUsernameValid) return;
+  
+    if (isAvailable === false) {
+      setError("username", {
+        type: "manual",
+        message: "Username already taken",
+      });
+    }
+  
+    if (isAvailable === true) {
+      clearErrors("username");
+    }
+  }, [isAvailable, isUsernameValid]);
+  
+      
+        
+       useEffect(() => {
+          if (debouncedUsername !== originalUsernameRef.current) {
+            lastCheckedUsernameRef.current = null;
+          }
+       }, [debouncedUsername]);
+  
 
   const onDropProfileImage = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles[0]) {
@@ -136,6 +211,8 @@ useEffect(() => {
   });
 
   const onSubmit = async (data: DeveloperProfileFormData) => {
+    if (isAvailable === false) return;
+
     try {
       const formData = new FormData();
 
@@ -290,6 +367,17 @@ useEffect(() => {
                 </label>
                 <input {...register('username')} className={inputClassName} />
                 <ErrorMessage error={errors.username} />
+                    {isChecking && !errors.username && (
+                    <span className="text-xs text-gray-400 mt-0.5 block">
+                      Checking username availability…
+                    </span>
+                  )}
+
+                  {isAvailable && !errors.username && (
+                    <span className="text-xs text-green-500 mt-0.5 block">
+                      Username is available ✓
+                    </span>
+                  )}
               </div>
 
               <div>

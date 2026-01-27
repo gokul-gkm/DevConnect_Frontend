@@ -5,7 +5,15 @@ const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/web
 const ACCEPTED_RESUME_TYPES = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 
 export const developerSchema = z.object({
-  email: z.string().email('Invalid email format'),
+  email: z
+    .string()
+    .trim()
+    .min(5, "Email is too short")
+    .email("Invalid email format")
+    .regex(
+      /^[a-zA-Z0-9._%+-]{3,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      "Email must have at least 3 characters before @"
+    ),
   bio: z.string().min(10, 'Bio should be at least 10 characters'),
   expertise: z.array(z.string()).min(1, 'Select at least one expertise').max(5, 'Maximum 5 expertise allowed'),
   languages: z.array(z.string()).min(1, 'At least one language is required'),

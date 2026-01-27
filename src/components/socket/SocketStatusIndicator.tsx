@@ -4,30 +4,15 @@ import { Wifi, WifiOff } from 'lucide-react';
 
 export const SocketStatusIndicator = () => {
     const [isConnected, setIsConnected] = useState(socketService.isConnected());
-    
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            setIsConnected(socketService.isConnected());
-        }, 2000);
-        
-        return () => clearInterval(intervalId);
-    }, []);
+    console.log("isConnected SSIndicator : ", isConnected)
 
-    useEffect(() => {
-        if (!isConnected) {
-            const token = localStorage.getItem('access-token');
-            const storedRole = localStorage.getItem('user-role') || 'user';
-            
-            if (token) {
-                const timeoutId = setTimeout(() => {
-                    console.log('Automatically attempting to reconnect socket...');
-                    socketService.connect(token, storedRole);
-                }, 3000);
-                
-                return () => clearTimeout(timeoutId);
-            }
-        }
-    }, [isConnected]);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsConnected(socketService.isConnected());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
     
     return (
         <div className="sticky bottom-0 left-0 right-0 z-10 border-t border-zinc-800 bg-black/95 backdrop-blur-sm p-4">

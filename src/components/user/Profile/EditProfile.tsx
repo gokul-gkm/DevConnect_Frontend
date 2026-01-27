@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { motion } from 'framer-motion'
@@ -16,6 +16,9 @@ import {
 import { toast } from 'react-hot-toast'
 import { ProfileFormData, profileSchema } from '@/utils/validation/userValidation'
 import PhoneInput from 'react-phone-number-input'
+import { useCheckUsername } from '@/hooks/common/useCheckUsername'
+import { useDebounce } from '@/hooks/useDebounce'
+import { useAuth } from '@/hooks/useAuth'
 
 const AVAILABLE_SKILLS = [
   "JavaScript", "TypeScript", "React", "Node.js", "Python", "Java", "C++", 
@@ -33,7 +36,12 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
     const [selectedImage, setSelectedImage] = useState<File | null>(null)
     const [previewUrl, setPreviewUrl] = useState<string>(userData.profilePicture || '')
     const [newSkill, setNewSkill] = useState('')
-    const fileInputRef = useRef<HTMLInputElement>(null)
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { user } = useAuth();
+    const { checkUsername, isChecking, isAvailable } = useCheckUsername(user._id!)
+  
+    const lastCheckedUsernameRef = useRef<string | null>(null);
+    const originalUsernameRef = useRef(userData.username);
   
     const {
       register,
@@ -41,9 +49,13 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
       formState: { errors, isSubmitting },
       setValue,
       control,
-      watch
+      watch,
+      setError,
+      clearErrors,
     } = useForm<ProfileFormData>({
       resolver: zodResolver(profileSchema),
+      mode: "onChange",       
+      reValidateMode: "onChange", 
       defaultValues: {
         username: userData.username,
         email: userData.email,
@@ -60,6 +72,54 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
         }
       }
     })
+  
+  const username = watch("username");
+  const debouncedUsername = useDebounce(username, 500);
+  const isUsernameValid = !!debouncedUsername && !errors.username;
+
+  useEffect(() => {
+  clearErrors("username");
+  lastCheckedUsernameRef.current = null;
+}, [username]);
+
+    
+      
+useEffect(() => {
+  if (!isUsernameValid) return;
+
+  if (debouncedUsername === originalUsernameRef.current) return;
+
+  if (lastCheckedUsernameRef.current === debouncedUsername) return;
+
+  lastCheckedUsernameRef.current = debouncedUsername;
+
+  checkUsername(debouncedUsername);
+}, [debouncedUsername, isUsernameValid]);
+
+    
+        
+useEffect(() => {
+  if (!isUsernameValid) return;
+
+  if (isAvailable === false) {
+    setError("username", {
+      type: "manual",
+      message: "Username already taken",
+    });
+  }
+
+  if (isAvailable === true) {
+    clearErrors("username");
+  }
+}, [isAvailable, isUsernameValid]);
+
+    
+      
+     useEffect(() => {
+        if (debouncedUsername !== originalUsernameRef.current) {
+          lastCheckedUsernameRef.current = null;
+        }
+      }, [debouncedUsername]);
   
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0]
@@ -78,7 +138,9 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
       setPreviewUrl(URL.createObjectURL(file))
     }
     
-    const onSubmit = async (data: ProfileFormData) => {
+  const onSubmit = async (data: ProfileFormData) => {
+        if (isAvailable === false) return;
+
         try {
           const formData = new FormData()
           formData.append('username', data.username)
@@ -152,8 +214,21 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
                     className="bg-zinc-900/50 border-white/5 focus:border-purple-500/50"
                     placeholder="Enter your username"
                   />
-                  {errors.username && (
-                    <p className="mt-1 text-sm text-red-500">{errors.username.message}</p>
+                        {errors.username && (
+                    <span className="text-xs text-red-500 mt-0.5 block">
+                      {errors.username.message}
+                    </span>
+                  )}
+                      {isChecking && !errors.username && (
+                    <span className="text-xs text-gray-400 mt-0.5 block">
+                      Checking username availability…
+                    </span>
+                  )}
+
+                  {isAvailable && !errors.username && (
+                    <span className="text-xs text-green-500 mt-0.5 block">
+                      Username is available ✓
+                    </span>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -166,7 +241,9 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
                     placeholder="Enter your email"
                   />
                   {errors.email && (
-                    <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+                      <span className="text-xs text-red-500 mt-0.5 block">
+                      {errors.email.message}
+                    </span>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -181,6 +258,10 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
                         withCountryCallingCode
                         defaultCountry="IN"
                         placeholder="Enter phone number"
+                        value={field.value || ""}
+                        onChange={(value) => {
+                          field.onChange(value ?? "");
+                        }}
                         className="w-full rounded-xl dark:bg-zinc-900 border border-zinc-800 text-white focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500"
                       />
                     )}
@@ -218,7 +299,9 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
                 placeholder="Tell us about yourself..."
               />
               {errors.bio && (
-                <p className="mt-1 text-sm text-red-500">{errors.bio.message}</p>
+                  <span className="text-xs text-red-500 mt-0.5 block">
+                      {errors.bio.message}
+                    </span>
               )}
                         </motion.div>
                
@@ -268,14 +351,16 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
                     }
                   }}
                   variant="outline"
-                  className="border-white/5 hover:bg-white/5"
+                  className="border-white/5 hover:bg-white/5 rounded-xl"
                   disabled={!newSkill}
                 >
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
               {errors.skills && (
-                <p className="mt-2 text-sm text-red-500">{errors.skills.message}</p>
+                  <span className="text-xs text-red-500 mt-0.5 block">
+                      {errors.skills.message}
+                    </span>
               )}
             </motion.div>
 
@@ -300,7 +385,9 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
                     placeholder="https://github.com/username"
                   />
                   {errors.socialLinks?.github && (
-                    <p className="mt-1 text-sm text-red-500">{errors.socialLinks.github.message}</p>
+                      <span className="text-xs text-red-500 mt-0.5 block">
+                      {errors.socialLinks.github.message}
+                    </span>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -313,7 +400,9 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
                     placeholder="https://linkedin.com/in/username"
                   />
                   {errors.socialLinks?.linkedIn && (
-                    <p className="mt-1 text-sm text-red-500">{errors.socialLinks.linkedIn.message}</p>
+                       <span className="text-xs text-red-500 mt-0.5 block">
+                      {errors.socialLinks.linkedIn.message}
+                    </span>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -326,7 +415,9 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
                     placeholder="https://twitter.com/username"
                   />
                   {errors.socialLinks?.twitter && (
-                    <p className="mt-1 text-sm text-red-500">{errors.socialLinks.twitter.message}</p>
+                     <span className="text-xs text-red-500 mt-0.5 block">
+                      {errors.socialLinks.twitter.message}
+                    </span>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -339,7 +430,9 @@ export function EditProfile({ userData, onSave }: EditProfileProps) {
                     placeholder="https://your-portfolio.com"
                   />
                   {errors.socialLinks?.portfolio && (
-                    <p className="mt-1 text-sm text-red-500">{errors.socialLinks.portfolio.message}</p>
+                       <span className="text-xs text-red-500 mt-0.5 block">
+                      {errors.socialLinks.portfolio.message}
+                    </span>
                   )}
                 </div>
               </div>

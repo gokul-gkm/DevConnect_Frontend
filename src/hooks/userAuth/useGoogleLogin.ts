@@ -4,7 +4,6 @@ import { toast } from 'react-hot-toast';
 import AuthApi from '@/service/Api/AuthApi';
 import { useAppDispatch } from '@/hooks/useAppSelector';
 import { setCredentials } from '@/redux/slices/authSlice';
-import { socketService } from '@/service/socket/socketService';
 
 
 
@@ -22,9 +21,10 @@ export const useGoogleLogin = () => {
           username: response.user.username,
           email: response.user.email,
           role: response.user.role,
-          _id: response.user._id
+          _id: response.user._id,
+          token: response.token!
         }));
-        socketService.connect(response.token!, 'user');
+        console.log("👑Socket service connect useGoogleLogin")
         toast.success("Login successful!");
         navigate("/");
       }

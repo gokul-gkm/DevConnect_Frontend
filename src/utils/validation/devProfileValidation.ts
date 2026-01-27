@@ -2,8 +2,32 @@ import parsePhoneNumberFromString from 'libphonenumber-js';
 import {z} from 'zod'
 
 export const developerProfileSchema = z.object({
-  username: z.string().trim().min(3, 'Username must be at least 3 characters'),
-  email: z.string().trim().email('Invalid email address'),
+  username: z
+  .string()
+  .trim()
+  .min(3, "Name must be at least 3 characters")
+  .max(40, "Name must not exceed 40 characters")
+  .regex(
+    /^[a-zA-Z0-9]+(?: [a-zA-Z0-9]+)*$/,
+    "Name can contain letters, numbers, and single spaces only"
+  )
+  .refine(
+    (value) => (value.match(/[a-zA-Z]/g)?.length ?? 0) >= 3,
+    {
+      message: "Name must contain at least 3 letters",
+    }
+  ),
+
+
+  email: z
+    .string()
+    .trim()
+    .min(5, "Email is too short")
+    .email("Invalid email format")
+    .regex(
+      /^[a-zA-Z0-9._%+-]{3,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      "Email must have at least 3 characters before @"
+    ),
   bio: z.string().trim().min(10, 'Bio must be at least 10 characters'),
   contact: z.string().refine((value) => {
     const phone = parsePhoneNumberFromString(value);

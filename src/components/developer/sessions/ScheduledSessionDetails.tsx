@@ -30,13 +30,8 @@ export default function ScheduledSessionDetails() {
   } = useScheduledSessionDetails(sessionId);
 
   if (isLoading) {
-    return (
-      <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
-        <div className="relative">
-          <div className="absolute inset-0 bg-indigo-500/10 blur-[100px] rounded-full -z-10" />
+    return (    
           <LoadingSpinner text='Loading Session Details...' bgColor='dark' />
-        </div>
-      </div>
     );
   }
 

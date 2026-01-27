@@ -32,7 +32,7 @@ export function CustomSelect({ value, onChange, options, placeholder = "Select..
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}
         className={`w-full flex items-center justify-between bg-zinc-900/50 
-          border border-white/5 rounded-lg px-3 py-2 text-left
+          border border-white/5 rounded-xl px-3 py-2 text-left
           focus:border-purple-500/50 focus:outline-none
           hover:bg-zinc-800/50 transition-colors ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
@@ -49,10 +49,12 @@ export function CustomSelect({ value, onChange, options, placeholder = "Select..
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             style={{ position: 'relative', zIndex: 9999 }}
-            className="absolute w-full mt-2 bg-zinc-900 border border-white/5 rounded-lg 
+            className="absolute w-full mt-2 bg-zinc-900 border border-white/5 rounded-xl 
               shadow-lg shadow-black/50 backdrop-blur-xl overflow-hidden"
           >
-            <div className="max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+
+            <div className="max-h-60 overflow-y-auto no-scrollbar">
+
               {options.length > 0 ? (
                 options.map((option) => (
                   <button
