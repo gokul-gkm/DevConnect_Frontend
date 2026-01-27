@@ -231,7 +231,28 @@ const AdminApi = {
             params: { page, limit, sortBy }
         });
         return response.data.data;
-    }
+    },
+
+
+    async downloadSessionsReport(params: {
+        from?: string; 
+        to?: string;  
+        search?: string;
+        status?: string[];
+        format?: 'csv';
+    }) {
+        const query = new URLSearchParams();
+        if (params.from) query.append('from', params.from);
+        if (params.to) query.append('to', params.to);
+        if (params.search) query.append('search', params.search);
+        if (params.status?.length) query.append('status', params.status.join(','));
+        query.append('format', params.format ?? 'csv');
+    
+        return axiosClient.get(`${adminRoutes.downloadSessionsReport}?${query.toString()}`, {
+        responseType: 'blob',
+        });
+    },
+  
 };
 
 export default AdminApi;

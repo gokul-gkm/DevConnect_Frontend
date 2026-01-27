@@ -6,6 +6,8 @@ import AdminTable from '@/components/admin/AdminTable';
 import { ColumnDef } from '@tanstack/react-table';
 import { useAdminSessions } from '@/hooks/admin/useAdminSessions';
 import { cn } from '@/lib/utils';
+import AdminApi from '@/service/Api/AdminApi';
+import { Download } from 'lucide-react';
 
 interface Session {
   _id: string;
@@ -45,6 +47,10 @@ const AdminSessionsPage = () => {
     page: 1,
     limit: 10
   });
+
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);  
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -86,6 +92,39 @@ const AdminSessionsPage = () => {
       ...prev,
       ...params
     }));
+  };
+
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  };
+  
+  const handleDownloadReport = async () => {
+    if (fromDate && toDate && new Date(fromDate) > new Date(toDate)) {
+      alert('From date cannot be after To date');
+      return;
+    }
+    setIsDownloading(true);
+    try {
+      const res = await AdminApi.downloadSessionsReport({
+        from: fromDate || undefined,
+        to: toDate || undefined,
+        search: debouncedSearch || undefined,
+        format: 'csv',
+      });
+      downloadBlob(res.data, 'session-report.csv');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to download report');
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -299,7 +338,7 @@ const AdminSessionsPage = () => {
               </button>
             </div>
 
-            <div className="p-4 border-b border-slate-800/50">
+            {/* <div className="p-4 border-b border-slate-800/50">
               <div className="relative">
                 <input
                   type="text"
@@ -310,7 +349,48 @@ const AdminSessionsPage = () => {
                 />
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               </div>
-            </div>
+            </div> */}
+
+<div className="p-4 border-b border-slate-800/50">
+  <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center">
+    <div className="relative w-full lg:flex-1">
+      <input
+        type="text"
+        placeholder="Search sessions..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all duration-300"
+      />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+    </div>
+
+    <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+      <input
+        type="date"
+        value={fromDate}
+        onChange={(e) => setFromDate(e.target.value)}
+        className="bg-slate-800/50 border border-slate-700/50 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+        placeholder="From date"
+      />
+      <input
+        type="date"
+        value={toDate}
+        onChange={(e) => setToDate(e.target.value)}
+        className="bg-slate-800/50 border border-slate-700/50 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+        placeholder="To date"
+      />
+      <button
+        type="button"
+        onClick={handleDownloadReport}
+        disabled={isDownloading}
+        className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-200 hover:bg-purple-500/15 disabled:opacity-60 disabled:cursor-not-allowed transition"
+      >
+        <Download className="h-4 w-4" />
+        {isDownloading ? 'Downloading...' : 'Download report'}
+      </button>
+    </div>
+  </div>
+</div>
 
             <AnimatePresence mode="wait">
               {activeTab === 0 ? (
