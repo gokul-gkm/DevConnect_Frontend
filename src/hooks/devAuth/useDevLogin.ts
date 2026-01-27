@@ -37,7 +37,7 @@ export const useDevLogin = () => {
         localStorage.setItem("user-role", 'developer');
         
         toast.success("Login successful!");
-        navigate("/developer/dashboard");
+        navigate("/developer");
       }
     },
     onError: (error: any) => {
@@ -68,7 +68,7 @@ export const useDevLogin = () => {
           })
         );   
         toast.success("Login successful!");
-        navigate("/developer/dashboard");
+        navigate("/developer");
       }
     },
     onError: (error: any) => {

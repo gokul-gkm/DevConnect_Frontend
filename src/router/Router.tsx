@@ -170,7 +170,7 @@ export const Router = createBrowserRouter([
           },
 
           {
-            path: "dashboard",
+            path: "",
             element: (
               <ProtectedRoute allowedRole={Role.DEVELOPER}>
                 <DevDashboard />

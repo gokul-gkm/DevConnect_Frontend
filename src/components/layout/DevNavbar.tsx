@@ -12,7 +12,7 @@ import DevAuthApi from '@/service/Api/DevAuthApi';
 import { useUnreadMessagesContext } from '@/contexts/UnreadMessagesContext';
 
 const navItems = [
-  { name: 'Home', delay: 0, url: '/developer/dashboard' },
+  { name: 'Home', delay: 0, url: '/developer' },
   { name: 'Sessions', delay: 0.1, url: '/developer/session-requests' },
   { name: 'Portfolio', delay: 0.4, url: '/developer/portfolio' },
   { name: 'About', delay: 0.6, url: '/about' },
