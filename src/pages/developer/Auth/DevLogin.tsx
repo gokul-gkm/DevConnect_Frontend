@@ -7,7 +7,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { loginSchema } from "@/utils/validation/userValidation";
-import { GoogleLogin } from "@react-oauth/google";
 import { useDevLogin } from "@/hooks/devAuth/useDevLogin";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion"; 
@@ -19,7 +18,7 @@ type LoginData = z.infer<typeof loginSchema>;
 export default function DevLogin() {
 
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isLoading, googleLogin } = useDevLogin();
+  const { login, isLoading } = useDevLogin();
 
   const {
     register,
@@ -32,14 +31,6 @@ export default function DevLogin() {
 
   const onSubmit = (data: LoginData) => {
     login({ email: data.email, password: data.password });
-  };
-
-  const handleGoogleSuccess = (credentialResponse: any) => {
-    googleLogin(credentialResponse.credential);
-  };
-
-  const handleGoogleError = () => {
-    console.error("Google login failed");
   };
 
   return (
@@ -124,17 +115,6 @@ export default function DevLogin() {
 
               <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-3 h-[1px] w-full" />
 
-              <div className="flex gap-2 justify-center">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={handleGoogleError}
-                  size="large"
-                  text="signup_with"
-                  logo_alignment="left"
-                  shape="rectangular"
-                  theme="filled_black"
-                />
-              </div>
             </form>
 
             <div className="text-center mt-4">
