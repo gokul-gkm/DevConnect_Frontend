@@ -26,7 +26,8 @@ export const adminRoutes = {
     getDashboardStats: "/admin/dashboard/stats",
     getRevenueStats: "/admin/revenue/stats",
     getSessions: "/admin/sessions",
-    getDeveloperLeaderboard: "/admin/developers/leaderboard"
+    getDeveloperLeaderboard: "/admin/developers/leaderboard",
+    downloadSessionsReport: "/admin/sessions/report",
 }
 
 export const devAuthRoutes = {
