@@ -27,7 +27,7 @@ const DevNavbar: React.FC = () => {
   const location = useLocation();
   const { scrollY } = useScroll();
   const dispatch = useAppDispatch();
-  const { isAuthenticated, username, email, _id } = useAppSelector((state) => state.user);
+  const { isAuthenticated, username, email} = useAppSelector((state) => state.user);
   const navigate = useNavigate();
   const { unreadCount } = useNotificationContext();
 

@@ -24,7 +24,7 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const { scrollY } = useScroll();
   const dispatch = useAppDispatch();
-  const { isAuthenticated, username, email, _id } = useAppSelector((state) => state.user);
+  const { isAuthenticated, username, email } = useAppSelector((state) => state.user);
   const { unreadCount } = useNotificationContext();
   const { unreadCount: unreadMessageCount } = useUnreadMessagesContext();
   
