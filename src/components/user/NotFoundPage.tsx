@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import Navbar from '../layout/Navbar';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import DevNavbar from '../layout/DevNavbar';
 
 const NotFound = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const { role } = useAppSelector((state) => state.user);
 
   useEffect(() => {
     const handleMouseMove = (e: any) => {
@@ -19,7 +22,8 @@ const NotFound = () => {
 
   return (
     <>
-    <Navbar />
+      {role === "developer" ? <DevNavbar /> : <Navbar />}
+      
     <div className="relative min-h-screen bg-black overflow-hidden flex items-center justify-center">
 
       <div className="absolute inset-0" style={{ perspective: '1000px' }}>
@@ -42,6 +46,7 @@ const NotFound = () => {
           ))}
         </div>
       </div>
+      
 
 
       <div
@@ -102,7 +107,7 @@ const NotFound = () => {
 
         <div className="flex justify-center items-center gap-8">
           <a
-            href="/"
+            href={ role === "developer" ? "/developer":"/"}
             className="group relative px-8 py-4 bg-transparent overflow-hidden rounded-xl transition-all duration-500"
             style={{
               transform: isHovered ? 'translateZ(50px)' : 'translateZ(0)'
