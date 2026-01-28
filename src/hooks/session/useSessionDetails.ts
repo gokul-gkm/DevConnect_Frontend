@@ -35,6 +35,7 @@ export interface Session {
   developerId: Developer;
   userId: User;
   rejectionReason?: string;
+  cancellationReason?: string;
   feedback?: string;
   rating?: number;
   _id: string;

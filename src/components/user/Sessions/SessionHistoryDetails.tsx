@@ -382,7 +382,7 @@ export function SessionHistoryDetails() {
             </motion.div>
           )}
 
-          {(session.status === 'rejected' || session.status === 'cancelled') && session.rejectionReason && (
+          {(session.status === 'rejected' || session.status === 'cancelled') && (session.rejectionReason || session.cancellationReason) && (
             <motion.div
               variants={itemVariants}
               className="mt-6 bg-gradient-to-br from-zinc-900/90 to-black/70 rounded-2xl backdrop-blur-md border border-zinc-800/50
@@ -394,7 +394,7 @@ export function SessionHistoryDetails() {
               </div>
               <div className="p-5">
                 <div className="bg-zinc-800/20 rounded-xl p-4 border border-zinc-800/50">
-                  <p className="text-zinc-300 leading-relaxed">{session.rejectionReason}</p>
+                  <p className="text-zinc-300 leading-relaxed">{session.rejectionReason || session.cancellationReason==="DEVELOPER_BLOCKED"? "Developer has been blocked by the admin" : session.cancellationReason || "No cancellation reason provided"}</p>
                 </div>
               </div>
             </motion.div>
