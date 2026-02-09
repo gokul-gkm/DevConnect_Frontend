@@ -249,7 +249,7 @@ export function SessionHistory() {
     <main className="w-full">
       <div className="min-h-screen p-4 lg:p-8 pt-20">
         <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {statsData.map((stat) => (
               <StatsCard
                 key={stat.label}

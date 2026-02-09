@@ -5,12 +5,13 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Star, User, Calendar, MessageSquare, Info, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/shadcn-button'
-import { Spinner } from '@/components/ui/spinner'
 import { format } from 'date-fns'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Input } from '@/components/ui/Input'
 import Pagination from '@/components/ui/Pagination'
 import { useReviews } from '@/hooks/reviews/useReviews'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { ReviewSkeleton } from './ReviewSkelton'
 
 interface Review {
   id: string;
@@ -61,12 +62,8 @@ export function DeveloperReviews() {
     setCurrentPage(page)
   }
 
-  if (isLoading && reviews.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Spinner size="lg" />
-      </div>
-    )
+  if (!isLoading && reviews.length === 0) {
+     return <LoadingSpinner text='Loading developer reviews...' bgColor='dark' /> 
   }
 
   return (
@@ -143,12 +140,8 @@ export function DeveloperReviews() {
           </select>
         </div>
       </motion.div>
-
-      {isFetching && !isLoading && (
-        <div className="text-center py-4">
-          <Spinner size="sm" />
-        </div>
-      )}
+     
+      {isFetching && !isLoading && <ReviewSkeleton count={3} />}
 
       {reviews.length > 0 ? (
         <div className="space-y-6">

@@ -9,7 +9,7 @@ interface StatsCardProps {
 
 export const StatsCard: React.FC<StatsCardProps> = ({ icon, label, value, colorClass = '' }) => (
   <div
-    className={`flex items-center gap-4 bg-gradient-to-br from-zinc-900/50 to-black/50 rounded-xl p-4 backdrop-blur-sm border border-white/5 hover:border-white/10 transition-all group min-w-[210px] ${colorClass}`}
+    className={`flex items-center gap-4 bg-gradient-to-br from-zinc-900/50 to-black/50 rounded-xl p-4 backdrop-blur-sm border border-white/5 hover:border-white/10 transition-all group min-w-[180px] ${colorClass}`}
     style={{ minHeight: 64 }}
   >
     <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-white/5">
