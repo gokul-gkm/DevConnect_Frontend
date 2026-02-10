@@ -199,7 +199,7 @@ const DevNavbar: React.FC = () => {
                     className="w-full h-full object-cover" 
                   />
                 </div>
-                <span className="text-white text-lg md:text-xl font-bold hidden lg:block">DevConnect</span>
+                <span className="text-white text-lg md:text-xl font-bold hidden md:block">DevConnect</span>
               </Link>
             </motion.div>
           </div>
